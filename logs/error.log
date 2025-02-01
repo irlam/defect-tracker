@@ -1,0 +1,387 @@
+[29-Jan-2025 21:20:34 UTC] Session Debug for user irlam:
+[29-Jan-2025 21:20:34 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+    [success_message] => Defect created successfully with pin location image.
+)
+
+[29-Jan-2025 21:39:08 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:41:40 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:41:42 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:44:25 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:44:27 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:44:30 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:44:31 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:47:52 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:47:56 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:47:57 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:47:58 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:49:25 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 21:49:27 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 22:00:25 UTC] Pin Image Path: floor_plan_pin_48_20250129212247.png
+[29-Jan-2025 22:01:58 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[29-Jan-2025 22:04:01 UTC] Session Debug for user irlam:
+[29-Jan-2025 22:04:01 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+    [success_message] => Defect created successfully with pin location image.
+)
+
+[30-Jan-2025 06:21:55 UTC] Session Debug for user irlam:
+[30-Jan-2025 06:21:55 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 06:21:59 UTC] Session Debug for user irlam:
+[30-Jan-2025 06:21:59 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 06:22:10 UTC] Session Debug for user irlam:
+[30-Jan-2025 06:22:10 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 06:22:37 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[30-Jan-2025 06:28:13 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[30-Jan-2025 06:28:22 UTC] Session Debug for user irlam:
+[30-Jan-2025 06:28:22 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 06:29:19 UTC] Session Debug for user irlam:
+[30-Jan-2025 06:29:19 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 07:25:41 UTC] Session Debug for user irlam:
+[30-Jan-2025 07:25:41 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 07:31:25 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[30-Jan-2025 07:44:23 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[30-Jan-2025 07:49:31 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[30-Jan-2025 08:00:32 UTC] Pin Image Path: https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png
+[30-Jan-2025 09:41:24 UTC] Session Debug for user irlam:
+[30-Jan-2025 09:41:24 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 09:51:53 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 241
+[30-Jan-2025 09:53:08 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 241
+[30-Jan-2025 09:54:01 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 241
+[30-Jan-2025 09:54:09 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 241
+[30-Jan-2025 09:54:45 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 241
+[30-Jan-2025 09:54:56 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 241
+[30-Jan-2025 10:00:45 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 10:00:49 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 10:01:03 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 10:15:44 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 10:15:52 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 10:16:17 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 10:16:31 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 11:10:59 UTC] Session Debug for user irlam:
+[30-Jan-2025 11:10:59 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 11:11:08 UTC] PHP Notice:  Undefined index: csrf_token in /home/dvntrack/defects.dvntracker.site/view_defect.php on line 269
+[30-Jan-2025 12:35:03 UTC] Session Debug for user irlam:
+[30-Jan-2025 12:35:03 UTC] Session data: Array
+(
+    [csrf_token] => b1c98591f302ba3281576d16643a866dbcdd8532aae0769e26de06f36a5b725e
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 13:30:37 UTC] Session Debug for user irlam:
+[30-Jan-2025 13:30:37 UTC] Session data: Array
+(
+    [csrf_token] => b1c98591f302ba3281576d16643a866dbcdd8532aae0769e26de06f36a5b725e
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 13:33:52 UTC] Session Debug for user irlam:
+[30-Jan-2025 13:33:52 UTC] Session data: Array
+(
+    [csrf_token] => b1c98591f302ba3281576d16643a866dbcdd8532aae0769e26de06f36a5b725e
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 13:34:00 UTC] Session Debug for user irlam:
+[30-Jan-2025 13:34:00 UTC] Session data: Array
+(
+    [csrf_token] => b1c98591f302ba3281576d16643a866dbcdd8532aae0769e26de06f36a5b725e
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 13:39:31 UTC] Session Debug for user irlam:
+[30-Jan-2025 13:39:31 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 13:59:13 UTC] Session Debug for user irlam:
+[30-Jan-2025 13:59:13 UTC] Session data: Array
+(
+    [csrf_token] => 9fed766824b55ddcc940596ee7885a8b6beb557bd4ca9f5281368acf87dab922
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 15:00:44 UTC] Session Debug for user irlam:
+[30-Jan-2025 15:00:44 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 15:54:20 UTC] Session Debug for user irlam:
+[30-Jan-2025 15:54:20 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 17:59:31 UTC] Session Debug for user irlam:
+[30-Jan-2025 17:59:31 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 18:11:42 UTC] Session Debug for user irlam:
+[30-Jan-2025 18:11:42 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 18:44:21 UTC] Session Debug for user irlam:
+[30-Jan-2025 18:44:21 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 20:54:21 UTC] Session Debug for user irlam:
+[30-Jan-2025 20:54:21 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 21:40:23 UTC] Session Debug for user irlam:
+[30-Jan-2025 21:40:23 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 21:56:47 UTC] Session Debug for user irlam:
+[30-Jan-2025 21:56:47 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 22:14:00 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:14:00 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 22:14:02 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:14:02 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 22:14:04 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:14:04 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+)
+
+[30-Jan-2025 22:21:08 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:21:08 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
+[30-Jan-2025 22:22:15 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:22:15 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+    [csrf_token] => 609539f11f512c7614720002cdf242f469d8a68f1d304c5cd22b5f8d7de183f5
+)
+
+[30-Jan-2025 22:22:38 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:22:38 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+    [csrf_token] => 609539f11f512c7614720002cdf242f469d8a68f1d304c5cd22b5f8d7de183f5
+)
+
+[30-Jan-2025 22:22:59 UTC] Session Debug for user irlam:
+[30-Jan-2025 22:22:59 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+    [user_type] => admin
+    [user_status] => active
+    [is_admin] => 
+    [csrf_token] => 609539f11f512c7614720002cdf242f469d8a68f1d304c5cd22b5f8d7de183f5
+)
+
+[31-Jan-2025 05:39:46 UTC] Session Debug for user irlam:
+[31-Jan-2025 05:39:46 UTC] Session data: Array
+(
+    [user_id] => 22
+    [username] => irlam
+    [full_name] => Chris Irlam
+    [role_id] => 1
+)
+
