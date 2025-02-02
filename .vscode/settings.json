@@ -1,0 +1,10 @@
+{
+    "mssql.applyLocalization": true,
+    "mssql.connections": [],
+    "mssql.autoDisableNonTSqlLanguageService": false,
+    "dataworkspace.excludedProjects": [
+        "tracker/tracker.sqlproj",
+        "defects-database/defects-database.sqlproj",
+        "dvntrack_defect-manager/dvntrack_defect-manager.sqlproj"
+    ]
+}

@@ -1,0 +1,658 @@
+===Database dvntrack_defect-manager
+
+== Table structure for table action_log
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|action|varchar(255)|No|
+|user_id|int(11)|No|
+|details|text|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+== Dumping data for table action_log
+
+|1|create_defect|22|{&quot;defect_id&quot;:46,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;floor_plan_pin_46_20250129210749.png&quot;,&quot;uploaded_images&quot;:[&quot;uploads\/images\/Screenshot 2024-01-25 202814.png&quot;]}|2025-01-29 21:07:51
+|2|create_defect|22|{&quot;defect_id&quot;:47,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;floor_plan_pin_47_20250129211619.png&quot;,&quot;uploaded_images&quot;:[&quot;uploads\/images\/Screenshot 2024-01-25 202814.png&quot;]}|2025-01-29 21:16:21
+|3|create_defect|22|{&quot;defect_id&quot;:48,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;floor_plan_pin_48_20250129212247.png&quot;,&quot;uploaded_images&quot;:[&quot;uploads\/images\/Screenshot 2024-01-25 202814.png&quot;]}|2025-01-29 21:22:49
+|4|create_defect|22|{&quot;defect_id&quot;:49,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:27,&quot;pin_image&quot;:&quot;https:\/\/defects.dvntracker.site\/floor_plan_pin_49_20250129220156.png&quot;,&quot;uploaded_images&quot;:[&quot;https:\/\/defects.dvntracker.site\/uploads\/images\/Screenshot 2024-01-25 202840.png&quot;]}|2025-01-29 22:01:58
+|5|create_defect|22|{&quot;defect_id&quot;:50,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;https:\/\/defects.dvntracker.site\/floor_plan_pin_50_20250130150126.png&quot;,&quot;uploaded_images&quot;:[&quot;https:\/\/defects.dvntracker.site\/uploads\/images\/LT-07.png&quot;]}|2025-01-30 15:01:29
+|6|create_defect|22|{&quot;defect_id&quot;:54,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defect_54\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defect_54\/20250130184201_679bc7f9bd82f_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 18:42:01
+|7|create_defect|22|{&quot;defect_id&quot;:55,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_55\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_55\/20250130205945_679be841c354f_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 20:59:45
+|8|create_defect|22|{&quot;defect_id&quot;:56,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_56\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_56\/20250130212044_679bed2c91c61_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 21:20:44
+|9|create_defect|22|{&quot;defect_id&quot;:57,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:27,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_57\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_57\/20250130212238_679bed9ee3526_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 21:22:38
+|10|create_defect|22|{&quot;defect_id&quot;:58,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_58\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_58\/20250130212643_679bee93e73d1_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 21:26:43
+|11|create_defect|22|{&quot;defect_id&quot;:59,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_59\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_59\/20250130215810_679bf5f2de65e_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 21:58:10
+|12|create_defect|22|{&quot;defect_id&quot;:60,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_60\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_60\/20250130221329_679bf989a0a1b_Screenshot 2024-01-25 202814.png&quot;]}|2025-01-30 22:13:29
+|13|create_defect|22|{&quot;defect_id&quot;:61,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_61\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_61\/20250131054027_679c624b0cacc_1000002877.png&quot;]}|2025-01-31 05:40:27
+|14|create_defect|22|{&quot;defect_id&quot;:62,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_62\/image.png&quot;,&quot;uploaded_images&quot;:[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_62\/20250131073417_679c7cf9df361_Screenshot 2024-12-12 082951.png&quot;]}|2025-01-31 07:34:17
+|15|create_defect|22|{&quot;defect_id&quot;:63,&quot;project_id&quot;:11,&quot;reported_by&quot;:22,&quot;assigned_to&quot;:28,&quot;pin_image&quot;:&quot;[\&quot;\\\/defect_63\\\/image.png\&quot;]&quot;,&quot;uploaded_images&quot;:[&quot;\/defect_63\/20250131102023_679ca3e722bd6_1000115227.jpg&quot;]}|2025-01-31 10:20:23
+== Table structure for table activity_logs
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|action_type|varchar(50)|No|
+|table_name|varchar(50)|No|
+|record_id|int(11)|Yes|NULL
+|action_by|varchar(50)|No|
+|action_at|datetime|No|
+|created_at|datetime|Yes|current_timestamp()
+== Dumping data for table activity_logs
+
+|50|INSERT|contractors|27|irlam|2025-01-25 11:43:55|2025-01-25 11:43:55
+|51|INSERT|contractors|28|irlam|2025-01-25 21:46:09|2025-01-25 21:46:09
+== Table structure for table categories
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|**name**|varchar(100)|No|
+|description|text|No|
+|created_by|int(11)|No|
+|created_at|datetime|No|
+|updated_by|int(11)|Yes|NULL
+|updated_at|datetime|No|
+|deleted_by|int(11)|Yes|NULL
+|deleted_at|datetime|Yes|NULL
+== Dumping data for table categories
+
+== Table structure for table comments
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|defect_id|int(11)|No|
+|user_id|int(11)|No|
+|comment|text|No|
+|created_at|timestamp|No|current_timestamp()
+== Dumping data for table comments
+
+== Table structure for table company_settings
+
+|------
+|Column|Type|Null|Default
+|------
+|//**setting_key**//|varchar(50)|No|
+|setting_value|text|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+|updated_at|timestamp|No|current_timestamp()
+== Dumping data for table company_settings
+
+== Table structure for table contractors
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|bigint(20)|No|
+|company_name|varchar(100)|No|
+|contact_name|varchar(100)|No|
+|email|varchar(100)|No|
+|phone|varchar(20)|No|
+|trade|varchar(50)|No|
+|address_line1|varchar(100)|Yes|NULL
+|address_line2|varchar(100)|Yes|NULL
+|city|varchar(50)|Yes|NULL
+|county|varchar(50)|Yes|NULL
+|postcode|varchar(10)|Yes|NULL
+|vat_number|varchar(15)|Yes|NULL
+|company_number|varchar(10)|Yes|NULL
+|insurance_info|text|Yes|NULL
+|utr_number|varchar(10)|Yes|NULL
+|notes|text|Yes|NULL
+|status|enum(&#039;active&#039;, &#039;inactive&#039;, &#039;suspended&#039;)|No|active
+|created_by|int(11)|No|
+|created_at|datetime|No|current_timestamp()
+|updated_by|int(11)|Yes|NULL
+|updated_at|datetime|Yes|NULL
+|deleted_at|datetime|Yes|NULL
+|deleted_by|int(11)|Yes|NULL
+|license_number|varchar(50)|Yes|NULL
+|logo|varchar(255)|Yes|NULL
+== Dumping data for table contractors
+
+|27|joiner|chris irlam|cirlam@gmail.com|774351488|floor layer|NULL|NULL|NULL|NULL|NULL|NULL|NULL|NULL|NULL|NULL|active|22|2025-01-25 11:43:55|22|2025-01-25 11:43:55|NULL|NULL|NULL|NULL
+|28|Cara Brickwork|chris irlam|cirlam5@gmail.com|07743514885|brick layer|NULL|NULL|NULL|NULL|NULL|NULL|NULL|NULL|NULL|NULL|active|22|2025-01-25 21:46:09|22|2025-01-25 21:46:09|NULL|NULL|NULL|NULL
+== Triggers contractors
+
+|------
+|Name|Time|Event|Definition
+|------
+|before_contractor_update|BEFORE|UPDATE|BEGIN
+    DECLARE debug_info TEXT;
+    
+    -- Create debug information
+    SET debug_info = CONCAT(&#039;Attempting update - Old updated_by: &#039;, 
+                           IFNULL(OLD.updated_by, &#039;NULL&#039;),
+                           &#039;, New updated_by: &#039;,
+                           IFNULL(NEW.updated_by, &#039;NULL&#039;),
+                           &#039;, Current time: &#039;,
+                           NOW());
+    
+    -- Log the debug information
+    INSERT INTO system_logs (message, created_at)
+    VALUES (debug_info, NOW());
+    
+    -- Verify user exists
+    IF NEW.updated_by IS NOT NULL AND NOT EXISTS (
+        SELECT 1 FROM users WHERE id = NEW.updated_by
+    ) THEN
+        SIGNAL SQLSTATE &#039;45000&#039;
+        SET MESSAGE_TEXT = &#039;Invalid user ID for updated_by&#039;;
+    END IF;
+END
+|contractors_after_insert|AFTER|INSERT|BEGIN
+    INSERT INTO `activity_logs` (
+        `action_type`,
+        `table_name`,
+        `record_id`,
+        `action_by`,
+        `action_at`
+    ) VALUES (
+        &#039;INSERT&#039;,
+        &#039;contractors&#039;,
+        NEW.id,
+        &#039;irlam&#039;,
+        NOW()
+    );
+END
+|contractors_after_update|AFTER|UPDATE|BEGIN
+    IF OLD.status != NEW.status THEN
+        INSERT INTO `activity_logs` (
+            `action_type`,
+            `table_name`,
+            `record_id`,
+            `action_by`,
+            `action_at`
+        ) VALUES (
+            &#039;STATUS_UPDATE&#039;,
+            &#039;contractors&#039;,
+            NEW.id,
+            &#039;irlam&#039;,
+            NOW()
+        );
+    END IF;
+END
+|contractors_before_insert|BEFORE|INSERT|BEGIN
+    IF NEW.utr_number IS NOT NULL AND NEW.utr_number != &#039;&#039; AND 
+       EXISTS (SELECT 1 FROM contractors WHERE utr_number = NEW.utr_number) THEN
+        SIGNAL SQLSTATE &#039;45000&#039; SET MESSAGE_TEXT = &#039;Duplicate UTR number&#039;;
+    END IF;
+    
+    IF NEW.vat_number IS NOT NULL AND NEW.vat_number != &#039;&#039; AND 
+       EXISTS (SELECT 1 FROM contractors WHERE vat_number = NEW.vat_number) THEN
+        SIGNAL SQLSTATE &#039;45000&#039; SET MESSAGE_TEXT = &#039;Duplicate VAT number&#039;;
+    END IF;
+    
+    IF NEW.company_number IS NOT NULL AND NEW.company_number != &#039;&#039; AND 
+       EXISTS (SELECT 1 FROM contractors WHERE company_number = NEW.company_number) THEN
+        SIGNAL SQLSTATE &#039;45000&#039; SET MESSAGE_TEXT = &#039;Duplicate Company number&#039;;
+    END IF;
+END
+|contractors_before_update|BEFORE|UPDATE|BEGIN
+    IF NEW.utr_number IS NOT NULL AND NEW.utr_number != &#039;&#039; AND 
+       EXISTS (SELECT 1 FROM contractors WHERE utr_number = NEW.utr_number AND id != NEW.id) THEN
+        SIGNAL SQLSTATE &#039;45000&#039; SET MESSAGE_TEXT = &#039;Duplicate UTR number&#039;;
+    END IF;
+    
+    IF NEW.vat_number IS NOT NULL AND NEW.vat_number != &#039;&#039; AND 
+       EXISTS (SELECT 1 FROM contractors WHERE vat_number = NEW.vat_number AND id != NEW.id) THEN
+        SIGNAL SQLSTATE &#039;45000&#039; SET MESSAGE_TEXT = &#039;Duplicate VAT number&#039;;
+    END IF;
+    
+    IF NEW.company_number IS NOT NULL AND NEW.company_number != &#039;&#039; AND 
+       EXISTS (SELECT 1 FROM contractors WHERE company_number = NEW.company_number AND id != NEW.id) THEN
+        SIGNAL SQLSTATE &#039;45000&#039; SET MESSAGE_TEXT = &#039;Duplicate Company number&#039;;
+    END IF;
+END
+== Table structure for table defects
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|project_id|int(11)|No|
+|floor_plan_id|int(11)|No|
+|reported_by|int(11)|No|
+|assigned_to|bigint(20)|Yes|NULL
+|title|varchar(200)|No|
+|description|text|Yes|NULL
+|status|enum(&#039;open&#039;, &#039;in_progress&#039;, &#039;completed&#039;, &#039;verified&#039;)|Yes|open
+|closure_image|varchar(255)|Yes|NULL
+|rejection_comment|text|Yes|NULL
+|priority|enum(&#039;low&#039;, &#039;medium&#039;, &#039;high&#039;, &#039;critical&#039;)|Yes|medium
+|category|varchar(50)|Yes|NULL
+|x_coordinate|float|Yes|NULL
+|y_coordinate|float|Yes|NULL
+|due_date|date|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+|updated_at|timestamp|No|current_timestamp()
+|updated_by|int(11)|Yes|NULL
+|contractor_id|bigint(20)|Yes|NULL
+|created_by|int(11)|No|
+|pin_x|float|Yes|NULL
+|pin_y|float|Yes|NULL
+|pin_image_path|varchar(255)|Yes|NULL
+|resolution_details|text|Yes|NULL
+|attachment_paths|text|Yes|NULL
+|comments|text|Yes|NULL
+|deleted_at|datetime|Yes|NULL
+== Dumping data for table defects
+
+|48|11|82|22|28|nn|nn|open|NULL|NULL|critical|NULL|0.697699|0.212255|NULL|2025-01-29 21:22:37|2025-01-29 21:22:49|NULL|NULL|22|0.697699|0.212255|floor_plan_pin_48_20250129212247.png|NULL|[&quot;uploads\/images\/Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|49|11|83|22|27|nn|nn| |uploads/defect_images/defect_679b89c9dd334_20250130_141641.png|ll|medium|NULL|0.633826|0.344818|NULL|2025-01-29 22:01:45|2025-01-30 14:17:05|22|NULL|22|0.633826|0.344818|https://defects.dvntracker.site/floor_plan_pin_49_20250129220156.png|NULL|[&quot;https:\/\/defects.dvntracker.site\/uploads\/images\/Screenshot 2024-01-25 202840.png&quot;]|NULL|NULL
+|50|11|82|22|28|hh|hh|open|NULL|NULL|medium|NULL|0.523798|0.180835|NULL|2025-01-30 15:01:16|2025-01-30 15:01:29|NULL|NULL|22|0.523798|0.180835|https://defects.dvntracker.site/floor_plan_pin_50_20250130150126.png|NULL|[&quot;https:\/\/defects.dvntracker.site\/uploads\/images\/LT-07.png&quot;]|NULL|NULL
+|53|11|82|22|28|mm|mm|open|NULL|NULL|low|NULL|0.523228|0.181097|NULL|2025-01-30 18:25:37|2025-01-30 18:25:37|NULL|NULL|22|0.523228|0.181097|NULL|NULL|NULL|NULL|NULL
+|54|11|82|22|28|mm|mm|open|NULL|NULL|low|NULL|0.523228|0.181097|NULL|2025-01-30 18:42:01|2025-01-30 18:42:01|NULL|NULL|22|0.523228|0.181097|/home/dvntrack/defects.dvntracker.site/uploads/defect_54/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defect_54\/20250130184201_679bc7f9bd82f_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|55|11|82|22|28|mm|mm|open|NULL|NULL|medium|NULL|0.527326|0.209112|NULL|2025-01-30 20:59:45|2025-01-30 20:59:45|NULL|NULL|22|0.527326|0.209112|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_55/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_55\/20250130205945_679be841c354f_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|56|11|82|22|28|mm|mm|open|NULL|NULL|low|NULL|0.523228|0.178658|NULL|2025-01-30 21:20:44|2025-01-30 21:20:44|NULL|NULL|22|0.523228|0.178658|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_56/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_56\/20250130212044_679bed2c91c61_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|57|11|82|22|27|nn|nn|open|NULL|NULL|low|NULL|0.520496|0.180473|NULL|2025-01-30 21:22:38|2025-01-30 21:22:38|NULL|NULL|22|0.520496|0.180473|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_57/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_57\/20250130212238_679bed9ee3526_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|58|11|82|22|28|kki|jjkjk|open|NULL|NULL|medium|NULL|0.509567|0.182344|NULL|2025-01-30 21:26:43|2025-01-30 21:26:43|NULL|NULL|22|0.509567|0.182344|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_58/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_58\/20250130212643_679bee93e73d1_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|59|11|82|22|28|nnn|nn|open|NULL|NULL|low|NULL|0.520496|0.193517|NULL|2025-01-30 21:58:10|2025-01-30 21:58:10|NULL|NULL|22|0.520496|0.193517|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_59/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_59\/20250130215810_679bf5f2de65e_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|60|11|82|22|28|mm|mm|open|NULL|NULL|medium|NULL|0.51913|0.178601|NULL|2025-01-30 22:13:29|2025-01-30 22:13:29|NULL|NULL|22|0.51913|0.178601|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_60/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_60\/20250130221329_679bf989a0a1b_Screenshot 2024-01-25 202814.png&quot;]|NULL|NULL
+|61|11|82|22|28|W|W|open|NULL|NULL|low|NULL|0.504982|0.181654|NULL|2025-01-31 05:40:27|2025-01-31 05:40:27|NULL|NULL|22|0.504982|0.181654|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_61/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_61\/20250131054027_679c624b0cacc_1000002877.png&quot;]|NULL|NULL
+|62|11|82|22|28|k|kkkk|open|NULL|NULL|medium|NULL|0.510903|0.157281|NULL|2025-01-31 07:34:17|2025-01-31 07:34:17|NULL|NULL|22|0.510903|0.157281|/home/dvntrack/defects.dvntracker.site/uploads/defects/defect_62/image.png|NULL|[&quot;\/home\/dvntrack\/defects.dvntracker.site\/uploads\/defects\/defect_62\/20250131073417_679c7cf9df361_Screenshot 2024-12-12 082951.png&quot;]|NULL|NULL
+|63|11|82|22|28|Ty|Gg|open|NULL|NULL|high|NULL|0.550359|0.406276|NULL|2025-01-31 10:20:23|2025-01-31 10:20:23|NULL|NULL|22|0.550359|0.406276|[&quot;\/defect_63\/image.png&quot;]|NULL|[&quot;\/defect_63\/20250131102023_679ca3e722bd6_1000115227.jpg&quot;]|NULL|NULL
+== Table structure for table defect_comments
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|defect_id|int(11)|No|
+|user_id|int(11)|No|
+|comment|text|No|
+|created_at|datetime|No|current_timestamp()
+|updated_at|datetime|No|current_timestamp()
+== Dumping data for table defect_comments
+
+== Table structure for table defect_history
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|defect_id|int(11)|No|
+|description|text|No|
+|created_at|datetime|No|current_timestamp()
+|updated_by|varchar(255)|No|
+== Dumping data for table defect_history
+
+== Table structure for table defect_images
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|defect_id|int(11)|No|
+|file_path|varchar(255)|No|
+|uploaded_by|int(11)|No|
+|created_at|timestamp|No|current_timestamp()
+|uploaded_at|timestamp|No|current_timestamp()
+== Dumping data for table defect_images
+
+== Table structure for table export_logs
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|bigint(20)|No|
+|user_id|int(11)|No|
+|export_type|varchar(50)|No|
+|file_format|varchar(10)|No|
+|filename|varchar(255)|No|
+|filesize|bigint(20)|No|
+|created_at|datetime|No|
+|downloaded_at|datetime|Yes|NULL
+|download_count|int(10)|Yes|0
+|status|enum(&#039;pending&#039;, &#039;completed&#039;, &#039;failed&#039;, &#039;expired&#039;)|No|pending
+|expiry_date|datetime|No|
+|ip_address|varchar(45)|Yes|NULL
+|user_agent|varchar(255)|Yes|NULL
+== Dumping data for table export_logs
+
+== Triggers export_logs
+
+|------
+|Name|Time|Event|Definition
+|------
+|tr_export_logs_before_insert|BEFORE|INSERT|BEGIN
+    SET NEW.expiry_date = DATE_ADD(NEW.created_at, INTERVAL 30 DAY);
+END
+== Table structure for table floor_plans
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|project_id|int(11)|No|
+|floor_name|varchar(255)|No|
+|level|varchar(50)|No|Level?
+|file_path|varchar(255)|No|
+|image_path|varchar(255)|Yes|NULL
+|floor_number|int(11)|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+|upload_date|datetime|Yes|current_timestamp()
+|uploaded_by|int(11)|No|
+|file_size|int(10)|Yes|NULL
+|file_type|varchar(50)|Yes|NULL
+|description|text|Yes|NULL
+|version|int(11)|Yes|1
+|status|enum(&#039;active&#039;, &#039;inactive&#039;, &#039;deleted&#039;)|No|active
+|last_modified|datetime|Yes|current_timestamp()
+|thumbnail_path|varchar(255)|Yes|NULL
+|original_filename|varchar(255)|No|
+|created_by|int(11)|Yes|NULL
+|updated_at|timestamp|No|current_timestamp()
+|updated_by|int(11)|Yes|NULL
+== Dumping data for table floor_plans
+
+|82|11|B1 - Level 1|B1 - Level 1|uploads/floor_plans/dvn/2025/01/dvn_b1-level-1_20250128_194921.pdf|NULL|NULL|2025-01-28 19:49:21|2025-01-28 19:49:21|22|491059|pdf| |1|active|2025-01-28 19:49:21|NULL|B1 - 1st Floor.pdf|22|2025-01-28 19:49:21|NULL
+|83|11|B1 - Level 2|B1 - Level 2|uploads/floor_plans/dvn/2025/01/dvn_b1-level-2_20250128_200601.pdf|NULL|NULL|2025-01-28 20:06:01|2025-01-28 20:06:01|22|788379|pdf| |1|active|2025-01-28 20:06:01|NULL|B1 - 2nd Floor.pdf|22|2025-01-28 20:06:01|NULL
+|84|11|B1 - Level 3|B1 - Level 3|uploads/floor_plans/dvn/2025/01/dvn_b1-level-3_20250128_201522.pdf|NULL|NULL|2025-01-28 20:15:22|2025-01-28 20:15:22|22|788082|pdf| |1|active|2025-01-28 20:15:22|NULL|B1 - 3rd Floor.pdf|22|2025-01-28 20:15:22|NULL
+== Triggers floor_plans
+
+|------
+|Name|Time|Event|Definition
+|------
+|before_floor_plans_insert|BEFORE|INSERT|BEGIN
+    IF NEW.created_by IS NULL THEN
+        SET NEW.created_by = NEW.uploaded_by;
+    END IF;
+END
+== Table structure for table notifications
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|user_id|int(11)|No|
+|type|varchar(50)|No|
+|message|text|No|
+|link_url|varchar(255)|Yes|NULL
+|is_read|tinyint(1)|Yes|0
+|created_at|datetime|Yes|current_timestamp()
+|updated_at|datetime|Yes|current_timestamp()
+== Dumping data for table notifications
+
+== Table structure for table permissions
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|permission_name|varchar(100)|Yes|NULL
+|**permission_key**|varchar(100)|Yes|NULL
+|**name**|varchar(50)|No|
+|description|text|Yes|NULL
+|created_by|varchar(50)|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+|updated_at|datetime|Yes|current_timestamp()
+|updated_by|varchar(50)|Yes|NULL
+|deleted_at|datetime|Yes|NULL
+|deleted_by|varchar(50)|Yes|NULL
+== Dumping data for table permissions
+
+|1|NULL|NULL|manage_users|Permission to manage users|system|2025-01-24 15:04:05|2025-01-24 15:11:00|NULL|NULL|NULL
+|2|NULL|NULL|view_reports|Permission to view reports|system|2025-01-24 15:04:05|2025-01-24 15:11:05|NULL|NULL|NULL
+|3|NULL|NULL|edit_projects|Permission to edit projects|system|2025-01-24 15:04:56|2025-01-24 15:11:11|NULL|NULL|NULL
+|4|NULL|NULL|delete_projects|Permission to delete projects|system|2025-01-24 15:04:56|2025-01-24 15:11:15|NULL|NULL|NULL
+== Table structure for table projects
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|name|varchar(255)|No|
+|description|text|Yes|NULL
+|start_date|date|Yes|NULL
+|end_date|date|Yes|NULL
+|notes|text|Yes|NULL
+|created_by|int(11)|Yes|NULL
+|updated_by|int(11)|Yes|NULL
+|status|varchar(50)|Yes|active
+|created_at|timestamp|No|current_timestamp()
+|updated_at|timestamp|No|current_timestamp()
+|is_active|tinyint(1)|Yes|1
+== Dumping data for table projects
+
+|11|DVN|McGoff’s 237-Appartments -  Downtown Victoria North|2025-01-24|2028-01-24|NULL|22|22|active|2025-01-24 17:23:33|2025-01-24 17:36:21|1
+== Table structure for table roles
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|**name**|varchar(50)|No|
+|description|text|Yes|NULL
+|created_by|varchar(50)|Yes|NULL
+|created_at|datetime|Yes|NULL
+|updated_at|timestamp|No|current_timestamp()
+|updated_by|varchar(50)|Yes|NULL
+== Dumping data for table roles
+
+|1|admin|Administrator role with full access|NULL|NULL|2025-02-02 08:28:37|irlam
+|2|manager|Project management and oversight capabilities|NULL|NULL|2025-01-21 18:58:21|irlam
+|3|contractor|Contractor access for defect updates and responses|NULL|NULL|2025-01-21 18:58:21|irlam
+|4|viewer|Read-only access to view defects and reports|NULL|NULL|2025-01-21 18:58:21|irlam
+|5|client|Client access to view and comment on defects|irlam|NULL|2025-01-21 18:58:21|irlam
+== Table structure for table role_permissions
+
+|------
+|Column|Type|Null|Default
+|------
+|//**role_id**//|int(11)|No|
+|//**permission_id**//|int(11)|No|
+|created_at|timestamp|No|current_timestamp()
+== Dumping data for table role_permissions
+
+|1|1|2025-01-25 13:28:35
+|1|2|2025-01-25 13:28:35
+|1|3|2025-01-25 13:28:35
+|1|4|2025-01-25 13:28:35
+|2|2|2025-01-25 13:28:35
+|2|3|2025-01-25 13:28:35
+|3|2|2025-01-25 13:28:35
+|4|2|2025-01-25 13:28:35
+|5|2|2025-01-25 13:28:35
+== Table structure for table system_logs
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|user_id|int(11)|Yes|NULL
+|action|varchar(255)|No|
+|action_by|int(11)|Yes|NULL
+|action_at|datetime|No|
+|ip_address|varchar(45)|Yes|NULL
+|details|text|Yes|NULL
+== Dumping data for table system_logs
+
+== Table structure for table users
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|**username**|varchar(50)|No|
+|password|varchar(255)|No|
+|first_name|varchar(100)|Yes|NULL
+|last_name|varchar(100)|Yes|NULL
+|email|varchar(100)|No|
+|user_type|enum(&#039;admin&#039;, &#039;manager&#039;, &#039;contractor&#039;, &#039;inspector&#039;, &#039;viewer&#039;, &#039;client&#039;)|Yes|viewer
+|status|enum(&#039;active&#039;, &#039;inactive&#039;)|Yes|active
+|created_by|varchar(50)|Yes|NULL
+|full_name|varchar(100)|No|
+|role|enum(&#039;admin&#039;, &#039;project_manager&#039;, &#039;contractor&#039;, &#039;client&#039;)|No|
+|avatar_url|varchar(255)|Yes|NULL
+|theme_preference|varchar(50)|Yes|light
+|created_at|timestamp|No|current_timestamp()
+|updated_at|timestamp|No|current_timestamp()
+|updated_by|varchar(50)|Yes|NULL
+|last_login|datetime|Yes|NULL
+|is_active|tinyint(1)|Yes|1
+|role_id|int(11)|Yes|NULL
+|contractor_id|int(11)|Yes|NULL
+|contractor_name|varchar(255)|Yes|NULL
+|contractor_trade|varchar(255)|Yes|NULL
+== Dumping data for table users
+
+|1|admin|$2y$10$PdaKDe8zxWgDVZOBh3MMo.c5.eHI.0xfES86xJPuiysR2.c36xYAm|chris|irlam|cirlam@gmail.com|admin|active|irlam|Admin User|admin|assets/images/default-avatar.png|dark|2025-01-15 10:58:42|2025-01-28 18:59:22|irlam|2025-01-28 18:59:22|1|1|NULL|NULL|NULL
+|22|irlam|$2y$10$T5uTE5vYzwQJ9xJkNwNc1uIBroAZfbzSpA8pI8ZkL6C9hFpRcup2O|Chris|Irlam|irlam@example.com|admin|active|irlam|Chris Irlam|admin|assets/images/default-avatar.png|light|2025-01-24 16:58:36|2025-02-02 08:28:37|irlam|2025-02-02 08:28:37|1|1|NULL|NULL|NULL
+|24|viewer|$2y$10$.SJZvAwXl.Riz7xec6eBd.YgYGqmpuwG6e6kyMIRzMoMpLha61Yf6|chris|irlam|cirlam4@gmail.com|viewer|active|irlam|chris irlam| |NULL|light|2025-01-25 13:30:40|2025-01-27 21:19:09|irlam|NULL|1|2|NULL|NULL|NULL
+|25|Contractor|$2y$10$Hu.wEni1IV0d/Y/LdC1ZM.3DSweI5sfV75rFrmwqbw237Ea7gjZqi|christian|irlam|cirlam@6gmail.com|contractor|active|irlam|christian irlam|contractor|NULL|light|2025-01-25 14:06:55|2025-01-27 21:43:59|irlam|2025-01-25 16:14:36|1|3|28|Cara Brickwork|brick layer
+|26|joiner|$2y$10$default_hash_replace_this|NULL|NULL|cirlam@gmail.com|contractor|active|irlam|chris irlam|contractor|NULL|light|2025-01-28 21:14:28|2025-01-28 21:14:28|irlam|NULL|1|3|27|joiner|floor layer
+== Triggers users
+
+|------
+|Name|Time|Event|Definition
+|------
+|users_insert_trigger|BEFORE|INSERT|BEGIN
+    SET NEW.created_at = NOW();
+    SET NEW.created_by = &#039;irlam&#039;;
+    SET NEW.updated_at = NOW();
+    SET NEW.updated_by = &#039;irlam&#039;;
+END
+|users_update_trigger|BEFORE|UPDATE|BEGIN
+    SET NEW.updated_at = NOW();
+    SET NEW.updated_by = &#039;irlam&#039;;
+END
+== Table structure for table user_logs
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|user_id|int(11)|No|
+|action|varchar(50)|No|
+|action_by|int(11)|No|
+|action_at|datetime|No|
+|ip_address|varchar(45)|No|
+|details|text|Yes|NULL
+|created_at|timestamp|No|current_timestamp()
+== Dumping data for table user_logs
+
+|48|22|create_contractor|22|2025-01-25 09:10:36|82.4.67.225|Created new contractor: Company Name 2|2025-01-25 09:10:36
+|49|22|create_contractor|22|2025-01-25 09:10:41|82.4.67.225|Created new contractor: Company Name 2|2025-01-25 09:10:41
+|50|22|create_contractor|22|2025-01-25 09:10:44|82.4.67.225|Created new contractor: Company Name 2|2025-01-25 09:10:44
+|51|22|create_contractor|22|2025-01-25 09:14:42|82.4.67.225|Created new contractor: Company Name 2|2025-01-25 09:14:42
+|52|22|delete_contractor|22|2025-01-25 09:14:57|82.4.67.225|Deleted contractor: test contracor (ID: 18)|2025-01-25 09:14:57
+|53|22|delete_contractor|22|2025-01-25 09:15:02|82.4.67.225|Deleted contractor: Company Name 2 (ID: 23)|2025-01-25 09:15:02
+|54|22|delete_contractor|22|2025-01-25 09:15:07|82.4.67.225|Deleted contractor: Company Name 2 (ID: 22)|2025-01-25 09:15:07
+|55|22|delete_contractor|22|2025-01-25 09:15:15|82.4.67.225|Deleted contractor: Company Name 2 (ID: 21)|2025-01-25 09:15:15
+|56|22|create_contractor|22|2025-01-25 09:15:52|82.4.67.225|Created new contractor: Company Name 2|2025-01-25 09:15:52
+|57|22|delete_contractor|22|2025-01-25 10:07:02|82.4.67.225|Deleted contractor: Company Name 2 (ID: 24)|2025-01-25 10:07:02
+|58|22|create_contractor|22|2025-01-25 10:08:02|82.4.67.225|Created new contractor: Test Company Name|2025-01-25 10:08:02
+|59|22|delete_contractor|22|2025-01-25 10:40:18|82.4.67.225|Deleted contractor: Test Company Name (ID: 25)|2025-01-25 10:40:18
+|60|22|create_contractor|22|2025-01-25 11:36:53|82.4.67.225|Created new contractor: joiner|2025-01-25 11:36:53
+|61|22|delete_contractor|22|2025-01-25 11:40:56|82.4.67.225|Deleted contractor: joiner (ID: 26)|2025-01-25 11:40:56
+|62|22|delete_contractor|22|2025-01-25 11:43:29|82.4.67.225|Deleted contractor: Company Name 2 (ID: 20)|2025-01-25 11:43:29
+|63|22|create_contractor|22|2025-01-25 11:43:55|82.4.67.225|Created new contractor: joiner|2025-01-25 11:43:55
+|64|23|create_user|22|2025-01-25 12:27:35|82.4.67.225|Created new user: manager (Type: manager)|2025-01-25 12:27:35
+|65|23|user_edited|22|2025-01-25 12:28:15|82.4.67.225|{&quot;edited_by&quot;:&quot;irlam&quot;}|2025-01-25 12:28:15
+|66|24|create_user|22|2025-01-25 13:30:40|82.4.67.225|{&quot;username&quot;:&quot;manager2&quot;,&quot;email&quot;:&quot;cirlam4@gmail.com&quot;,&quot;user_type&quot;:&quot;manager&quot;,&quot;role&quot;:&quot;manager&quot;,&quot;role_id&quot;:&quot;2&quot;,&quot;contractor_id&quot;:null,&quot;contractor_name&quot;:null,&quot;created_by&quot;:&quot;irlam&quot;}|2025-01-25 13:30:40
+|67|24|user_edited|22|2025-01-25 13:54:20|82.4.67.225|{&quot;edited_by&quot;:&quot;irlam&quot;}|2025-01-25 13:54:20
+|68|24|type_changed|22|2025-01-25 14:05:39|82.4.67.225|{&quot;new_type&quot;:&quot;manager&quot;,&quot;new_role_id&quot;:2,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-25 14:05:39
+|69|23|type_changed|22|2025-01-25 14:05:48|82.4.67.225|{&quot;new_type&quot;:&quot;viewer&quot;,&quot;new_role_id&quot;:4,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-25 14:05:48
+|70|23|type_changed|22|2025-01-25 14:05:54|82.4.67.225|{&quot;new_type&quot;:&quot;contractor&quot;,&quot;new_role_id&quot;:3,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-25 14:05:54
+|71|25|create_user|22|2025-01-25 14:06:55|82.4.67.225|{&quot;username&quot;:&quot;irlam9&quot;,&quot;email&quot;:&quot;cirlam@6gmail.com&quot;,&quot;user_type&quot;:&quot;contractor&quot;,&quot;role&quot;:&quot;contractor&quot;,&quot;role_id&quot;:&quot;3&quot;,&quot;contractor_id&quot;:&quot;27&quot;,&quot;contractor_name&quot;:&quot;joiner&quot;,&quot;created_by&quot;:&quot;irlam&quot;}|2025-01-25 14:06:55
+|72|25|status_changed|22|2025-01-25 14:07:25|82.4.67.225|{&quot;new_status&quot;:&quot;inactive&quot;,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-25 14:07:25
+|73|25|status_changed|22|2025-01-25 14:07:37|82.4.67.225|{&quot;new_status&quot;:&quot;inactive&quot;,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-25 14:07:37
+|74|25|status_changed|22|2025-01-25 14:07:58|82.4.67.225|{&quot;new_status&quot;:&quot;active&quot;,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-25 14:07:58
+|75|22|create_contractor|22|2025-01-25 21:46:09|82.4.67.225|Created new contractor: Cara Brickwork|2025-01-25 21:46:09
+|76|24|type_changed|22|2025-01-26 09:39:53|82.4.67.225|{&quot;new_type&quot;:&quot;viewer&quot;,&quot;new_role_id&quot;:4,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-26 09:39:53
+|77|23|type_changed|22|2025-01-26 09:40:50|82.4.67.225|{&quot;new_type&quot;:&quot;manager&quot;,&quot;new_role_id&quot;:2,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-26 09:40:50
+|78|24|user_edited|22|2025-01-27 20:29:52|82.4.67.225|{&quot;edited_by&quot;:&quot;irlam&quot;}|2025-01-27 20:29:52
+|79|24|type_changed|22|2025-01-27 20:30:08|82.4.67.225|{&quot;new_type&quot;:&quot;contractor&quot;,&quot;new_role_id&quot;:3,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 20:30:08
+|80|24|type_changed|22|2025-01-27 20:30:26|82.4.67.225|{&quot;new_type&quot;:&quot;manager&quot;,&quot;new_role_id&quot;:2,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 20:30:26
+|81|24|type_changed|22|2025-01-27 20:30:36|82.4.67.225|{&quot;new_type&quot;:&quot;client&quot;,&quot;new_role_id&quot;:5,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 20:30:36
+|82|24|type_changed|22|2025-01-27 20:30:44|82.4.67.225|{&quot;new_type&quot;:&quot;viewer&quot;,&quot;new_role_id&quot;:4,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 20:30:44
+|83|24|user_edited|22|2025-01-27 20:31:04|82.4.67.225|{&quot;edited_by&quot;:&quot;irlam&quot;}|2025-01-27 20:31:04
+|84|25|user_edited|22|2025-01-27 20:31:24|82.4.67.225|{&quot;edited_by&quot;:&quot;irlam&quot;}|2025-01-27 20:31:24
+|85|24|type_changed|22|2025-01-27 20:55:32|82.4.67.225|{&quot;new_type&quot;:&quot;client&quot;,&quot;new_role_id&quot;:5,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 20:55:32
+|86|23|type_changed|22|2025-01-27 20:57:43|82.4.67.225|{&quot;new_type&quot;:&quot;contractor&quot;,&quot;new_role_id&quot;:3,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 20:57:43
+|87|24|type_changed|22|2025-01-27 21:07:17|82.4.67.225|{&quot;new_type&quot;:&quot;manager&quot;,&quot;new_role_id&quot;:2,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 21:07:17
+|88|24|type_changed|22|2025-01-27 21:08:41|82.4.67.225|{&quot;new_type&quot;:&quot;client&quot;,&quot;new_role_id&quot;:5,&quot;changed_by&quot;:&quot;irlam&quot;}|2025-01-27 21:08:41
+|89|24|type_changed|22|2025-01-27 21:13:11|82.4.67.225|{&quot;new_type&quot;:&quot;viewer&quot;,&quot;new_role_id&quot;:4,&quot;new_role&quot;:&quot;viewer&quot;,&quot;changed_by&quot;:&quot;irlam&quot;,&quot;timestamp&quot;:&quot;2025-01-27 21:13:11&quot;}|2025-01-27 21:13:11
+|90|24|user_edited|22|2025-01-27 21:19:09|82.4.67.225|{&quot;edited_by&quot;:&quot;irlam&quot;}|2025-01-27 21:19:09
+|91|25|type_changed|22|2025-01-27 21:43:31|82.4.67.225|{&quot;new_type&quot;:&quot;manager&quot;,&quot;new_role&quot;:&quot;project_manager&quot;,&quot;new_role_id&quot;:2,&quot;contractor_id&quot;:null,&quot;contractor_name&quot;:null,&quot;contractor_trade&quot;:null,&quot;changed_by&quot;:&quot;irlam&quot;,&quot;timestamp&quot;:&quot;2025-01-27 21:39:35&quot;}|2025-01-27 21:43:31
+|92|25|type_changed|22|2025-01-27 21:43:45|82.4.67.225|{&quot;new_type&quot;:&quot;manager&quot;,&quot;new_role&quot;:&quot;project_manager&quot;,&quot;new_role_id&quot;:2,&quot;contractor_id&quot;:null,&quot;contractor_name&quot;:null,&quot;contractor_trade&quot;:null,&quot;changed_by&quot;:&quot;irlam&quot;,&quot;timestamp&quot;:&quot;2025-01-27 21:39:35&quot;}|2025-01-27 21:43:45
+|93|25|type_changed|22|2025-01-27 21:43:59|82.4.67.225|{&quot;new_type&quot;:&quot;contractor&quot;,&quot;new_role&quot;:&quot;contractor&quot;,&quot;new_role_id&quot;:3,&quot;contractor_id&quot;:&quot;28&quot;,&quot;contractor_name&quot;:&quot;Cara Brickwork&quot;,&quot;contractor_trade&quot;:&quot;brick layer&quot;,&quot;changed_by&quot;:&quot;irlam&quot;,&quot;timestamp&quot;:&quot;2025-01-27 21:39:35&quot;}|2025-01-27 21:43:59
+|94|1|type_changed|22|2025-01-28 05:46:50|216.169.133.20|{&quot;new_type&quot;:&quot;client&quot;,&quot;new_role&quot;:&quot;client&quot;,&quot;new_role_id&quot;:5,&quot;contractor_id&quot;:null,&quot;contractor_name&quot;:null,&quot;contractor_trade&quot;:null,&quot;changed_by&quot;:&quot;irlam&quot;,&quot;timestamp&quot;:&quot;2025-01-27 21:39:35&quot;}|2025-01-28 05:46:50
+|95|1|type_changed|22|2025-01-28 05:47:44|216.169.133.20|{&quot;new_type&quot;:&quot;admin&quot;,&quot;new_role&quot;:&quot;admin&quot;,&quot;new_role_id&quot;:1,&quot;contractor_id&quot;:null,&quot;contractor_name&quot;:null,&quot;contractor_trade&quot;:null,&quot;changed_by&quot;:&quot;irlam&quot;,&quot;timestamp&quot;:&quot;2025-01-27 21:39:35&quot;}|2025-01-28 05:47:44
+|96|22|update_defect|22|2025-01-30 09:53:59|41.180.248.70|{&quot;defect_id&quot;:49,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 09:53:59
+|97|22|update_defect|22|2025-01-30 09:54:54|41.180.248.70|{&quot;defect_id&quot;:49,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 09:54:54
+|98|22|update_defect|22|2025-01-30 10:15:50|41.180.248.70|{&quot;defect_id&quot;:49,&quot;new_status&quot;:&quot;open&quot;,&quot;updated_by&quot;:22}|2025-01-30 10:15:50
+|99|22|update_defect|22|2025-01-30 10:16:15|41.180.248.70|{&quot;defect_id&quot;:49,&quot;new_status&quot;:&quot;closed&quot;,&quot;updated_by&quot;:22}|2025-01-30 10:16:15
+|100|22|update_defect|22|2025-01-30 10:16:29|41.180.248.70|{&quot;defect_id&quot;:49,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 10:16:29
+|101|22|update_defect|22|2025-01-30 12:35:15|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;open&quot;,&quot;updated_by&quot;:22}|2025-01-30 12:35:15
+|102|22|update_defect|22|2025-01-30 12:35:41|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;open&quot;,&quot;new_status&quot;:&quot;closed&quot;,&quot;updated_by&quot;:22}|2025-01-30 12:35:41
+|103|22|update_defect|22|2025-01-30 12:37:01|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 12:37:01
+|104|22|update_defect|22|2025-01-30 12:39:58|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 12:39:58
+|105|22|update_defect|22|2025-01-30 12:44:03|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 12:44:03
+|106|22|update_defect|22|2025-01-30 13:12:01|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;closed&quot;,&quot;updated_by&quot;:22}|2025-01-30 13:12:01
+|107|22|update_defect|22|2025-01-30 13:13:52|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 13:13:52
+|108|22|update_defect|22|2025-01-30 13:23:29|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 13:23:29
+|109|22|update_defect|22|2025-01-30 13:30:28|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 13:30:28
+|110|22|update_defect|22|2025-01-30 14:05:16|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;open&quot;,&quot;updated_by&quot;:22}|2025-01-30 14:05:16
+|111|22|update_defect|22|2025-01-30 14:16:41|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;open&quot;,&quot;new_status&quot;:&quot;closed&quot;,&quot;updated_by&quot;:22}|2025-01-30 14:16:41
+|112|22|update_defect|22|2025-01-30 14:17:05|41.180.248.70|{&quot;defect_id&quot;:49,&quot;old_status&quot;:&quot;&quot;,&quot;new_status&quot;:&quot;rejected&quot;,&quot;updated_by&quot;:22}|2025-01-30 14:17:05
+== Table structure for table user_permissions
+
+|------
+|Column|Type|Null|Default
+|------
+|//**user_id**//|int(11)|No|
+|//**permission_id**//|int(11)|No|
+|created_at|timestamp|No|current_timestamp()
+== Dumping data for table user_permissions
+
+|1|1|2025-01-24 15:12:52
+|1|2|2025-01-24 15:12:52
+|1|3|2025-01-24 15:12:52
+|1|4|2025-01-24 15:12:52
+== Table structure for table user_roles
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|**user_id**|int(11)|No|
+|**role_id**|int(11)|No|
+|created_at|datetime|Yes|current_timestamp()
+|updated_at|datetime|Yes|current_timestamp()
+|created_by|int(11)|Yes|NULL
+|updated_by|int(11)|Yes|NULL
+|deleted_at|datetime|Yes|NULL
+|deleted_by|int(11)|Yes|NULL
+== Dumping data for table user_roles
+
+|1|1|1|2025-01-18 09:51:52|2025-01-28 18:59:22|1|22|NULL|NULL
+|2|24|2|2025-01-25 13:30:40|2025-01-27 21:07:17|22|22|NULL|NULL
+|6|25|3|2025-01-25 14:06:55|2025-01-27 21:43:59|22|22|NULL|NULL
+|7|22|1|2025-01-26 09:08:42|2025-02-02 08:28:37|NULL|NULL|NULL|NULL
+|14|24|4|2025-01-26 09:39:53|2025-01-27 21:13:11|22|22|NULL|NULL
+|275|24|3|2025-01-27 20:30:08|2025-01-27 20:30:08|22|NULL|NULL|NULL
+|277|24|5|2025-01-27 20:30:36|2025-01-27 21:08:41|22|22|NULL|NULL
+|286|25|2|2025-01-27 21:43:31|2025-01-27 21:43:45|22|22|NULL|NULL
+|298|1|5|2025-01-28 05:46:50|2025-01-28 05:46:50|22|NULL|NULL|NULL
+== Table structure for table user_sessions
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|bigint(20)|No|
+|user_id|bigint(20)|No|
+|session_id|varchar(255)|No|
+|ip_address|varchar(45)|Yes|NULL
+|user_agent|text|Yes|NULL
+|logged_in_at|datetime|No|
+|logged_out_at|datetime|Yes|NULL
+|last_activity|datetime|No|
+|created_at|datetime|No|current_timestamp()
+== Dumping data for table user_sessions
+

@@ -1,0 +1,57 @@
+{
+  "format": 1,
+  "restore": {
+    "e:\\dvntracker.site\\_Ai-website files\\Backup-31-01-2025-0720\\website files\\defect-tracker\\tracker\\tracker.sqlproj": {}
+  },
+  "projects": {
+    "e:\\dvntracker.site\\_Ai-website files\\Backup-31-01-2025-0720\\website files\\defect-tracker\\tracker\\tracker.sqlproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "e:\\dvntracker.site\\_Ai-website files\\Backup-31-01-2025-0720\\website files\\defect-tracker\\tracker\\tracker.sqlproj",
+        "projectName": "tracker",
+        "projectPath": "e:\\dvntracker.site\\_Ai-website files\\Backup-31-01-2025-0720\\website files\\defect-tracker\\tracker\\tracker.sqlproj",
+        "packagesPath": "C:\\Users\\irlam\\.nuget\\packages\\",
+        "outputPath": "e:\\dvntracker.site\\_Ai-website files\\Backup-31-01-2025-0720\\website files\\defect-tracker\\tracker\\obj\\",
+        "projectStyle": "PackageReference",
+        "skipContentFileWrite": true,
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\irlam\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net45"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net45": {
+            "projectReferences": {}
+          }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        }
+      },
+      "frameworks": {
+        "net45": {
+          "dependencies": {
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.0, )"
+            }
+          }
+        }
+      }
+    }
+  }
+}

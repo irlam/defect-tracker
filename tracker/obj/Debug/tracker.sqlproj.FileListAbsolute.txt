@@ -1,0 +1,8 @@
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\bin\Debug\tracker.dacpac
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\tracker.sqlproj.AssemblyReference.cache
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\Model.xml
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\refactor.xml
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\postdeploy.sql
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\predeploy.sql
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\tracker.dll
+e:\dvntracker.site\_Ai-website files\Backup-31-01-2025-0720\website files\defect-tracker\tracker\obj\Debug\tracker.pdb

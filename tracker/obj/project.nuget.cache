@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "jIGKbObMsBs=",
+  "success": true,
+  "projectFilePath": "e:\\dvntracker.site\\_Ai-website files\\Backup-31-01-2025-0720\\website files\\defect-tracker\\tracker\\tracker.sqlproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\irlam\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.0\\microsoft.netframework.referenceassemblies.1.0.0.nupkg.sha512",
+    "C:\\Users\\irlam\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net45\\1.0.0\\microsoft.netframework.referenceassemblies.net45.1.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
