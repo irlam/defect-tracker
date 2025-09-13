@@ -1,0 +1,52 @@
+# docker-compose.yml - Docker Compose configuration for Defect Tracker
+# This file defines the services needed to run the defect tracking system:
+# - web: PHP Apache web server with the application
+# - db: MySQL database server
+# - adminer: Database administration tool
+
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - PHP_DISPLAY_ERRORS=1
+      - PHP_ERROR_REPORTING=E_ALL
+    networks:
+      - defect-tracker-network
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: defecttracker
+      MYSQL_USER: defecttracker
+      MYSQL_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - defect-tracker-network
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - defect-tracker-network
+
+volumes:
+  db_data:
+
+networks:
+  defect-tracker-network:
+    driver: bridge

@@ -1,0 +1,53 @@
+# .gitignore - Git ignore file for Defect Tracker
+# Excludes build artifacts, dependencies, and sensitive files from version control
+
+# Composer dependencies
+/vendor/
+composer.lock
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Application logs and cache
+/logs/*.log
+/logs/*.txt
+/cache/
+/tmp/
+
+# Uploads and user-generated content
+/uploads/defects/*
+!/uploads/defects/.gitkeep
+/uploads/floor_plans/*
+!/uploads/floor_plans/.gitkeep
+
+# Export files
+/exports/*
+!/exports/.gitkeep
+/pdf_exports/*
+!/pdf_exports/.gitkeep
+
+# Environment and config files (keep templates)
+.env
+/config/database.local.php
+
+# Docker volumes and build cache
+/docker-data/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Temporary files
+*.tmp
+*.temp
