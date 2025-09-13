@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+	<script src="/main.js"></script>
+	<script>
+  if (typeof navigator.serviceWorker !== 'undefined') {
+    navigator.serviceWorker.register('main.js')
+  }
+</script>
+
+    <title>Defects Tracking Website</title>
+    <!-- Include Bootstrap CSS for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .bg {
+            /* The background image */
+            background-image: url('uploads/images/background.jpeg');
+            
+            /* Full height */
+            height: 100%; 
+
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .overlay {
+            /* Dark overlay to make text readable */
+            background: rgba(0, 0, 0, 0.5);
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+        .content {
+            max-width: 600px;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="bg">
+        <div class="overlay">
+            <div class="content">
+                <h1>Defect Guardian<br>The Defects Tracking Website</h1>
+                <p>Manage and track defects efficiently.</p>
+                <a href="login.php" class="btn btn-primary btn-lg">Login</a>
+				<script src="/main.js"></script>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

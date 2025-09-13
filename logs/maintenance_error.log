@@ -1,0 +1,5 @@
+
+[29-Mar-2025 16:30:10 UTC] Database backup created successfully: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/backups/backup_2025-03-29_16-30-09.sql
+[29-Mar-2025 16:30:29 UTC] Database reset error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'k87747_defecttracker.acceptance_history' doesn't exist
+[30-Mar-2025 11:06:33 UTC] Unauthorized maintenance access attempt from IP: 172.71.241.75 (not logged in)
+[03-Apr-2025 08:40:11 UTC] Unauthorized maintenance access attempt from IP: 172.70.163.142 (not logged in)

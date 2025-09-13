@@ -1,0 +1,216 @@
+
+[25-Apr-2025 17:05:40 UTC] [2025-04-25 17:05:40] User: manager - Generated new CSRF token.
+
+[25-Apr-2025 17:06:46 UTC] [2025-04-25 17:06:46] User: manager - Received POST request.
+
+[25-Apr-2025 17:06:46 UTC] [2025-04-25 17:06:46] User: manager - Due date value before database insertion: 2025-05-02
+
+[25-Apr-2025 17:06:46 UTC] [2025-04-25 17:06:46] User: manager - Defect created with ID: 325
+
+[25-Apr-2025 17:06:46 UTC] [2025-04-25 17:06:46] User: manager - Created defect directory: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/defects/325
+
+[25-Apr-2025 17:06:46 UTC] [2025-04-25 17:06:46] User: manager - Floor Plan Path: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/floor_plan_images/block-1_b1-level-2_20250219_223853.png
+
+[25-Apr-2025 17:06:48 UTC] [2025-04-25 17:06:46] User: manager - Created floor plan with pin: uploads/defects/325/floorplan_with_pin_defect.png
+
+[25-Apr-2025 17:06:48 UTC] [2025-04-25 17:06:46] User: manager - Successfully inserted pin image record: uploads/defects/325/floorplan_with_pin_defect.png
+
+[25-Apr-2025 17:06:48 UTC] [2025-04-25 17:06:46] User: manager - No images found in the form submission
+
+[25-Apr-2025 17:06:48 UTC] [2025-04-25 17:06:46] User: manager - FILES array contents: Array
+(
+    [images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 
+                )
+
+            [type] => Array
+                (
+                    [0] => 
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => 
+                )
+
+            [error] => Array
+                (
+                    [0] => 4
+                )
+
+            [size] => Array
+                (
+                    [0] => 0
+                )
+
+        )
+
+    [canvas_image] => Array
+        (
+            [name] => canvas_image.png
+            [full_path] => canvas_image.png
+            [type] => image/png
+            [tmp_name] => /tmp/php2DHdwm
+            [error] => 0
+            [size] => 1192
+        )
+
+)
+
+
+[27-May-2025 14:08:05 UTC] [2025-05-27 14:08:05] User: manager - Generated new CSRF token.
+
+[17-Jul-2025 15:36:12 UTC] [2025-07-17 15:36:12] User: manager - Generated new CSRF token.
+
+[17-Jul-2025 15:37:15 UTC] [2025-07-17 15:37:15] User: manager - Received POST request.
+
+[17-Jul-2025 15:37:15 UTC] [2025-07-17 15:37:15] User: manager - Due date value before database insertion: 2025-07-22
+
+[17-Jul-2025 15:37:15 UTC] [2025-07-17 15:37:15] User: manager - Defect created with ID: 326
+
+[17-Jul-2025 15:37:15 UTC] [2025-07-17 15:37:15] User: manager - Created defect directory: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/defects/326
+
+[17-Jul-2025 15:37:15 UTC] [2025-07-17 15:37:15] User: manager - Floor Plan Path: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/floor_plan_images/block-1_b1-level-4_20250219_223949.png
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - Created floor plan with pin: uploads/defects/326/floorplan_with_pin_defect.png
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - Successfully inserted pin image record: uploads/defects/326/floorplan_with_pin_defect.png
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - Processing 1 uploaded images
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - FILES array details: Array
+(
+    [images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => s-l1600.png
+                )
+
+            [full_path] => Array
+                (
+                    [0] => s-l1600.png
+                )
+
+            [type] => Array
+                (
+                    [0] => image/png
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => /tmp/phpasMjxh
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 3349088
+                )
+
+        )
+
+    [canvas_image] => Array
+        (
+            [name] => canvas_image.png
+            [full_path] => canvas_image.png
+            [type] => image/png
+            [tmp_name] => /tmp/phpKuXF1r
+            [error] => 0
+            [size] => 1192
+        )
+
+)
+
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - Processing file: s-l1600.png, type: image/png, size: 3349088
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - Moving file to: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/defects/326/1752766636_687918acf377e_s-l1600.png
+
+[17-Jul-2025 15:37:16 UTC] [2025-07-17 15:37:15] User: manager - Uploaded image: uploads/defects/326/1752766636_687918acf377e_s-l1600.png
+
+[27-Aug-2025 08:33:19 UTC] [2025-08-27 08:33:19] User: irlam - Generated new CSRF token.
+
+[27-Aug-2025 08:35:06 UTC] [2025-08-27 08:35:06] User: irlam - Received POST request.
+
+[27-Aug-2025 08:35:06 UTC] [2025-08-27 08:35:06] User: irlam - Due date value before database insertion: 2025-09-03
+
+[27-Aug-2025 08:35:06 UTC] [2025-08-27 08:35:06] User: irlam - Defect created with ID: 327
+
+[27-Aug-2025 08:35:06 UTC] [2025-08-27 08:35:06] User: irlam - Created defect directory: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/defects/327
+
+[27-Aug-2025 08:35:06 UTC] [2025-08-27 08:35:06] User: irlam - Floor Plan Path: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/floor_plan_images/block-1_b1-level-1_20250209_133201.png
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - Created floor plan with pin: uploads/defects/327/floorplan_with_pin_defect.png
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - Successfully inserted pin image record: uploads/defects/327/floorplan_with_pin_defect.png
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - Processing 1 uploaded images
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - FILES array details: Array
+(
+    [images] => Array
+        (
+            [name] => Array
+                (
+                    [0] => 17562836957745536192986660399468.jpg
+                )
+
+            [full_path] => Array
+                (
+                    [0] => 17562836957745536192986660399468.jpg
+                )
+
+            [type] => Array
+                (
+                    [0] => image/jpeg
+                )
+
+            [tmp_name] => Array
+                (
+                    [0] => /tmp/phpE2BBme
+                )
+
+            [error] => Array
+                (
+                    [0] => 0
+                )
+
+            [size] => Array
+                (
+                    [0] => 5459268
+                )
+
+        )
+
+    [canvas_image] => Array
+        (
+            [name] => canvas_image.png
+            [full_path] => canvas_image.png
+            [type] => image/png
+            [tmp_name] => /tmp/phpMW87kz
+            [error] => 0
+            [size] => 1572
+        )
+
+)
+
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - Processing file: 17562836957745536192986660399468.jpg, type: image/jpeg, size: 5459268
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - Moving file to: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/uploads/defects/327/1756283708_68aec33cf1984_17562836957745536192986660399468.jpg
+
+[27-Aug-2025 08:35:08 UTC] [2025-08-27 08:35:06] User: irlam - Uploaded image: uploads/defects/327/1756283708_68aec33cf1984_17562836957745536192986660399468.jpg
+

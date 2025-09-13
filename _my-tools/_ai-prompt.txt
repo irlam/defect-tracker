@@ -1,0 +1,73 @@
+help create a web-based construction defect tracker that can be hosted on webhosting via Cpanel using PHP with MySQL for the backend with the ability to add defects as a "pin" to a floor plan which is uploaded via a admin panel. Add authentication, detailed defect views, Email notifications for defect assignments to different contractors. Filtering and searching defects, Improved user interface using Bootstrap or any other CSS framework, image upload, location input, look at the below website examples and start to create code to make something similar, I will also eventually require both iOS and android apps after the back end is complete.
+you will be choosing the preferred coding language which is the most optimized for hosting on a webserver and simple to use for this task.
+at the top of each php file produced please start the php with the file name and what it does for refrence, also comment within the code structure.
+in the database structure (MySQL) create an admin user with username irlam and password subaru555
+https://www.snagmaster.co.uk/
+https://www.snagr.co.uk/en/industries/construction-infrastructure
+https://www.planradar.com/product/defect-management/
+
+must also include but not limited to include any other features that may be of use, for example.
+
+Defects and issues can be managed via web browser or via a companion App on a mobile device, developed for iOS and Android, allow users to operate offline with full functionality and synchronise securely and seamlessly with the project portal.
+Users are presented a feature set relevant to their project role and can add and update snags, add and annotate photos, mark–up plans, pinpoint ssues, share comments, store GPS data, and sketch.
+Project definable categories combined with powerful filters allows subsets of issues to be easily isolated, sorted and reported on. The web–portal and the Apps are easy to use, ensuring everyone can use them.
+Dashboard & Reporting
+presents project information via an intuitive web–based portal. The personalised, interactive and secure dashboard provides views for main contractor, sub contractor and client users to ensure everyone has the access they require.
+Data can be displayed as tables or graphs and filtered, ordered and downloaded in a variety of useful PDF layouts, or exported to Excel for further analysis. Produce and export activity reports, tracker views, plan views, subcontractor worksheets and room sheets.
+improve project productivity by securely managing site data in a single project portal.
+Responses can be augmented with an array of supporting information e.g. photos, annotations, markups, pinpoints and so on. displayed discretely in registers or as a tracker/progress view and a range of export and download options are available as PDF and Excel.
+
+A form for entering defect details
+A floor plan viewer with pin placement functionality
+Real-time AJAX updates for project and floor plan selection
+Form validation
+Mobile-responsive design using Bootstrap
+Image upload capability
+Would you like me to continue with:
+The defect viewing pageThe defect listing and filtering page
+The email notification system
+The API endpoints for mobile integration
+The defect editing pageThe email notification system
+The API endpoints for mobile integration
+The activity timeline implementation for the view page
+The defect viewing page 
+The defect editing page
+The email notification system
+
+i want the gui to look like https://www.snagmaster.co.uk/ dashboard,and everything else
+
+break it down into small steps to help create all the above, only provide one piece of code at a time
+
+
+======================================
+
+
+First, here's the database structure (MySQL):
+
+User: dvntrack_defect-manager
+Database: dvntrack_defect-manager
+password: ^cHMcJseC$%S
+
+=======================================
+
+
+
+This implementation includes:
+
+Dashboard interface
+Defect management system
+Floor plan upload and management
+Defect pin placement system
+Email notification system
+Search and filtering functionality
+
+Please let me know which part you'd like me to focus on next, and I'll provide the corresponding code with detailed comments and explanations.
+
+Also, note that for security purposes, you should:
+
+Store the config.php file outside the web root directory
+Use HTTPS for all communications
+Implement CSRF protection
+Use prepared statements for all database queries (as shown in the examples)
+Implement rate limiting for login attempts
+Use proper password hashing (already implemented in the example)
