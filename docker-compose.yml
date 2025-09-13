@@ -3,8 +3,6 @@
 # It sets up three services: the web application, MySQL database, and Adminer for database management.
 # All services are configured for easy local development with live code editing.
 
-version: '3.8'
-
 services:
   # Web application service - PHP with Apache
   web:
