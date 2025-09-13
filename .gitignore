@@ -1,0 +1,40 @@
+# Environment variables
+.env
+
+# PHP
+vendor/
+
+# Logs
+logs/*.log
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cache files
+cache/
+*.cache
+
+# Backup files
+*.bak
+*~
+
+# Upload directories (keep structure but not files)
+uploads/*
+!uploads/.htaccess
+!uploads/defects/.htaccess
+
+# Config files with sensitive data
+config/database.local.php
+config/local.php
