@@ -1,0 +1,101 @@
+# docker-compose.yml
+# This file defines the complete local development environment for the defect tracker.
+# It sets up three services: the web application, MySQL database, and Adminer for database management.
+# All services are configured for easy local development with live code editing.
+
+version: '3.8'
+
+services:
+  # Web application service - PHP with Apache
+  web:
+    # Build the custom PHP image from the Dockerfile in the current directory
+    build: .
+    
+    # Make the application available on localhost:8000
+    ports:
+      - "8000:80"
+    
+    # Mount the entire project directory into the container for live editing
+    # This means changes you make on your computer are immediately visible in the container
+    volumes:
+      - .:/var/www/html
+    
+    # Set environment variables for the application
+    environment:
+      # Database connection settings that match the 'db' service below
+      - DB_HOST=db
+      - DB_NAME=defect_tracker
+      - DB_USER=root
+      - DB_PASSWORD=root_password
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+    
+    # Ensure the database starts before the web application
+    depends_on:
+      - db
+    
+    # Connect to the defect-tracker network
+    networks:
+      - defect-tracker-network
+
+  # MySQL database service
+  db:
+    # Use MySQL 8.0 for compatibility and modern features
+    image: mysql:8.0
+    
+    # Set the root password and create the application database
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=defect_tracker
+      - MYSQL_CHARACTER_SET_SERVER=utf8mb4
+      - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
+    
+    # Persist database data using a named volume
+    # This means your data survives container restarts and rebuilds
+    volumes:
+      - db_data:/var/lib/mysql
+    
+    # Internal port for database connections (not exposed to host)
+    ports:
+      - "3306:3306"
+    
+    # Connect to the defect-tracker network
+    networks:
+      - defect-tracker-network
+
+  # Adminer service - web-based database management tool
+  adminer:
+    # Use the official Adminer image for easy database management
+    image: adminer:latest
+    
+    # Make Adminer available on localhost:8080
+    ports:
+      - "8080:8080"
+    
+    # Ensure the database is available before starting Adminer
+    depends_on:
+      - db
+    
+    # Connect to the defect-tracker network
+    networks:
+      - defect-tracker-network
+
+# Define the network for service communication
+networks:
+  defect-tracker-network:
+    driver: bridge
+
+# Define named volumes for data persistence
+volumes:
+  # Database data volume - keeps your database data safe
+  db_data:
+    driver: local
+
+# Usage Instructions:
+# 1. Copy .env.example to .env and adjust settings if needed
+# 2. Run: docker-compose up --build
+# 3. Visit http://localhost:8000 for the application
+# 4. Visit http://localhost:8080 for Adminer (database management)
+#    - Server: db, Username: root, Password: root_password, Database: defect_tracker
+# 5. Edit files on your computer - changes appear immediately in the container
