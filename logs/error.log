@@ -2548,3 +2548,7 @@ Stack trace:
 )
 
 [05-Sep-2025 10:06:48 Europe/London] Actual open defects: 13
+[13-Sep-2025 10:02:11 UTC] PHP Fatal error:  Uncaught Error: Call to a member function query() on null in /home/runner/work/defect-tracker/defect-tracker/check_database.php:22
+Stack trace:
+#0 {main}
+  thrown in /home/runner/work/defect-tracker/defect-tracker/check_database.php on line 22
