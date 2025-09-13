@@ -160,7 +160,7 @@ class TestDatabase {
                 FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
                 FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
                 UNIQUE(role_id, permission_id)
-            )""
+            )"
         ];
         
         foreach ($tables as $sql) {
