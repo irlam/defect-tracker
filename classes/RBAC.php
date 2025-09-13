@@ -12,12 +12,20 @@ class RBAC {
     }
 
     public function getRoles() {
-        $stmt = $this->db->query("SELECT * FROM roles ORDER BY name");
+        $stmt = $this->db->query("
+            SELECT id, name, description, created_at, updated_at 
+            FROM roles 
+            ORDER BY name
+        ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getPermissions() {
-        $stmt = $this->db->query("SELECT * FROM permissions ORDER BY name");
+        $stmt = $this->db->query("
+            SELECT id, name, description, category, created_at 
+            FROM permissions 
+            ORDER BY category, name
+        ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

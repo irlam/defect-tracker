@@ -22,11 +22,19 @@ if (!$rbac->hasPermission($_SESSION['user_id'], 'manage_system')) {
 }
 
 // Fetch current system configurations
-$stmt = $db->query("SELECT * FROM system_configurations ORDER BY config_key");
+$stmt = $db->query("
+    SELECT id, config_key, config_value, description, category, is_encrypted, updated_at 
+    FROM system_configurations 
+    ORDER BY category, config_key
+");
 $configurations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch email templates
-$stmt = $db->query("SELECT * FROM email_templates ORDER BY name");
+$stmt = $db->query("
+    SELECT id, name, subject, body, variables, is_active, updated_at 
+    FROM email_templates 
+    ORDER BY name
+");
 $emailTemplates = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get system health metrics
