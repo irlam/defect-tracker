@@ -1,0 +1,24 @@
+{
+  "name": "PHP & MySQL Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/php:8.2",
+  "features": {
+    "ghcr.io/devcontainers/features/mysql:1": {
+      "version": "8.0",
+      "database": "defect_tracker",
+      "user": "root",
+      "password": "password"
+    }
+  },
+  "forwardPorts": [80, 3306],
+  "postCreateCommand": "composer install || true",
+  "mounts": [
+    "source=${localWorkspaceFolder}/uploads,target=/var/www/html/uploads,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      }
+    }
+  }
+}
