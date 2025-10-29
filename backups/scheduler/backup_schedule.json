@@ -1,0 +1,11 @@
+{
+    "schedule_67bf74e53bfe1": {
+        "id": "schedule_67bf74e53bfe1",
+        "name": "Nightly Backup",
+        "frequency": "daily",
+        "time": "01:00",
+        "enabled": true,
+        "created": "2025-02-26 20:09:09",
+        "modified": "2025-02-26 20:09:09"
+    }
+}
