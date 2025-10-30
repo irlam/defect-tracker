@@ -1,9 +1,12 @@
 <?php
 // config/database.php
 // Configuration file for database connection and global settings
-// Current Date and Time (UTC): <?php echo gmdate('Y-m-d H:i:s'); ?>
 
 require_once __DIR__ . '/env.php';
+
+if (!class_exists('Environment')) {
+    throw new RuntimeException('Environment configuration loader is missing.');
+}
 
 class Database {
     // Database configuration - loaded from environment variables
@@ -74,6 +77,4 @@ if (Environment::isDevelopment()) {
     ini_set('display_errors', 0);
     ini_set('log_errors', 1);
 }
-
 ini_set('error_log', __DIR__ . '/../logs/error.log');
-?>

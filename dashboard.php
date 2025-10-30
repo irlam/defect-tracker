@@ -143,11 +143,8 @@ $debugStmt = $db->prepare($debugQuery);
 $debugStmt->execute();
 $actualOpenCount = $debugStmt->fetchColumn();
 
-// Log or display the debug information
+// Log the debug information during development
 error_log("Actual open defects: " . $actualOpenCount);
-
-// Optionally display on page during development:
-echo " Actual open defects: " . $actualOpenCount . " ";
 
     // Get recent defects with enhanced details
     $recentDefects = $db->prepare("

@@ -2,7 +2,6 @@
 /**
  * config/env.php
  * Environment variable loader and configuration management
- * Current Date and Time (UTC): <?php echo gmdate('Y-m-d H:i:s'); ?>
  */
 
 class Environment {
