@@ -928,7 +928,7 @@ if (!function_exists('formatUKDateTime')) {
                                                         <div class="defect-images d-flex flex-wrap">
                                                             <?php
                                                             // Fetch images associated with this defect
-                                                            $imagesQuery = "SELECT file_path, is_main FROM defect_images WHERE defect_id = :defect_id";
+                                                            $imagesQuery = "SELECT file_path FROM defect_images WHERE defect_id = :defect_id";
                                                             $imageStmt = $db->prepare($imagesQuery);
                                                             $imageStmt->bindParam(":defect_id", $defect['id'], PDO::PARAM_INT);
                                                             $imageStmt->execute();
@@ -941,10 +941,6 @@ if (!function_exists('formatUKDateTime')) {
                                                                         echo '<div class="position-relative me-2 mb-2">';
                                                                         // Make image clickable to open modal
                                                                         echo '<img src="' . $imgSrc . '" alt="Defect Image" onclick="showImageModal(\'' . $imgSrc . '\')" class="img-thumbnail">';
-                                                                        // Display "Main" badge if applicable
-                                                                        if (!empty($image['is_main']) && $image['is_main']) {
-                                                                            echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">Main <span class="visually-hidden">image</span></span>';
-                                                                        }
                                                                         echo '</div>';
                                                                     }
                                                                 }
