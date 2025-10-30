@@ -11,6 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once 'config/database.php';
 require_once 'config/constants.php';
+require_once 'classes/NotificationHelper.php';
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['defect_id'], $_POST['reopen_comment'])) {
@@ -37,6 +38,10 @@ try {
         $stmt->bindParam(':defect_id', $defectId);
 
         if ($stmt->execute() && $stmt->rowCount() > 0) {
+            // Send notifications
+            $notificationHelper = new NotificationHelper($db);
+            $notificationHelper->notifyDefectStatusChanged($defectId, 'reopened', $userId);
+
             $_SESSION['success_message'] = "Defect #{$defectId} has been reopened successfully.";
         } else {
             throw new Exception("Failed to reopen defect #{$defectId}.");

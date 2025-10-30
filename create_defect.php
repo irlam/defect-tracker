@@ -23,6 +23,7 @@ require_once 'config/database.php';
 require_once 'includes/functions.php';
 require_once 'includes/DefectImageProcessor.php';
 require_once 'includes/navbar.php';
+require_once 'classes/NotificationHelper.php';
 // require_once 'includes/PdfConverter.php';
 
 $currentUser = $_SESSION['username'];
@@ -177,6 +178,10 @@ if ($dueDate === null) {
     // Get the generated defect ID
     $defectId = $db->lastInsertId();
     logEntry("Defect created with ID: " . $defectId);
+
+    // Trigger notification for defect creation
+    $notificationHelper = new NotificationHelper($db);
+    $notificationHelper->notifyDefectCreated($defectId, $currentUserId);
 
     // Store the recent description
     storeRecentDescription($currentUserId, $description, $db);

@@ -211,7 +211,7 @@ class Navbar {
         echo '</ul>'; // Close the main navigation list (ul.navbar-nav).
         echo '</div>'; // Close the collapsible container div.
 
-        // Right-aligned section: Contains user logo, time display, and username.
+        // Right-aligned section: Contains user logo, notification bell, time display, and username.
         // 'd-flex' enables flexbox layout. 'align-items-center' vertically centers items in the flex container.
         // 'ms-auto' applies auto margin to the start (left), pushing this container to the far right.
         echo '<div class="d-flex align-items-center ms-auto">';
@@ -225,6 +225,92 @@ class Navbar {
             echo '<img src="' . $this->userLogo . '" alt="User Logo" class="img-fluid" style="max-height: 40px;">';
             echo '</div>';
         }
+
+        // Add notification bell with unread count
+        echo '<div class="dropdown me-3">';
+        echo '<button class="btn btn-link text-decoration-none position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">';
+        echo '<i class="fas fa-bell fa-lg text-primary"></i>';
+        // Get unread notification count
+        try {
+            $unreadQuery = "SELECT COUNT(*) as unread_count FROM notifications WHERE user_id = :user_id AND is_read = 0";
+            $unreadStmt = $this->db->prepare($unreadQuery);
+            $unreadStmt->bindParam(':user_id', $this->userId, PDO::PARAM_INT);
+            $unreadStmt->execute();
+            $unreadResult = $unreadStmt->fetch(PDO::FETCH_ASSOC);
+            $unreadCount = $unreadResult['unread_count'] ?? 0;
+
+            if ($unreadCount > 0) {
+                echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge">' . $unreadCount . '</span>';
+            }
+        } catch (Exception $e) {
+            // Silently handle database errors for notifications
+            error_log("Error fetching notification count: " . $e->getMessage());
+        }
+        echo '</button>';
+        echo '<ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">';
+        echo '<li><h6 class="dropdown-header">Notifications</h6></li>';
+
+        // Get recent notifications for dropdown
+        try {
+            $recentQuery = "SELECT id, type, message, created_at, is_read FROM notifications WHERE user_id = :user_id ORDER BY created_at DESC LIMIT 5";
+            $recentStmt = $this->db->prepare($recentQuery);
+            $recentStmt->bindParam(':user_id', $this->userId, PDO::PARAM_INT);
+            $recentStmt->execute();
+            $recentNotifications = $recentStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($recentNotifications)) {
+                echo '<li><span class="dropdown-item-text text-muted">No notifications yet</span></li>';
+            } else {
+                foreach ($recentNotifications as $notification) {
+                    $iconClass = 'fas fa-info-circle text-primary';
+                    switch ($notification['type']) {
+                        case 'defect_assigned':
+                            $iconClass = 'fas fa-user-plus text-success';
+                            break;
+                        case 'defect_created':
+                            $iconClass = 'fas fa-plus-circle text-info';
+                            break;
+                        case 'defect_accepted':
+                            $iconClass = 'fas fa-check-circle text-success';
+                            break;
+                        case 'defect_rejected':
+                            $iconClass = 'fas fa-times-circle text-danger';
+                            break;
+                        case 'defect_reopened':
+                            $iconClass = 'fas fa-undo text-warning';
+                            break;
+                        case 'comment_added':
+                            $iconClass = 'fas fa-comment text-primary';
+                            break;
+                    }
+
+                    echo '<li>';
+                    echo '<a class="dropdown-item notification-item ' . (!$notification['is_read'] ? 'unread' : '') . '" href="#" data-notification-id="' . $notification['id'] . '">';
+                    echo '<div class="d-flex align-items-start">';
+                    echo '<i class="' . $iconClass . ' me-2 mt-1"></i>';
+                    echo '<div class="flex-grow-1">';
+                    echo '<div class="fw-bold small">' . htmlspecialchars($notification['type']) . '</div>';
+                    echo '<div class="text-truncate small text-muted" style="max-width: 250px;">' . htmlspecialchars($notification['message']) . '</div>';
+                    echo '<div class="small text-muted">' . date('M j, g:i A', strtotime($notification['created_at'])) . '</div>';
+                    echo '</div>';
+                    if (!$notification['is_read']) {
+                        echo '<span class="badge bg-primary ms-2">New</span>';
+                    }
+                    echo '</div>';
+                    echo '</a>';
+                    echo '</li>';
+                }
+            }
+
+            echo '<li><hr class="dropdown-divider"></li>';
+            echo '<li><a class="dropdown-item text-center" href="/notifications.php"><i class="fas fa-list me-1"></i>View All Notifications</a></li>';
+        } catch (Exception $e) {
+            error_log("Error fetching recent notifications: " . $e->getMessage());
+            echo '<li><span class="dropdown-item-text text-muted">Unable to load notifications</span></li>';
+        }
+
+        echo '</ul>';
+        echo '</div>';
 
         // Display the UK time and user login information.
         // 'navbar-text' provides vertical alignment and color. 'text-end' aligns text to the right. 'pe-3' adds padding-end (right padding).
@@ -303,6 +389,73 @@ class Navbar {
             updateUKTime();
 
         </script>'; // End of the script tag and the PHP echo statement.
+
+        // Add notification dropdown styles and JavaScript
+        echo '<style>
+            .notification-dropdown {
+                min-width: 350px;
+                max-width: 400px;
+            }
+            .notification-item.unread {
+                background-color: #f8f9ff;
+            }
+            .notification-item:hover {
+                background-color: #f8f9fa;
+            }
+            @media (max-width: 768px) {
+                .notification-dropdown {
+                    min-width: 300px;
+                    max-width: 350px;
+                }
+            }
+        </style>';
+
+        echo '<script>
+            // Handle notification dropdown clicks
+            document.addEventListener("DOMContentLoaded", function() {
+                // Mark notification as read when clicked in dropdown
+                document.querySelectorAll(".notification-item").forEach(item => {
+                    item.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        const notificationId = this.dataset.notificationId;
+                        const notificationItem = this;
+
+                        // Mark as read via AJAX
+                        fetch("notifications.php", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded",
+                            },
+                            body: "action=mark_read&notification_id=" + notificationId
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                notificationItem.classList.remove("unread");
+                                const badge = notificationItem.querySelector(".badge");
+                                if (badge) badge.remove();
+
+                                // Update notification badge count
+                                updateNotificationBadge();
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
+                    });
+                });
+            });
+
+            function updateNotificationBadge() {
+                const badge = document.querySelector(".notification-badge");
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent) || 0;
+                    if (currentCount > 1) {
+                        badge.textContent = currentCount - 1;
+                    } else {
+                        badge.style.display = "none";
+                    }
+                }
+            }
+        </script>';
     } // End of render() method
 
     /**
