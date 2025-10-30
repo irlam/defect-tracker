@@ -53,11 +53,15 @@ require_once '../config/database.php'; // Ensure this path is correct for DB con
 // Set default timezone to UK for date/time display formatting
 date_default_timezone_set('Europe/London');
 
-// Get current UTC time as string for display
-$utcNowString = gmdate('Y-m-d H:i:s');
+// Get current UTC time as string for display (falls back if not already set)
+if (!isset($utcNowString) || !is_string($utcNowString) || trim($utcNowString) === '') {
+    $utcNowString = gmdate('Y-m-d H:i:s');
+}
 
-// Set logged-in username (in production this would come from session/auth)
-$loggedInUsername = 'System Admin'; // Default for demo/analysis page
+// Set logged-in username (fallback for when auth/session is unavailable)
+if (!isset($loggedInUsername) || !is_string($loggedInUsername) || trim($loggedInUsername) === '') {
+    $loggedInUsername = 'System Admin'; // Default for demo/analysis page
+}
 
 // Create DateTime object from UTC string and convert to UK time for display
 try {
