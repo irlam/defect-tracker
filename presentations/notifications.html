@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defect Tracker - Notifications & Alerts Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="../css/presentation.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="presentation-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-tools"></i>
+                <span>Defect Tracker</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Dashboard</a>
+                <a href="defect-creation.html">Create Defects</a>
+                <a href="defect-management.html">Manage Defects</a>
+                <a href="user-management.html">User Management</a>
+                <a href="reporting.html">Analytics</a>
+                <a href="#" class="active">Notifications</a>
+                <a href="floor-plans.html">Floor Plans</a>
+                <a href="mobile.html">Mobile</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-bell"></i>
+                    <span>Real-Time Notifications</span>
+                </div>
+                <h1>Stay Connected with Smart Notifications</h1>
+                <p>Never miss a critical update with our comprehensive notification system. Get instant alerts for defect assignments, status changes, deadlines, and team communications.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label">Delivery Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">15s</div>
+                        <div class="stat-label">Average Response</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="notification-demo">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="notification-list">
+                                <div class="notification-item urgent">
+                                    <div class="notification-icon">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">Critical Defect Assigned</div>
+                                        <div class="notification-message">Electrical issue in Unit 1205 requires immediate attention</div>
+                                        <div class="notification-time">2 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="notification-item info">
+                                    <div class="notification-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">Status Update</div>
+                                        <div class="notification-message">Defect #1234 marked as resolved by John Smith</div>
+                                        <div class="notification-time">15 min ago</div>
+                                    </div>
+                                </div>
+                                <div class="notification-item success">
+                                    <div class="notification-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">Deadline Approaching</div>
+                                        <div class="notification-message">Project Alpha deadline in 2 hours</div>
+                                        <div class="notification-time">1 hour ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <i class="fas fa-microphone"></i>
+                    <h3>System Capabilities</h3>
+                </div>
+                <div class="voice-over-content">
+                    <div class="voice-over-text">
+                        "Our intelligent notification system ensures your team stays informed and responsive. Receive instant alerts via email, SMS, push notifications, and in-app messages. Customize notification preferences by role, project, and urgency level. Track delivery status and response times with comprehensive analytics."
+                    </div>
+                    <div class="voice-over-controls">
+                        <button class="btn btn-primary" onclick="playVoiceOver()">
+                            <i class="fas fa-play"></i>
+                            Play Narration
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="toggleAutoAdvance()">
+                            <i class="fas fa-forward"></i>
+                            Auto Advance: <span id="autoAdvanceStatus">ON</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification Types Demo -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Comprehensive Notification Types</h2>
+                <p>Choose from multiple notification channels and customize delivery based on urgency and user preferences.</p>
+            </div>
+
+            <div class="notification-types-grid">
+                <div class="notification-type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h4>Email Notifications</h4>
+                    <p>Detailed HTML emails with defect information, images, and direct action links.</p>
+                    <div class="type-features">
+                        <span class="feature-tag">Rich Content</span>
+                        <span class="feature-tag">Action Buttons</span>
+                        <span class="feature-tag">Templates</span>
+                    </div>
+                </div>
+
+                <div class="notification-type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4>SMS Alerts</h4>
+                    <p>Critical updates delivered instantly via SMS for urgent defect notifications.</p>
+                    <div class="type-features">
+                        <span class="feature-tag">Instant Delivery</span>
+                        <span class="feature-tag">High Priority</span>
+                        <span class="feature-tag">Global Reach</span>
+                    </div>
+                </div>
+
+                <div class="notification-type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h4>Push Notifications</h4>
+                    <p>Mobile app notifications with vibration and sound alerts for real-time updates.</p>
+                    <div class="type-features">
+                        <span class="feature-tag">Mobile First</span>
+                        <span class="feature-tag">Rich Media</span>
+                        <span class="feature-tag">Offline Queue</span>
+                    </div>
+                </div>
+
+                <div class="notification-type-card">
+                    <div class="type-icon">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <h4>In-App Alerts</h4>
+                    <p>Real-time notifications within the application with interactive elements.</p>
+                    <div class="type-features">
+                        <span class="feature-tag">Interactive</span>
+                        <span class="feature-tag">Context Aware</span>
+                        <span class="feature-tag">Persistent</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Notification Center -->
+    <section class="demo-section bg-light">
+        <div class="container">
+            <div class="section-header">
+                <h2>Interactive Notification Center</h2>
+                <p>Experience our powerful notification management system with filtering, prioritization, and bulk actions.</p>
+            </div>
+
+            <div class="notification-center-demo">
+                <div class="center-controls">
+                    <div class="control-group">
+                        <label>Filter by Type:</label>
+                        <select id="notificationFilter" onchange="filterNotifications()">
+                            <option value="all">All Notifications</option>
+                            <option value="urgent">Urgent Only</option>
+                            <option value="assignments">Assignments</option>
+                            <option value="updates">Status Updates</option>
+                            <option value="deadlines">Deadlines</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Sort by:</label>
+                        <select id="notificationSort" onchange="sortNotifications()">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="priority">Priority</option>
+                            <option value="unread">Unread First</option>
+                        </select>
+                    </div>
+                    <div class="control-actions">
+                        <button class="btn btn-outline-primary" onclick="markAllRead()">
+                            <i class="fas fa-check-double"></i>
+                            Mark All Read
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="clearAllNotifications()">
+                            <i class="fas fa-trash"></i>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="notification-center">
+                    <div class="notification-item unread urgent" data-type="urgent" data-priority="high">
+                        <div class="notification-checkbox">
+                            <input type="checkbox" onchange="toggleSelection(this)">
+                        </div>
+                        <div class="notification-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <div class="notification-title">Critical Safety Issue - Electrical Fault</div>
+                                <div class="notification-time">2 minutes ago</div>
+                            </div>
+                            <div class="notification-message">
+                                Urgent: Electrical fault detected in Building A, Floor 3. Multiple circuits affected. Safety hazard identified. Immediate contractor dispatch required.
+                            </div>
+                            <div class="notification-meta">
+                                <span class="meta-tag priority-high">High Priority</span>
+                                <span class="meta-tag type-urgent">Safety Critical</span>
+                                <span class="meta-project">Project: Downtown Complex</span>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewDefect(1234)">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="assignToMe()">
+                                <i class="fas fa-user-plus"></i>
+                                Assign
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="notification-item unread" data-type="assignments" data-priority="medium">
+                        <div class="notification-checkbox">
+                            <input type="checkbox" onchange="toggleSelection(this)">
+                        </div>
+                        <div class="notification-icon">
+                            <i class="fas fa-user-tag"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <div class="notification-title">New Defect Assignment</div>
+                                <div class="notification-time">15 minutes ago</div>
+                            </div>
+                            <div class="notification-message">
+                                You have been assigned to resolve plumbing issue in Unit 1502. Customer reported leaking faucet in kitchen sink. Priority: Medium.
+                            </div>
+                            <div class="notification-meta">
+                                <span class="meta-tag priority-medium">Medium Priority</span>
+                                <span class="meta-tag type-assignment">Assignment</span>
+                                <span class="meta-project">Project: Riverside Apartments</span>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewDefect(1235)">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="snoozeNotification()">
+                                <i class="fas fa-clock"></i>
+                                Snooze
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="notification-item" data-type="updates" data-priority="low">
+                        <div class="notification-checkbox">
+                            <input type="checkbox" onchange="toggleSelection(this)">
+                        </div>
+                        <div class="notification-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <div class="notification-title">Defect Status Update</div>
+                                <div class="notification-time">1 hour ago</div>
+                            </div>
+                            <div class="notification-message">
+                                Defect #1228 has been marked as resolved by Mike Johnson. HVAC system in Lobby area has been repaired and tested successfully.
+                            </div>
+                            <div class="notification-meta">
+                                <span class="meta-tag priority-low">Low Priority</span>
+                                <span class="meta-tag type-update">Status Update</span>
+                                <span class="meta-project">Project: Office Tower</span>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewDefect(1228)">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="viewHistory()">
+                                <i class="fas fa-history"></i>
+                                History
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="notification-item unread" data-type="deadlines" data-priority="high">
+                        <div class="notification-checkbox">
+                            <input type="checkbox" onchange="toggleSelection(this)">
+                        </div>
+                        <div class="notification-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <div class="notification-title">Deadline Warning</div>
+                                <div class="notification-time">2 hours ago</div>
+                            </div>
+                            <div class="notification-message">
+                                Critical: Project deadline approaching in 4 hours. 15 defects remain unresolved in Phase 2 construction. Immediate action required to meet project timeline.
+                            </div>
+                            <div class="notification-meta">
+                                <span class="meta-tag priority-high">High Priority</span>
+                                <span class="meta-tag type-deadline">Deadline</span>
+                                <span class="meta-project">Project: Mall Renovation</span>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewProject()">
+                                <i class="fas fa-eye"></i>
+                                View Project
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="escalateIssue()">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Escalate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="notification-item" data-type="updates" data-priority="medium">
+                        <div class="notification-checkbox">
+                            <input type="checkbox" onchange="toggleSelection(this)">
+                        </div>
+                        <div class="notification-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <div class="notification-title">New Comment Added</div>
+                                <div class="notification-time">3 hours ago</div>
+                            </div>
+                            <div class="notification-message">
+                                Sarah added a comment to defect #1240: "Parts have been ordered and should arrive tomorrow. Will schedule repair for Friday morning."
+                            </div>
+                            <div class="notification-meta">
+                                <span class="meta-tag priority-medium">Medium Priority</span>
+                                <span class="meta-tag type-comment">Comment</span>
+                                <span class="meta-project">Project: Hotel Complex</span>
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewDefect(1240)">
+                                <i class="fas fa-eye"></i>
+                                View
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="replyToComment()">
+                                <i class="fas fa-reply"></i>
+                                Reply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="center-footer">
+                    <div class="pagination-info">
+                        Showing 5 of 47 notifications
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-outline-primary btn-sm" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                            Previous
+                        </button>
+                        <span class="page-indicator">Page 1 of 10</span>
+                        <button class="btn btn-outline-primary btn-sm" onclick="nextPage()">
+                            Next
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification Settings -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Customizable Notification Preferences</h2>
+                <p>Configure notification settings by role, project, and communication channel to match your workflow needs.</p>
+            </div>
+
+            <div class="settings-demo">
+                <div class="settings-sidebar">
+                    <div class="settings-nav">
+                        <div class="nav-item active" onclick="showSettingsTab('general')">
+                            <i class="fas fa-cog"></i>
+                            General Settings
+                        </div>
+                        <div class="nav-item" onclick="showSettingsTab('channels')">
+                            <i class="fas fa-broadcast-tower"></i>
+                            Notification Channels
+                        </div>
+                        <div class="nav-item" onclick="showSettingsTab('rules')">
+                            <i class="fas fa-filter"></i>
+                            Notification Rules
+                        </div>
+                        <div class="nav-item" onclick="showSettingsTab('schedule')">
+                            <i class="fas fa-calendar-alt"></i>
+                            Schedule & Quiet Hours
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-content">
+                    <div id="general-settings" class="settings-tab active">
+                        <h4>General Notification Preferences</h4>
+                        <div class="setting-group">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Email Notifications</label>
+                                    <p>Receive defect updates and assignments via email</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked onchange="toggleSetting('email')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>SMS Alerts</label>
+                                    <p>Get urgent notifications via text message</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" onchange="toggleSetting('sms')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Push Notifications</label>
+                                    <p>Mobile app notifications for real-time updates</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked onchange="toggleSetting('push')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <label>Browser Notifications</label>
+                                    <p>Desktop notifications when using the web application</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked onchange="toggleSetting('browser')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="channels-settings" class="settings-tab">
+                        <h4>Notification Channels Configuration</h4>
+                        <div class="channel-config">
+                            <div class="channel-item">
+                                <div class="channel-header">
+                                    <i class="fas fa-envelope"></i>
+                                    <h5>Email Channel</h5>
+                                </div>
+                                <div class="channel-settings">
+                                    <div class="setting-row">
+                                        <label>Frequency:</label>
+                                        <select>
+                                            <option>Immediate</option>
+                                            <option>Hourly Digest</option>
+                                            <option>Daily Summary</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Include Images:</label>
+                                        <input type="checkbox" checked>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="channel-item">
+                                <div class="channel-header">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <h5>SMS Channel</h5>
+                                </div>
+                                <div class="channel-settings">
+                                    <div class="setting-row">
+                                        <label>Urgency Threshold:</label>
+                                        <select>
+                                            <option>All Notifications</option>
+                                            <option>High Priority Only</option>
+                                            <option>Critical Only</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Phone Number:</label>
+                                        <input type="tel" placeholder="+1 (555) 123-4567">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="rules-settings" class="settings-tab">
+                        <h4>Smart Notification Rules</h4>
+                        <div class="rules-list">
+                            <div class="rule-item">
+                                <div class="rule-condition">
+                                    <strong>When:</strong> Defect assigned to me
+                                </div>
+                                <div class="rule-action">
+                                    <strong>Then:</strong> Send immediate notification via all channels
+                                </div>
+                                <div class="rule-controls">
+                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </div>
+                            </div>
+                            <div class="rule-item">
+                                <div class="rule-condition">
+                                    <strong>When:</strong> Deadline within 24 hours
+                                </div>
+                                <div class="rule-action">
+                                    <strong>Then:</strong> Send email and push notification
+                                </div>
+                                <div class="rule-controls">
+                                    <button class="btn btn-sm btn-outline-primary">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="addNewRule()">
+                                <i class="fas fa-plus"></i>
+                                Add New Rule
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="schedule-settings" class="settings-tab">
+                        <h4>Quiet Hours & Scheduling</h4>
+                        <div class="schedule-settings">
+                            <div class="setting-group">
+                                <h5>Quiet Hours</h5>
+                                <div class="time-settings">
+                                    <div class="time-input">
+                                        <label>Start Time:</label>
+                                        <input type="time" value="22:00">
+                                    </div>
+                                    <div class="time-input">
+                                        <label>End Time:</label>
+                                        <input type="time" value="08:00">
+                                    </div>
+                                </div>
+                                <p class="setting-description">Non-urgent notifications will be held during quiet hours</p>
+                            </div>
+
+                            <div class="setting-group">
+                                <h5>Weekly Schedule</h5>
+                                <div class="weekday-settings">
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox" checked> Monday
+                                    </label>
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox" checked> Tuesday
+                                    </label>
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox" checked> Wednesday
+                                    </label>
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox" checked> Thursday
+                                    </label>
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox" checked> Friday
+                                    </label>
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox"> Saturday
+                                    </label>
+                                    <label class="weekday-toggle">
+                                        <input type="checkbox"> Sunday
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="demo-section bg-light">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose Our Notification System?</h2>
+                <p>Experience the difference with enterprise-grade notification capabilities designed for construction defect management.</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>Lightning Fast Delivery</h4>
+                    <p>99.9% delivery rate with sub-second notification dispatch across all channels.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4>Smart Prioritization</h4>
+                    <p>AI-powered notification routing ensures critical issues reach the right people instantly.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Enterprise Security</h4>
+                    <p>End-to-end encryption and compliance with industry security standards.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Delivery Analytics</h4>
+                    <p>Comprehensive reporting on notification delivery, open rates, and response times.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h4>Role-Based Rules</h4>
+                    <p>Customizable notification rules based on user roles, projects, and responsibilities.</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-mobile-screen"></i>
+                    </div>
+                    <h4>Multi-Device Support</h4>
+                    <p>Seamless notifications across desktop, mobile, tablets, and smart devices.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Stay Connected?</h2>
+                <p>Join thousands of construction professionals who rely on our notification system to keep their projects on track and their teams informed.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary btn-lg" onclick="startDemo()">
+                        <i class="fas fa-play"></i>
+                        Start Free Demo
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg" onclick="scheduleCall()">
+                        <i class="fas fa-calendar"></i>
+                        Schedule Consultation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="presentation-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-tools"></i>
+                    <span>Defect Tracker</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#support">Support</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Defect Tracker. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/presentation.js"></script>
+    <script src="js/notifications.js"></script>
+</body>
+</html>

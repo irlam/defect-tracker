@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defect Tracker - Mobile Experience Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="../css/presentation.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="presentation-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-tools"></i>
+                <span>Defect Tracker</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Dashboard</a>
+                <a href="defect-creation.html">Create Defects</a>
+                <a href="defect-management.html">Manage Defects</a>
+                <a href="user-management.html">User Management</a>
+                <a href="reporting.html">Analytics</a>
+                <a href="notifications.html">Notifications</a>
+                <a href="floor-plans.html">Floor Plans</a>
+                <a href="#" class="active">Mobile</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile-First Design</span>
+                </div>
+                <h1>Defect Tracking That Travels With You</h1>
+                <p>Experience our fully responsive mobile interface designed for field technicians, inspectors, and managers on the go. Capture defects instantly with your smartphone or tablet.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Responsive</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">PWA</div>
+                        <div class="stat-label">Progressive Web App</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">Offline</div>
+                        <div class="stat-label">Capable</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="mobile-demo">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="mobile-app-interface">
+                                <div class="mobile-header">
+                                    <div class="mobile-nav">
+                                        <i class="fas fa-bars"></i>
+                                        <span>Defect Tracker</span>
+                                        <i class="fas fa-bell"></i>
+                                    </div>
+                                </div>
+                                <div class="mobile-content">
+                                    <div class="mobile-dashboard">
+                                        <div class="mobile-stats">
+                                            <div class="mobile-stat-card">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div class="stat-info">
+                                                    <div class="stat-value">24</div>
+                                                    <div class="stat-label">Active Defects</div>
+                                                </div>
+                                            </div>
+                                            <div class="mobile-stat-card">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                                <div class="stat-info">
+                                                    <div class="stat-value">3</div>
+                                                    <div class="stat-label">Due Today</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mobile-actions">
+                                            <button class="mobile-action-btn primary">
+                                                <i class="fas fa-plus"></i>
+                                                <span>New Defect</span>
+                                            </button>
+                                            <button class="mobile-action-btn secondary">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Quick Photo</span>
+                                            </button>
+                                        </div>
+                                        <div class="mobile-recent">
+                                            <h4>Recent Activity</h4>
+                                            <div class="recent-item">
+                                                <div class="item-icon">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div class="item-content">
+                                                    <div class="item-title">Defect #1234 Resolved</div>
+                                                    <div class="item-time">2 hours ago</div>
+                                                </div>
+                                            </div>
+                                            <div class="recent-item">
+                                                <div class="item-icon">
+                                                    <i class="fas fa-user-plus"></i>
+                                                </div>
+                                                <div class="item-content">
+                                                    <div class="item-title">Assigned to John Smith</div>
+                                                    <div class="item-time">4 hours ago</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mobile-footer">
+                                    <div class="mobile-tab active">
+                                        <i class="fas fa-home"></i>
+                                        <span>Home</span>
+                                    </div>
+                                    <div class="mobile-tab">
+                                        <i class="fas fa-list"></i>
+                                        <span>Defects</span>
+                                    </div>
+                                    <div class="mobile-tab">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Add</span>
+                                    </div>
+                                    <div class="mobile-tab">
+                                        <i class="fas fa-chart-bar"></i>
+                                        <span>Reports</span>
+                                    </div>
+                                    <div class="mobile-tab">
+                                        <i class="fas fa-user"></i>
+                                        <span>Profile</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mobile-gestures">
+                        <div class="gesture-hint">
+                            <i class="fas fa-hand-point-up"></i>
+                            <span>Tap to interact</span>
+                        </div>
+                        <div class="gesture-hint">
+                            <i class="fas fa-arrows-alt"></i>
+                            <span>Swipe to navigate</span>
+                        </div>
+                        <div class="gesture-hint">
+                            <i class="fas fa-search-plus"></i>
+                            <span>Pinch to zoom</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <i class="fas fa-microphone"></i>
+                    <h3>Mobile-First Architecture</h3>
+                </div>
+                <div class="voice-over-content">
+                    <div class="voice-over-text">
+                        "Our mobile-first approach ensures that every feature works seamlessly across devices. From smartphones to tablets, our responsive design adapts to any screen size while maintaining full functionality and an intuitive touch interface."
+                    </div>
+                    <div class="voice-over-controls">
+                        <button class="btn btn-primary" onclick="playVoiceOver()">
+                            <i class="fas fa-play"></i>
+                            Play Narration
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="toggleAutoAdvance()">
+                            <i class="fas fa-forward"></i>
+                            Auto Advance: <span id="autoAdvanceStatus">ON</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Features Showcase -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Mobile-Optimized Features</h2>
+                <p>Designed specifically for field work with touch-friendly interfaces and mobile-first workflows.</p>
+            </div>
+
+            <div class="mobile-features-grid">
+                <div class="mobile-feature-card">
+                    <div class="feature-visual">
+                        <div class="mobile-screenshot">
+                            <div class="screenshot-header">
+                                <div class="signal-bars"></div>
+                                <div class="time">9:41</div>
+                                <div class="battery"></div>
+                            </div>
+                            <div class="screenshot-content camera-interface">
+                                <div class="camera-viewfinder">
+                                    <div class="viewfinder-overlay">
+                                        <div class="capture-guide">
+                                            <i class="fas fa-crosshairs"></i>
+                                        </div>
+                                        <div class="capture-hint">Align defect in center</div>
+                                    </div>
+                                </div>
+                                <div class="camera-controls">
+                                    <button class="camera-btn capture">
+                                        <i class="fas fa-circle"></i>
+                                    </button>
+                                    <button class="camera-btn gallery">
+                                        <i class="fas fa-images"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Instant Camera Capture</h4>
+                        <p>Capture high-quality defect photos directly within the app using your device's camera with automatic defect detection and image enhancement.</p>
+                        <div class="feature-specs">
+                            <span class="spec-tag">4K Resolution</span>
+                            <span class="spec-tag">Auto-Focus</span>
+                            <span class="spec-tag">HDR</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mobile-feature-card">
+                    <div class="feature-visual">
+                        <div class="mobile-screenshot">
+                            <div class="screenshot-header">
+                                <div class="signal-bars"></div>
+                                <div class="time">9:41</div>
+                                <div class="battery"></div>
+                            </div>
+                            <div class="screenshot-content voice-interface">
+                                <div class="voice-waveform">
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar active"></div>
+                                    <div class="wave-bar active"></div>
+                                    <div class="wave-bar"></div>
+                                    <div class="wave-bar active"></div>
+                                </div>
+                                <div class="voice-status">
+                                    <div class="status-icon recording">
+                                        <i class="fas fa-microphone"></i>
+                                    </div>
+                                    <div class="status-text">Listening...</div>
+                                </div>
+                                <div class="voice-transcript">
+                                    "Electrical outlet in conference room not working"
+                                </div>
+                                <div class="voice-controls">
+                                    <button class="voice-btn stop">
+                                        <i class="fas fa-stop"></i>
+                                    </button>
+                                    <button class="voice-btn save">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Voice-Activated Reporting</h4>
+                        <p>Dictate defect reports hands-free while inspecting. Voice-to-text conversion with intelligent categorization and automatic transcription.</p>
+                        <div class="feature-specs">
+                            <span class="spec-tag">Voice Commands</span>
+                            <span class="spec-tag">Auto-Categorize</span>
+                            <span class="spec-tag">Multi-Language</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mobile-feature-card">
+                    <div class="feature-visual">
+                        <div class="mobile-screenshot">
+                            <div class="screenshot-header">
+                                <div class="signal-bars"></div>
+                                <div class="time">9:41</div>
+                                <div class="battery"></div>
+                            </div>
+                            <div class="screenshot-content gps-interface">
+                                <div class="gps-map">
+                                    <div class="map-marker user-location">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="map-marker defect-location">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="gps-route">
+                                        <div class="route-line"></div>
+                                    </div>
+                                </div>
+                                <div class="gps-info">
+                                    <div class="location-text">Building A, Floor 3</div>
+                                    <div class="distance-text">150 ft to next defect</div>
+                                </div>
+                                <div class="gps-controls">
+                                    <button class="gps-btn navigate">
+                                        <i class="fas fa-route"></i>
+                                        Navigate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-content">
+                        <h4>GPS-Enabled Navigation</h4>
+                        <p>Precise indoor/outdoor navigation to defect locations with turn-by-turn directions and estimated arrival times.</p>
+                        <div class="feature-specs">
+                            <span class="spec-tag">Indoor GPS</span>
+                            <span class="spec-tag">Route Planning</span>
+                            <span class="spec-tag">ETA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mobile-feature-card">
+                    <div class="feature-visual">
+                        <div class="mobile-screenshot">
+                            <div class="screenshot-header">
+                                <div class="signal-bars"></div>
+                                <div class="time">9:41</div>
+                                <div class="battery"></div>
+                            </div>
+                            <div class="screenshot-content offline-interface">
+                                <div class="offline-indicator">
+                                    <i class="fas fa-wifi-slash"></i>
+                                    <span>Offline Mode</span>
+                                </div>
+                                <div class="offline-queue">
+                                    <div class="queue-item">
+                                        <div class="queue-icon">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                        <div class="queue-info">
+                                            <div class="queue-title">Defect Photo #1234</div>
+                                            <div class="queue-status">Queued for upload</div>
+                                        </div>
+                                        <div class="queue-progress">
+                                            <div class="progress-bar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="queue-item">
+                                        <div class="queue-icon">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div class="queue-info">
+                                            <div class="queue-title">Defect Report #1235</div>
+                                            <div class="queue-status">Saved locally</div>
+                                        </div>
+                                        <div class="queue-progress">
+                                            <div class="progress-bar" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="offline-sync">
+                                    <button class="sync-btn">
+                                        <i class="fas fa-sync"></i>
+                                        Sync When Online
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-content">
+                        <h4>Offline Capability</h4>
+                        <p>Continue working without internet connection. All data syncs automatically when connectivity is restored.</p>
+                        <div class="feature-specs">
+                            <span class="spec-tag">Auto-Sync</span>
+                            <span class="spec-tag">Local Storage</span>
+                            <span class="spec-tag">Conflict Resolution</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Mobile Demo -->
+    <section class="demo-section bg-light">
+        <div class="container">
+            <div class="section-header">
+                <h2>Interactive Mobile Experience</h2>
+                <p>Try our touch-optimized interface with gesture controls and mobile workflows.</p>
+            </div>
+
+            <div class="mobile-demo-interface">
+                <div class="demo-device">
+                    <div class="device-frame">
+                        <div class="device-screen" id="interactiveScreen">
+                            <!-- Dynamic content will be loaded here -->
+                            <div class="mobile-app-screen active" id="dashboard-screen">
+                                <div class="mobile-app-header">
+                                    <div class="app-nav">
+                                        <button class="nav-btn" onclick="toggleMobileMenu()">
+                                            <i class="fas fa-bars"></i>
+                                        </button>
+                                        <div class="app-title">Defect Tracker</div>
+                                        <button class="nav-btn" onclick="showNotifications()">
+                                            <i class="fas fa-bell"></i>
+                                            <span class="notification-badge">3</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mobile-app-content">
+                                    <div class="welcome-section">
+                                        <h3>Good morning, John!</h3>
+                                        <p>You have 5 active defects today</p>
+                                    </div>
+
+                                    <div class="quick-stats">
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </div>
+                                            <div class="stat-number">24</div>
+                                            <div class="stat-label">Active</div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="stat-number">3</div>
+                                            <div class="stat-label">Due Today</div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <div class="stat-icon">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            <div class="stat-number">12</div>
+                                            <div class="stat-label">Completed</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="recent-activity">
+                                        <h4>Recent Activity</h4>
+                                        <div class="activity-list">
+                                            <div class="activity-item" onclick="viewDefect(1234)">
+                                                <div class="activity-icon">
+                                                    <i class="fas fa-wrench"></i>
+                                                </div>
+                                                <div class="activity-content">
+                                                    <div class="activity-title">Plumbing repair completed</div>
+                                                    <div class="activity-meta">Unit 1205 • 2 hours ago</div>
+                                                </div>
+                                                <div class="activity-status completed">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                            </div>
+                                            <div class="activity-item" onclick="viewDefect(1235)">
+                                                <div class="activity-icon">
+                                                    <i class="fas fa-bolt"></i>
+                                                </div>
+                                                <div class="activity-content">
+                                                    <div class="activity-title">Electrical issue reported</div>
+                                                    <div class="activity-meta">Lobby • 4 hours ago</div>
+                                                </div>
+                                                <div class="activity-status urgent">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                            </div>
+                                            <div class="activity-item" onclick="viewDefect(1236)">
+                                                <div class="activity-icon">
+                                                    <i class="fas fa-paint-roller"></i>
+                                                </div>
+                                                <div class="activity-content">
+                                                    <div class="activity-title">Paint touch-up needed</div>
+                                                    <div class="activity-meta">Hallway B • 6 hours ago</div>
+                                                </div>
+                                                <div class="activity-status pending">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mobile-app-footer">
+                                    <div class="app-tab active" onclick="switchMobileTab('dashboard')">
+                                        <i class="fas fa-home"></i>
+                                        <span>Home</span>
+                                    </div>
+                                    <div class="app-tab" onclick="switchMobileTab('defects')">
+                                        <i class="fas fa-list"></i>
+                                        <span>Defects</span>
+                                    </div>
+                                    <div class="app-tab" onclick="switchMobileTab('add')">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Add</span>
+                                    </div>
+                                    <div class="app-tab" onclick="switchMobileTab('reports')">
+                                        <i class="fas fa-chart-bar"></i>
+                                        <span>Reports</span>
+                                    </div>
+                                    <div class="app-tab" onclick="switchMobileTab('profile')">
+                                        <i class="fas fa-user"></i>
+                                        <span>Profile</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Defects Screen -->
+                            <div class="mobile-app-screen" id="defects-screen">
+                                <div class="mobile-app-header">
+                                    <div class="app-nav">
+                                        <button class="nav-btn" onclick="goBackToDashboard()">
+                                            <i class="fas fa-arrow-left"></i>
+                                        </button>
+                                        <div class="app-title">My Defects</div>
+                                        <button class="nav-btn" onclick="showDefectFilters()">
+                                            <i class="fas fa-filter"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mobile-app-content">
+                                    <div class="defect-filters">
+                                        <div class="filter-tabs">
+                                            <button class="filter-tab active" onclick="filterDefects('all')">All</button>
+                                            <button class="filter-tab" onclick="filterDefects('assigned')">Assigned</button>
+                                            <button class="filter-tab" onclick="filterDefects('urgent')">Urgent</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="defect-list">
+                                        <div class="defect-card" onclick="viewDefectDetails(1234)">
+                                            <div class="defect-header">
+                                                <div class="defect-id">#1234</div>
+                                                <div class="defect-priority high">High</div>
+                                            </div>
+                                            <div class="defect-title">Electrical outlet malfunction</div>
+                                            <div class="defect-location">Unit 1205, Building A</div>
+                                            <div class="defect-meta">
+                                                <span class="defect-date">Due: Today</span>
+                                                <span class="defect-assignee">Assigned to: John</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="defect-card" onclick="viewDefectDetails(1235)">
+                                            <div class="defect-header">
+                                                <div class="defect-id">#1235</div>
+                                                <div class="defect-priority medium">Medium</div>
+                                            </div>
+                                            <div class="defect-title">HVAC noise complaint</div>
+                                            <div class="defect-location">Conference Room B</div>
+                                            <div class="defect-meta">
+                                                <span class="defect-date">Due: Tomorrow</span>
+                                                <span class="defect-assignee">Assigned to: Sarah</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="defect-card" onclick="viewDefectDetails(1236)">
+                                            <div class="defect-header">
+                                                <div class="defect-id">#1236</div>
+                                                <div class="defect-priority low">Low</div>
+                                            </div>
+                                            <div class="defect-title">Scratched wall surface</div>
+                                            <div class="defect-location">Main Hallway</div>
+                                            <div class="defect-meta">
+                                                <span class="defect-date">Due: Next Week</span>
+                                                <span class="defect-assignee">Unassigned</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Defect Screen -->
+                            <div class="mobile-app-screen" id="add-screen">
+                                <div class="mobile-app-header">
+                                    <div class="app-nav">
+                                        <button class="nav-btn" onclick="goBackToDashboard()">
+                                            <i class="fas fa-arrow-left"></i>
+                                        </button>
+                                        <div class="app-title">New Defect</div>
+                                        <button class="nav-btn" onclick="saveDefect()">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mobile-app-content">
+                                    <div class="defect-form">
+                                        <div class="form-section">
+                                            <label>Defect Type</label>
+                                            <select class="form-input">
+                                                <option>Electrical</option>
+                                                <option>Plumbing</option>
+                                                <option>HVAC</option>
+                                                <option>Structural</option>
+                                                <option>Cosmetic</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-section">
+                                            <label>Priority</label>
+                                            <div class="priority-buttons">
+                                                <button class="priority-btn low">Low</button>
+                                                <button class="priority-btn medium active">Medium</button>
+                                                <button class="priority-btn high">High</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-section">
+                                            <label>Description</label>
+                                            <textarea class="form-input" placeholder="Describe the defect..." rows="3"></textarea>
+                                        </div>
+
+                                        <div class="form-section">
+                                            <label>Location</label>
+                                            <input type="text" class="form-input" placeholder="Room number or area">
+                                            <button class="location-btn" onclick="getCurrentLocation()">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                Use Current Location
+                                            </button>
+                                        </div>
+
+                                        <div class="form-section">
+                                            <label>Photos</label>
+                                            <div class="photo-upload">
+                                                <button class="photo-btn" onclick="takePhoto()">
+                                                    <i class="fas fa-camera"></i>
+                                                    Take Photo
+                                                </button>
+                                                <button class="photo-btn" onclick="chooseFromGallery()">
+                                                    <i class="fas fa-images"></i>
+                                                    Gallery
+                                                </button>
+                                            </div>
+                                            <div class="photo-preview">
+                                                <!-- Photos will appear here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-controls">
+                    <div class="control-panel">
+                        <h4>Demo Controls</h4>
+                        <div class="control-buttons">
+                            <button class="demo-btn" onclick="simulateTap()">
+                                <i class="fas fa-hand-point-up"></i>
+                                Simulate Tap
+                            </button>
+                            <button class="demo-btn" onclick="simulateSwipe()">
+                                <i class="fas fa-arrows-alt-h"></i>
+                                Simulate Swipe
+                            </button>
+                            <button class="demo-btn" onclick="simulatePinch()">
+                                <i class="fas fa-search-plus"></i>
+                                Simulate Pinch
+                            </button>
+                        </div>
+                        <div class="gesture-instructions">
+                            <p><strong>Try these gestures:</strong></p>
+                            <ul>
+                                <li><strong>Tap:</strong> Select items and buttons</li>
+                                <li><strong>Swipe:</strong> Navigate between screens</li>
+                                <li><strong>Pinch:</strong> Zoom in/out on floor plans</li>
+                                <li><strong>Long Press:</strong> Access context menus</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Benefits -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Mobile-First Benefits</h2>
+                <p>Why mobile access transforms defect management workflows.</p>
+            </div>
+
+            <div class="mobile-benefits">
+                <div class="benefit-showcase">
+                    <div class="benefit-metric">
+                        <div class="metric-number">75%</div>
+                        <div class="metric-label">Faster Defect Reporting</div>
+                        <div class="metric-description">Capture and report defects in seconds with mobile-optimized forms</div>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="mobile-workflow">
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="step-label">Take Photo</div>
+                            </div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div class="step-label">Add Details</div>
+                            </div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-paper-plane"></i>
+                                </div>
+                                <div class="step-label">Submit</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="benefit-showcase reverse">
+                    <div class="benefit-metric">
+                        <div class="metric-number">90%</div>
+                        <div class="metric-label">First-Time Resolution</div>
+                        <div class="metric-description">Complete defect information capture reduces follow-up questions</div>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="mobile-features-list">
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>High-quality photos</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>GPS location data</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Voice notes</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Structured data capture</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="benefit-showcase">
+                    <div class="benefit-metric">
+                        <div class="metric-number">50%</div>
+                        <div class="metric-label">Reduced Admin Time</div>
+                        <div class="metric-description">Automated workflows and smart defaults streamline defect management</div>
+                    </div>
+                    <div class="benefit-visual">
+                        <div class="efficiency-chart">
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 80%"></div>
+                                <div class="bar-label">Traditional</div>
+                            </div>
+                            <div class="chart-bar">
+                                <div class="bar-fill" style="height: 40%"></div>
+                                <div class="bar-label">Mobile App</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Experience Mobile Excellence</h2>
+                <p>Download our mobile app and transform how your team manages defects from anywhere.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary btn-lg" onclick="downloadApp()">
+                        <i class="fas fa-download"></i>
+                        Download Mobile App
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg" onclick="viewDemoVideo()">
+                        <i class="fas fa-play-circle"></i>
+                        Watch Demo Video
+                    </button>
+                </div>
+                <div class="app-store-links">
+                    <a href="#" class="app-store-btn">
+                        <i class="fab fa-apple"></i>
+                        <div>
+                            <div class="store-label">Download on the</div>
+                            <div class="store-name">App Store</div>
+                        </div>
+                    </a>
+                    <a href="#" class="app-store-btn">
+                        <i class="fab fa-google-play"></i>
+                        <div>
+                            <div class="store-label">Get it on</div>
+                            <div class="store-name">Google Play</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="presentation-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-tools"></i>
+                <span>Defect Tracker</span>
+            </div>
+            <div class="footer-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#support">Support</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-facebook"></i></a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Defect Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/presentation.js"></script>
+    <script src="js/mobile.js"></script>
+</body>
+</html>

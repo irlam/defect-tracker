@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defect Creation - McGoff Defect Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/presentation.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-building me-2"></i>
+                McGoff Defect Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="defect-creation.html">Defect Creation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="defect-management.html">Defect Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-management.html">User Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reporting.html">Reporting & Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="notifications.html">Real-time Notifications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="floor-plans.html">Floor Plan Integration</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="mobile.html">Mobile Experience</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title animate-fade-in">
+                            <span class="text-primary">Defect Creation</span><br>
+                            Made Simple & Powerful
+                        </h1>
+                        <p class="hero-subtitle animate-fade-in-delay">
+                            Transform how your team identifies and documents construction defects.
+                            From initial discovery to detailed documentation in minutes.
+                        </p>
+                        <div class="hero-features animate-slide-up">
+                            <div class="feature-highlight">
+                                <i class="fas fa-bolt"></i>
+                                <span>5-Minute Setup</span>
+                            </div>
+                            <div class="feature-highlight">
+                                <i class="fas fa-images"></i>
+                                <span>Multi-Image Support</span>
+                            </div>
+                            <div class="feature-highlight">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Precise Location Pinning</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual animate-float">
+                        <div class="creation-workflow">
+                            <div class="workflow-step active" data-step="1">
+                                <div class="step-icon">
+                                    <i class="fas fa-plus-circle"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Identify Defect</h4>
+                                    <p>Spot issue on site</p>
+                                </div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step" data-step="2">
+                                <div class="step-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Document</h4>
+                                    <p>Take photos & details</p>
+                                </div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step" data-step="3">
+                                <div class="step-icon">
+                                    <i class="fas fa-map-pin"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Pin Location</h4>
+                                    <p>Mark exact spot</p>
+                                </div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step" data-step="4">
+                                <div class="step-icon">
+                                    <i class="fas fa-paper-plane"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Submit</h4>
+                                    <p>Auto-notifications sent</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <i class="fas fa-microphone"></i>
+                    <h3>Defect Creation Process Narration</h3>
+                </div>
+                <div class="voice-over-content">
+                    <div class="narration-text">
+                        <p class="highlight">"Creating a defect in our system takes just 5 minutes and ensures every critical detail is captured."</p>
+
+                        <p>"Imagine you're walking through a construction site and you spot a defect - maybe a cracked foundation or faulty wiring. Instead of scribbling notes on a napkin, you pull out your phone or tablet."</p>
+
+                        <p>"Our intuitive interface guides you through each step: name the defect, describe the issue, select the priority level, and choose the affected floor plan. The system automatically suggests recent descriptions to save you time."</p>
+
+                        <p>"Then comes the magic - you upload multiple high-quality images, and with our visual floor plan integration, you can precisely pin the exact location of the defect. No more vague descriptions like 'somewhere on the second floor'."</p>
+
+                        <p>"Hit submit, and boom - the defect is instantly created, notifications are automatically sent to the assigned contractor and project manager, and the issue enters our comprehensive tracking system."</p>
+                    </div>
+                    <div class="narration-duration">
+                        <i class="fas fa-clock"></i>
+                        Duration: 52 seconds
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Demo Section -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Interactive Defect Creation Demo</h2>
+                <p>Experience the creation process step by step</p>
+            </div>
+
+            <div class="demo-workflow">
+                <div class="workflow-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step active" data-step="1">
+                            <span class="step-number">1</span>
+                            <span class="step-label">Basic Info</span>
+                        </div>
+                        <div class="step" data-step="2">
+                            <span class="step-number">2</span>
+                            <span class="step-label">Location</span>
+                        </div>
+                        <div class="step" data-step="3">
+                            <span class="step-number">3</span>
+                            <span class="step-label">Images</span>
+                        </div>
+                        <div class="step" data-step="4">
+                            <span class="step-number">4</span>
+                            <span class="step-label">Submit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-content">
+                    <div class="demo-step active" id="step1">
+                        <div class="demo-form">
+                            <h3>Step 1: Basic Defect Information</h3>
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" class="form-control" placeholder="e.g., Cracked Foundation Wall" value="Cracked Foundation Wall">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea class="form-control" rows="3" placeholder="Describe the defect in detail...">Foundation wall shows significant cracking approximately 3mm wide, running vertically for 2 meters. Located in the east wing basement.</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select class="form-control">
+                                    <option>Low (5-7 business days)</option>
+                                    <option selected>High (1-2 business days)</option>
+                                    <option>Critical (Within 24 hours)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Assign To</label>
+                                <select class="form-control">
+                                    <option>ABC Construction Co.</option>
+                                    <option selected>XYZ Contractors Ltd.</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-step" id="step2">
+                        <div class="demo-floorplan">
+                            <h3>Step 2: Pin Defect Location</h3>
+                            <div class="floorplan-container">
+                                <div class="floorplan-image">
+                                    <img src="https://via.placeholder.com/600x400/2563eb/ffffff?text=Floor+Plan" alt="Floor Plan">
+                                    <div class="location-pin active">
+                                        <i class="fas fa-map-pin"></i>
+                                    </div>
+                                </div>
+                                <div class="pin-instructions">
+                                    <p><i class="fas fa-mouse-pointer"></i> Click anywhere on the floor plan to pin the defect location</p>
+                                    <p><i class="fas fa-arrows-alt"></i> Drag the pin to adjust position</p>
+                                    <div class="coordinates">Coordinates: X: 245, Y: 180</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-step" id="step3">
+                        <div class="demo-images">
+                            <h3>Step 3: Upload Supporting Images</h3>
+                            <div class="image-upload-area">
+                                <div class="upload-zone">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Drag & drop images here or click to browse</p>
+                                    <small>Supports JPG, PNG, GIF up to 10MB each</small>
+                                </div>
+                                <div class="uploaded-images">
+                                    <div class="image-preview">
+                                        <img src="https://via.placeholder.com/150x150/dc2626/ffffff?text=Crack+Close-up" alt="Crack close-up">
+                                        <div class="image-actions">
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="image-preview">
+                                        <img src="https://via.placeholder.com/150x150/059669/ffffff?text=Wide+Angle+View" alt="Wide angle view">
+                                        <div class="image-actions">
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="image-preview">
+                                        <img src="https://via.placeholder.com/150x150/7c3aed/ffffff?text=Measurement+Reference" alt="Measurement reference">
+                                        <div class="image-actions">
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="demo-step" id="step4">
+                        <div class="demo-submit">
+                            <h3>Step 4: Review & Submit</h3>
+                            <div class="submission-summary">
+                                <div class="summary-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Defect details completed</span>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Location pinned on floor plan</span>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>3 images uploaded</span>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="fas fa-paper-plane text-primary"></i>
+                                    <span>Ready to submit - notifications will be sent automatically</span>
+                                </div>
+                            </div>
+                            <div class="submit-actions">
+                                <button class="btn btn-success btn-lg" id="submitBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Create Defect
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-navigation">
+                    <button class="btn btn-outline-secondary" id="prevBtn" disabled>
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <button class="btn btn-primary" id="nextBtn">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Our Defect Creation Process Excels</h2>
+                <p>Built by construction professionals for construction professionals</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4>5-Minute Creation</h4>
+                    <p>Complete defect documentation in under 5 minutes with our streamlined interface and smart defaults.</p>
+                    <div class="benefit-metric">300% faster than paper-based methods</div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-crosshairs"></i>
+                    </div>
+                    <h4>Precise Location Tracking</h4>
+                    <p>Pin defects to exact coordinates on floor plans, eliminating ambiguity and reducing miscommunication.</p>
+                    <div class="benefit-metric">99.9% location accuracy</div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <h4>Rich Media Support</h4>
+                    <p>Upload multiple high-resolution images with automatic optimization and organization.</p>
+                    <div class="benefit-metric">Unlimited images per defect</div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h4>Instant Notifications</h4>
+                    <p>Automatic notifications to all stakeholders the moment a defect is created.</p>
+                    <div class="benefit-metric">< 5 second notification delivery</div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4>Mobile Optimized</h4>
+                    <p>Full functionality on smartphones and tablets for on-site defect reporting.</p>
+                    <div class="benefit-metric">100% mobile compatible</div>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h4>Smart Suggestions</h4>
+                    <p>AI-powered suggestions for defect categorization and contractor assignment.</p>
+                    <div class="benefit-metric">Intelligent automation</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Dashboard -->
+    <section class="back-to-dashboard">
+        <div class="container">
+            <div class="dashboard-link">
+                <a href="index.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard Overview
+                </a>
+                <p>Continue exploring our comprehensive defect management system</p>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/presentation.js"></script>
+    <script src="js/defect-creation.js"></script>
+</body>
+</html>

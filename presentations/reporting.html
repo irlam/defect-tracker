@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporting & Analytics - Construction Defect Tracking System</title>
+
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/presentation.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-tools"></i>
+                Construction Defect Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="reporting.html">Reporting</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="notifications.html">Notifications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="floor-plans.html">Floor Plans</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="display-4 fw-bold mb-4">
+                            <i class="fas fa-chart-bar text-warning"></i>
+                            Advanced Reporting & Analytics
+                        </h1>
+                        <p class="lead mb-4">
+                            Comprehensive data visualization with real-time insights, custom dashboards,
+                            and automated report generation for data-driven decision making.
+                        </p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">50+</div>
+                                <div class="stat-label">Report Types</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">Real-time</div>
+                                <div class="stat-label">Data Updates</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label">Automated Reports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="analytics-dashboard">
+                            <div class="dashboard-preview">
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Resolution Trends</span>
+                                </div>
+                                <div class="metric-cards">
+                                    <div class="metric-card">
+                                        <div class="metric-value">94%</div>
+                                        <div class="metric-label">Resolution Rate</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">2.3d</div>
+                                        <div class="metric-label">Avg. Time</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">156</div>
+                                        <div class="metric-label">Active Defects</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <div class="voice-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3>Data-Driven Insights & Automated Reporting</h3>
+                </div>
+                <div class="voice-over-content">
+                    <p class="voice-text highlight">
+                        "Our advanced analytics platform transforms raw defect data into actionable business intelligence. Real-time dashboards provide instant visibility into project performance, contractor efficiency, and defect trends."
+                    </p>
+                    <p class="voice-text">
+                        "Interactive charts and graphs allow you to drill down into specific time periods, projects, or defect categories. Custom filters let you focus on exactly the data that matters to your role and responsibilities."
+                    </p>
+                    <p class="voice-text">
+                        "Automated report generation ensures stakeholders receive timely updates via email or scheduled exports. From executive summaries to detailed technical reports, our system adapts to your communication needs."
+                    </p>
+                    <p class="voice-text">
+                        "Predictive analytics identify potential problem areas before they become critical. Trend analysis helps optimize resource allocation and improve overall project outcomes through data-driven decision making."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Analytics Demo -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Interactive Analytics Dashboard</h2>
+                <p class="lead text-muted">Explore real-time data visualization and reporting capabilities</p>
+            </div>
+
+            <div class="analytics-dashboard-demo">
+                <!-- Dashboard Controls -->
+                <div class="dashboard-controls">
+                    <div class="control-group">
+                        <label>Date Range:</label>
+                        <select id="dateRange" onchange="updateDashboard()">
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Project:</label>
+                        <select id="projectFilter" onchange="updateDashboard()">
+                            <option value="all">All Projects</option>
+                            <option value="building-a">Building A</option>
+                            <option value="building-b">Building B</option>
+                            <option value="building-c">Building C</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Status:</label>
+                        <select id="statusFilter" onchange="updateDashboard()">
+                            <option value="all">All Status</option>
+                            <option value="open">Open</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="control-actions">
+                        <button class="btn btn-outline-primary" onclick="exportReport()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn btn-outline-success" onclick="scheduleReport()">
+                            <i class="fas fa-clock"></i> Schedule
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card" onclick="showMetricDetail('total-defects')">
+                        <div class="metric-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="totalDefects">1,247</div>
+                            <div class="metric-label">Total Defects</div>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+12% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card" onclick="showMetricDetail('resolution-rate')">
+                        <div class="metric-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="resolutionRate">94%</div>
+                            <div class="metric-label">Resolution Rate</div>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+2% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card" onclick="showMetricDetail('avg-resolution-time')">
+                        <div class="metric-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="avgResolutionTime">2.3 days</div>
+                            <div class="metric-label">Avg. Resolution Time</div>
+                            <div class="metric-change negative">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>-0.5 days from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card" onclick="showMetricDetail('contractor-performance')">
+                        <div class="metric-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-value" id="contractorScore">8.7</div>
+                            <div class="metric-label">Contractor Score</div>
+                            <div class="metric-change positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+0.3 from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <!-- Defect Trends Chart -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h4>Defect Trends Over Time</h4>
+                            <div class="chart-controls">
+                                <button class="btn btn-sm btn-outline-primary active" onclick="switchChartType('line')">Line</button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="switchChartType('bar')">Bar</button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="switchChartType('area')">Area</button>
+                            </div>
+                        </div>
+                        <div class="chart-canvas">
+                            <div class="trend-chart">
+                                <div class="chart-grid">
+                                    <div class="grid-line" style="bottom: 0%"></div>
+                                    <div class="grid-line" style="bottom: 25%"></div>
+                                    <div class="grid-line" style="bottom: 50%"></div>
+                                    <div class="grid-line" style="bottom: 75%"></div>
+                                    <div class="grid-line" style="bottom: 100%"></div>
+                                </div>
+                                <div class="chart-data">
+                                    <div class="data-point" style="left: 10%; height: 30%;" data-value="45">
+                                        <div class="point-tooltip">Jan 10: 45 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 20%; height: 45%;" data-value="67">
+                                        <div class="point-tooltip">Jan 17: 67 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 30%; height: 35%;" data-value="52">
+                                        <div class="point-tooltip">Jan 24: 52 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 40%; height: 55%;" data-value="82">
+                                        <div class="point-tooltip">Jan 31: 82 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 50%; height: 40%;" data-value="60">
+                                        <div class="point-tooltip">Feb 7: 60 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 60%; height: 50%;" data-value="75">
+                                        <div class="point-tooltip">Feb 14: 75 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 70%; height: 45%;" data-value="67">
+                                        <div class="point-tooltip">Feb 21: 67 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 80%; height: 35%;" data-value="52">
+                                        <div class="point-tooltip">Feb 28: 52 defects</div>
+                                    </div>
+                                    <div class="data-point" style="left: 90%; height: 25%;" data-value="37">
+                                        <div class="point-tooltip">Mar 7: 37 defects</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Distribution -->
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h4>Defect Status Distribution</h4>
+                        </div>
+                        <div class="chart-canvas">
+                            <div class="pie-chart">
+                                <div class="pie-segment open" style="--percentage: 15;">
+                                    <div class="segment-label">Open (15%)</div>
+                                </div>
+                                <div class="pie-segment in-progress" style="--percentage: 35;">
+                                    <div class="segment-label">In Progress (35%)</div>
+                                </div>
+                                <div class="pie-segment resolved" style="--percentage: 45;">
+                                    <div class="segment-label">Resolved (45%)</div>
+                                </div>
+                                <div class="pie-segment closed" style="--percentage: 5;">
+                                    <div class="segment-label">Closed (5%)</div>
+                                </div>
+                            </div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color open"></div>
+                                    <span>Open</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color in-progress"></div>
+                                    <span>In Progress</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color resolved"></div>
+                                    <span>Resolved</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color closed"></div>
+                                    <span>Closed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contractor Performance Table -->
+                <div class="performance-table-container">
+                    <div class="table-header">
+                        <h4>Contractor Performance Rankings</h4>
+                        <div class="table-controls">
+                            <select onchange="sortPerformance(this.value)">
+                                <option value="score">Sort by Score</option>
+                                <option value="defects">Sort by Defects</option>
+                                <option value="time">Sort by Avg. Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="performance-table">
+                        <div class="table-row header">
+                            <div class="col-contractor">Contractor</div>
+                            <div class="col-score">Score</div>
+                            <div class="col-defects">Defects Completed</div>
+                            <div class="col-time">Avg. Resolution Time</div>
+                            <div class="col-trend">Trend</div>
+                        </div>
+                        <div class="table-row" data-score="9.2" data-defects="89" data-time="1.8">
+                            <div class="col-contractor">
+                                <div class="contractor-info">
+                                    <div class="contractor-avatar">PS</div>
+                                    <div class="contractor-details">
+                                        <strong>Premier Services</strong>
+                                        <small>Foundation & Structural</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-score">
+                                <div class="score-display">
+                                    <span class="score-value">9.2</span>
+                                    <div class="score-stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-defects">89</div>
+                            <div class="col-time">1.8 days</div>
+                            <div class="col-trend">
+                                <i class="fas fa-arrow-up text-success"></i>
+                                <span class="text-success">+0.3</span>
+                            </div>
+                        </div>
+                        <div class="table-row" data-score="8.9" data-defects="76" data-time="2.1">
+                            <div class="col-contractor">
+                                <div class="contractor-info">
+                                    <div class="contractor-avatar">EC</div>
+                                    <div class="contractor-details">
+                                        <strong>Elite Contractors</strong>
+                                        <small>General Construction</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-score">
+                                <div class="score-display">
+                                    <span class="score-value">8.9</span>
+                                    <div class="score-stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-defects">76</div>
+                            <div class="col-time">2.1 days</div>
+                            <div class="col-trend">
+                                <i class="fas fa-arrow-up text-success"></i>
+                                <span class="text-success">+0.1</span>
+                            </div>
+                        </div>
+                        <div class="table-row" data-score="8.5" data-defects="65" data-time="2.4">
+                            <div class="col-contractor">
+                                <div class="contractor-info">
+                                    <div class="contractor-avatar">QC</div>
+                                    <div class="contractor-details">
+                                        <strong>Quality Construction</strong>
+                                        <small>Interior Finishing</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-score">
+                                <div class="score-display">
+                                    <span class="score-value">8.5</span>
+                                    <div class="score-stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-defects">65</div>
+                            <div class="col-time">2.4 days</div>
+                            <div class="col-trend">
+                                <i class="fas fa-minus text-warning"></i>
+                                <span class="text-warning">0.0</span>
+                            </div>
+                        </div>
+                        <div class="table-row" data-score="8.1" data-defects="58" data-time="2.8">
+                            <div class="col-contractor">
+                                <div class="contractor-info">
+                                    <div class="contractor-avatar">BR</div>
+                                    <div class="contractor-details">
+                                        <strong>Budget Repairs</strong>
+                                        <small>Maintenance & Repairs</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-score">
+                                <div class="score-display">
+                                    <span class="score-value">8.1</span>
+                                    <div class="score-stars">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-defects">58</div>
+                            <div class="col-time">2.8 days</div>
+                            <div class="col-trend">
+                                <i class="fas fa-arrow-down text-danger"></i>
+                                <span class="text-danger">-0.2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Report Types Section -->
+    <section class="reports-section bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Comprehensive Report Library</h2>
+                <p class="lead text-muted">50+ automated reports covering every aspect of defect management</p>
+            </div>
+
+            <div class="reports-grid">
+                <div class="report-category">
+                    <div class="category-header">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Performance Reports</h4>
+                    </div>
+                    <div class="category-reports">
+                        <div class="report-item" onclick="previewReport('contractor-performance')">
+                            <h5>Contractor Performance</h5>
+                            <p>Detailed analysis of contractor efficiency, quality scores, and completion times</p>
+                            <div class="report-meta">
+                                <span class="frequency">Weekly</span>
+                                <span class="format">PDF/Excel</span>
+                            </div>
+                        </div>
+                        <div class="report-item" onclick="previewReport('project-progress')">
+                            <h5>Project Progress</h5>
+                            <p>Overall project status with defect resolution rates and timeline analysis</p>
+                            <div class="report-meta">
+                                <span class="frequency">Daily</span>
+                                <span class="format">Dashboard</span>
+                            </div>
+                        </div>
+                        <div class="report-item" onclick="previewReport('quality-metrics')">
+                            <h5>Quality Metrics</h5>
+                            <p>Defect recurrence rates, rework analysis, and quality improvement trends</p>
+                            <div class="report-meta">
+                                <span class="frequency">Monthly</span>
+                                <span class="format">PDF</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-category">
+                    <div class="category-header">
+                        <i class="fas fa-building"></i>
+                        <h4>Project Reports</h4>
+                    </div>
+                    <div class="category-reports">
+                        <div class="report-item" onclick="previewReport('defect-summary')">
+                            <h5>Defect Summary</h5>
+                            <p>Comprehensive overview of all defects by category, priority, and location</p>
+                            <div class="report-meta">
+                                <span class="frequency">Weekly</span>
+                                <span class="format">PDF/Excel</span>
+                            </div>
+                        </div>
+                        <div class="report-item" onclick="previewReport('floor-plan-analysis')">
+                            <h5>Floor Plan Analysis</h5>
+                            <p>Visual defect distribution across building floors and zones</p>
+                            <div class="report-meta">
+                                <span class="frequency">Monthly</span>
+                                <span class="format">Interactive</span>
+                            </div>
+                        </div>
+                        <div class="report-item" onclick="previewReport('cost-analysis')">
+                            <h5>Cost Analysis</h5>
+                            <p>Financial impact of defects including repair costs and delay penalties</p>
+                            <div class="report-meta">
+                                <span class="frequency">Monthly</span>
+                                <span class="format">Excel</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-category">
+                    <div class="category-header">
+                        <i class="fas fa-clock"></i>
+                        <h4>Time-Based Reports</h4>
+                    </div>
+                    <div class="category-reports">
+                        <div class="report-item" onclick="previewReport('aging-report')">
+                            <h5>Aging Report</h5>
+                            <p>Defects by age showing resolution time trends and bottlenecks</p>
+                            <div class="report-meta">
+                                <span class="frequency">Daily</span>
+                                <span class="format">Dashboard</span>
+                            </div>
+                        </div>
+                        <div class="report-item" onclick="previewReport('sla-compliance')">
+                            <h5>SLA Compliance</h5>
+                            <p>Service level agreement adherence and deadline performance</p>
+                            <div class="report-meta">
+                                <span class="frequency">Weekly</span>
+                                <span class="format">PDF</span>
+                            </div>
+                        </div>
+                        <div class="report-item" onclick="previewReport('predictive-analytics')">
+                            <h5>Predictive Analytics</h5>
+                            <p>Forecast defect trends and identify potential problem areas</p>
+                            <div class="report-meta">
+                                <span class="frequency">Monthly</span>
+                                <span class="format">Interactive</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Export & Automation Section -->
+    <section class="export-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Automated Report Generation</h2>
+                <p class="lead text-muted">Schedule reports and export data in multiple formats instantly</p>
+            </div>
+
+            <div class="export-features">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="export-card">
+                            <div class="export-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <h4>PDF Reports</h4>
+                            <p>Professional formatted reports with charts, tables, and executive summaries</p>
+                            <div class="export-options">
+                                <span class="option-tag">Branded</span>
+                                <span class="option-tag">Printable</span>
+                                <span class="option-tag">Shareable</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="export-card">
+                            <div class="export-icon">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <h4>Excel Exports</h4>
+                            <p>Raw data exports with multiple worksheets, pivot tables, and formulas</p>
+                            <div class="export-options">
+                                <span class="option-tag">Pivot Ready</span>
+                                <span class="option-tag">Formulae</span>
+                                <span class="option-tag">Charts</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="export-card">
+                            <div class="export-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h4>Automated Email</h4>
+                            <p>Schedule automatic report delivery to stakeholders and team members</p>
+                            <div class="export-options">
+                                <span class="option-tag">Scheduled</span>
+                                <span class="option-tag">Custom Recipients</span>
+                                <span class="option-tag">Conditional</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Analytics Benefits</h2>
+                <p class="lead text-muted">Transform data into actionable insights for better decision making</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h4>Real-Time Visibility</h4>
+                    <p>Instant access to current project status, defect trends, and performance metrics</p>
+                    <div class="benefit-metric">Live dashboards</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Data-Driven Decisions</h4>
+                    <p>Identify trends, predict issues, and optimize resource allocation with analytics</p>
+                    <div class="benefit-metric">40% better decisions</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>Stakeholder Communication</h4>
+                    <p>Automated reports ensure all stakeholders stay informed with relevant data</p>
+                    <div class="benefit-metric">95% satisfaction</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h4>Performance Optimization</h4>
+                    <p>Continuous improvement through contractor rankings and quality metrics</p>
+                    <div class="benefit-metric">25% efficiency gain</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Compliance & Audit</h4>
+                    <p>Complete audit trails and compliance reporting for regulatory requirements</p>
+                    <div class="benefit-metric">100% traceable</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4>Automated Insights</h4>
+                    <p>AI-powered analytics automatically identify patterns and recommend actions</p>
+                    <div class="benefit-metric">Predictive alerts</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Dashboard -->
+    <section class="back-to-dashboard">
+        <div class="container">
+            <div class="dashboard-link">
+                <a href="index.html" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+                <p>Continue exploring our comprehensive analytics and reporting system</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="js/presentation.js"></script>
+    <script src="js/reporting.js"></script>
+</body>
+</html>

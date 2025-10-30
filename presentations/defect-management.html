@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defect Management - Construction Defect Tracking System</title>
+
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/presentation.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-tools"></i>
+                Construction Defect Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="defect-management.html">Defect Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-management.html">User Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reporting.html">Reporting</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="display-4 fw-bold mb-4">
+                            <i class="fas fa-tasks text-warning"></i>
+                            Defect Management Excellence
+                        </h1>
+                        <p class="lead mb-4">
+                            Streamline your defect resolution process with our comprehensive management system.
+                            Track progress, assign responsibilities, and ensure timely completion.
+                        </p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">94%</div>
+                                <div class="stat-label">Resolution Rate</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">2.3 days</div>
+                                <div class="stat-label">Avg. Resolution Time</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">99.8%</div>
+                                <div class="stat-label">On-Time Completion</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="workflow-diagram">
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-plus-circle"></i>
+                                </div>
+                                <div class="step-label">Created</div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="step-label">Assigned</div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="step-label">Accepted</div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="step-label">In Progress</div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-thumbs-up"></i>
+                                </div>
+                                <div class="step-label">Resolved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <div class="voice-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3>Defect Management Workflow</h3>
+                </div>
+                <div class="voice-over-content">
+                    <p class="voice-text highlight">
+                        "Once a defect is created, our intelligent management system takes over. Defects are automatically routed to the appropriate contractors based on their expertise and current workload."
+                    </p>
+                    <p class="voice-text">
+                        "Contractors receive instant notifications and can accept or reject assignments. Our system tracks all communications, deadlines, and progress updates in real-time."
+                    </p>
+                    <p class="voice-text">
+                        "Project managers maintain full visibility with comprehensive dashboards showing defect status, contractor performance, and project timelines. Automated reminders ensure nothing falls through the cracks."
+                    </p>
+                    <p class="voice-text">
+                        "Quality control is built-in with before-and-after photo requirements, completion checklists, and approval workflows. Every defect resolution is documented and auditable."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Management Demo -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Interactive Management Demo</h2>
+                <p class="lead text-muted">Experience the complete defect lifecycle management</p>
+            </div>
+
+            <div class="management-dashboard">
+                <!-- Status Overview -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h4><i class="fas fa-chart-pie"></i> Defect Status Overview</h4>
+                    </div>
+                    <div class="widget-content">
+                        <div class="status-chart">
+                            <div class="chart-item">
+                                <div class="chart-label">Open</div>
+                                <div class="chart-bar">
+                                    <div class="chart-fill" style="width: 15%; background: #dc2626;"></div>
+                                </div>
+                                <div class="chart-value">15</div>
+                            </div>
+                            <div class="chart-item">
+                                <div class="chart-label">In Progress</div>
+                                <div class="chart-bar">
+                                    <div class="chart-fill" style="width: 35%; background: #f59e0b;"></div>
+                                </div>
+                                <div class="chart-value">35</div>
+                            </div>
+                            <div class="chart-item">
+                                <div class="chart-label">Resolved</div>
+                                <div class="chart-bar">
+                                    <div class="chart-fill" style="width: 45%; background: #10b981;"></div>
+                                </div>
+                                <div class="chart-value">45</div>
+                            </div>
+                            <div class="chart-item">
+                                <div class="chart-label">Closed</div>
+                                <div class="chart-bar">
+                                    <div class="chart-fill" style="width: 5%; background: #6b7280;"></div>
+                                </div>
+                                <div class="chart-value">5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Defects Table -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h4><i class="fas fa-list"></i> Recent Defects</h4>
+                        <div class="widget-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="filterDefects('all')">All</button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="filterDefects('urgent')">Urgent</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="filterDefects('overdue')">Overdue</button>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div class="defects-table">
+                            <div class="defect-row" data-status="in-progress" data-priority="high">
+                                <div class="defect-info">
+                                    <div class="defect-title">DT-2025-001: Cracked Foundation Wall</div>
+                                    <div class="defect-meta">Floor 2, Building A • High Priority • Due: Mar 10</div>
+                                </div>
+                                <div class="defect-status">
+                                    <span class="status-badge status-in-progress">In Progress</span>
+                                </div>
+                                <div class="defect-assignee">
+                                    <div class="assignee-avatar">JD</div>
+                                    <span>John Doe</span>
+                                </div>
+                                <div class="defect-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewDefect('DT-2025-001')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="updateStatus('DT-2025-001', 'resolved')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="defect-row" data-status="open" data-priority="urgent">
+                                <div class="defect-info">
+                                    <div class="defect-title">DT-2025-002: Leaking Roof</div>
+                                    <div class="defect-meta">Roof Level • Urgent • Due: Mar 8</div>
+                                </div>
+                                <div class="defect-status">
+                                    <span class="status-badge status-open">Open</span>
+                                </div>
+                                <div class="defect-assignee">
+                                    <div class="assignee-avatar">SM</div>
+                                    <span>Sarah Miller</span>
+                                </div>
+                                <div class="defect-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewDefect('DT-2025-002')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="assignDefect('DT-2025-002')">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="defect-row" data-status="resolved" data-priority="medium">
+                                <div class="defect-info">
+                                    <div class="defect-title">DT-2025-003: Broken Window Seal</div>
+                                    <div class="defect-meta">Floor 5, Building B • Medium Priority • Resolved: Mar 5</div>
+                                </div>
+                                <div class="defect-status">
+                                    <span class="status-badge status-resolved">Resolved</span>
+                                </div>
+                                <div class="defect-assignee">
+                                    <div class="assignee-avatar">MR</div>
+                                    <span>Mike Ross</span>
+                                </div>
+                                <div class="defect-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewDefect('DT-2025-003')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="closeDefect('DT-2025-003')">
+                                        <i class="fas fa-lock"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Workflow -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h4><i class="fas fa-user-cog"></i> Smart Assignment System</h4>
+                    </div>
+                    <div class="widget-content">
+                        <div class="assignment-workflow">
+                            <div class="workflow-stage">
+                                <div class="stage-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h5>Auto-Assignment</h5>
+                                <p>AI analyzes defect type, location, and contractor expertise</p>
+                                <div class="stage-metric">95% accuracy</div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-stage">
+                                <div class="stage-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h5>Instant Notification</h5>
+                                <p>Contractors receive push notifications and email alerts</p>
+                                <div class="stage-metric">< 5 min response</div>
+                            </div>
+                            <div class="workflow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="workflow-stage">
+                                <div class="stage-icon">
+                                    <i class="fas fa-handshake"></i>
+                                </div>
+                                <h5>Acceptance/Rejection</h5>
+                                <p>Contractors can accept or decline with reason codes</p>
+                                <div class="stage-metric">98% acceptance rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Tracking Section -->
+    <section class="progress-section bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Real-Time Progress Tracking</h2>
+                <p class="lead text-muted">Monitor defect resolution with detailed progress updates</p>
+            </div>
+
+            <div class="progress-demo">
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <h4>DT-2025-001: Cracked Foundation Wall</h4>
+                        <div class="progress-status">
+                            <span class="status-badge status-in-progress">In Progress</span>
+                        </div>
+                    </div>
+                    <div class="progress-timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Defect Created</h6>
+                                <p>March 1, 2025 - 9:00 AM</p>
+                                <small>Reported by: Project Manager</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Assigned to Contractor</h6>
+                                <p>March 1, 2025 - 9:15 AM</p>
+                                <small>Auto-assigned based on foundation expertise</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Contractor Accepted</h6>
+                                <p>March 1, 2025 - 9:30 AM</p>
+                                <small>Estimated completion: March 8, 2025</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item active">
+                            <div class="timeline-marker">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Work in Progress</h6>
+                                <p>March 5, 2025 - 2:00 PM</p>
+                                <small>Foundation repair materials ordered, scheduled for tomorrow</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item pending">
+                            <div class="timeline-marker">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Quality Inspection</h6>
+                                <p>Expected: March 8, 2025</p>
+                                <small>Final inspection and approval</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item pending">
+                            <div class="timeline-marker">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Resolution Complete</h6>
+                                <p>Expected: March 8, 2025</p>
+                                <small>Defect closed and archived</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quality Control Section -->
+    <section class="quality-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Built-in Quality Control</h2>
+                <p class="lead text-muted">Ensure every defect is properly resolved with comprehensive checklists</p>
+            </div>
+
+            <div class="quality-features">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="quality-card">
+                            <div class="quality-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <h4>Before/After Photos</h4>
+                            <p>Contractors must upload photos showing the defect before work begins and after completion</p>
+                            <div class="quality-metric">
+                                <span class="metric-value">100%</span>
+                                <span class="metric-label">Compliance Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="quality-card">
+                            <div class="quality-icon">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <h4>Completion Checklist</h4>
+                            <p>Standardized checklists ensure all required work is completed according to specifications</p>
+                            <div class="quality-metric">
+                                <span class="metric-value">96%</span>
+                                <span class="metric-label">First-Time Pass Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="quality-card">
+                            <div class="quality-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <h4>Approval Workflow</h4>
+                            <p>Project managers review and approve all completed work before defects are closed</p>
+                            <div class="quality-metric">
+                                <span class="metric-value">2.1 days</span>
+                                <span class="metric-label">Avg. Approval Time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Management Benefits</h2>
+                <p class="lead text-muted">Why our defect management system delivers superior results</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h4>Accelerated Resolution</h4>
+                    <p>Intelligent assignment and automated workflows reduce resolution time by 40%</p>
+                    <div class="benefit-metric">40% faster resolution</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h4>Complete Visibility</h4>
+                    <p>Real-time dashboards provide instant insight into all defect activities and progress</p>
+                    <div class="benefit-metric">100% transparency</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Quality Assurance</h4>
+                    <p>Built-in checklists and approval processes ensure consistent, high-quality repairs</p>
+                    <div class="benefit-metric">96% first-time quality</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Performance Analytics</h4>
+                    <p>Detailed reporting on contractor performance, defect trends, and project metrics</p>
+                    <div class="benefit-metric">Real-time insights</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h4>Automated Notifications</h4>
+                    <p>Smart alerts ensure stakeholders are informed of important updates and deadlines</p>
+                    <div class="benefit-metric">< 5 min notifications</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h4>Complete Audit Trail</h4>
+                    <p>Every action, communication, and change is logged for full accountability</p>
+                    <div class="benefit-metric">100% traceable</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Dashboard -->
+    <section class="back-to-dashboard">
+        <div class="container">
+            <div class="dashboard-link">
+                <a href="index.html" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+                <p>Continue exploring our comprehensive defect management system</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="js/presentation.js"></script>
+    <script src="js/defect-management.js"></script>
+</body>
+</html>

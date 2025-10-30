@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defect Tracker - Floor Plan Integration Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="../css/presentation.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="presentation-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-tools"></i>
+                <span>Defect Tracker</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Dashboard</a>
+                <a href="defect-creation.html">Create Defects</a>
+                <a href="defect-management.html">Manage Defects</a>
+                <a href="user-management.html">User Management</a>
+                <a href="reporting.html">Analytics</a>
+                <a href="notifications.html">Notifications</a>
+                <a href="#" class="active">Floor Plans</a>
+                <a href="mobile.html">Mobile</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Visual Floor Plan Integration</span>
+                </div>
+                <h1>Visualize Defects on Interactive Floor Plans</h1>
+                <p>Transform your defect tracking with spatial awareness. Pin defects directly on floor plans, visualize defect patterns, and navigate building spaces with precision.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Floor Plans</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">2D/3D</div>
+                        <div class="stat-label">Visualization</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">GPS</div>
+                        <div class="stat-label">Integration</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floor-plan-demo">
+                    <div class="demo-floor-plan">
+                        <div class="floor-plan-header">
+                            <h4>Building A - Floor 3</h4>
+                            <div class="floor-controls">
+                                <button class="btn btn-sm btn-outline-light" onclick="zoomIn()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="zoomOut()">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="resetView()">
+                                    <i class="fas fa-home"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="floor-plan-canvas">
+                            <svg viewBox="0 0 800 600" class="floor-plan-svg">
+                                <!-- Building outline -->
+                                <rect x="50" y="50" width="700" height="500" fill="#f8fafc" stroke="#374151" stroke-width="2"/>
+
+                                <!-- Rooms -->
+                                <rect x="60" y="60" width="150" height="120" fill="#e2e8f0" stroke="#6b7280" stroke-width="1"/>
+                                <text x="135" y="130" text-anchor="middle" font-size="12" fill="#374151">Office 301</text>
+
+                                <rect x="220" y="60" width="150" height="120" fill="#e2e8f0" stroke="#6b7280" stroke-width="1"/>
+                                <text x="295" y="130" text-anchor="middle" font-size="12" fill="#374151">Office 302</text>
+
+                                <rect x="380" y="60" width="150" height="120" fill="#e2e8f0" stroke="#6b7280" stroke-width="1"/>
+                                <text x="455" y="130" text-anchor="middle" font-size="12" fill="#374151">Office 303</text>
+
+                                <rect x="540" y="60" width="200" height="120" fill="#e2e8f0" stroke="#6b7280" stroke-width="1"/>
+                                <text x="640" y="130" text-anchor="middle" font-size="12" fill="#374151">Conference Room</text>
+
+                                <!-- Hallway -->
+                                <rect x="60" y="190" width="680" height="40" fill="#d1d5db" stroke="#6b7280" stroke-width="1"/>
+                                <text x="400" y="215" text-anchor="middle" font-size="12" fill="#374151">Main Hallway</text>
+
+                                <!-- More rooms -->
+                                <rect x="60" y="240" width="150" height="120" fill="#e2e8f0" stroke="#6b7280" stroke-width="1"/>
+                                <text x="135" y="310" text-anchor="middle" font-size="12" fill="#374151">Office 304</text>
+
+                                <rect x="220" y="240" width="150" height="120" fill="#e2e8f0" stroke="#6b7280" stroke-width="1"/>
+                                <text x="295" y="310" text-anchor="middle" font-size="12" fill="#374151">Office 305</text>
+
+                                <!-- Stairwell -->
+                                <rect x="700" y="240" width="40" height="120" fill="#374151" stroke="#1e293b" stroke-width="1"/>
+                                <text x="720" y="300" text-anchor="middle" font-size="10" fill="white" transform="rotate(-90 720 300)">Stairs</text>
+
+                                <!-- Defects -->
+                                <circle cx="135" cy="100" r="8" fill="#dc2626" stroke="white" stroke-width="2" class="defect-pin" data-defect-id="1"/>
+                                <circle cx="295" cy="100" r="8" fill="#f59e0b" stroke="white" stroke-width="2" class="defect-pin" data-defect-id="2"/>
+                                <circle cx="455" cy="100" r="8" fill="#10b981" stroke="white" stroke-width="2" class="defect-pin" data-defect-id="3"/>
+                                <circle cx="640" cy="100" r="8" fill="#dc2626" stroke="white" stroke-width="2" class="defect-pin" data-defect-id="4"/>
+                                <circle cx="135" cy="280" r="8" fill="#f59e0b" stroke="white" stroke-width="2" class="defect-pin" data-defect-id="5"/>
+                            </svg>
+
+                            <!-- Defect tooltips -->
+                            <div class="defect-tooltip" id="tooltip-1" style="display: none;">
+                                <div class="tooltip-header">
+                                    <span class="defect-id">#1234</span>
+                                    <span class="defect-priority priority-high">High</span>
+                                </div>
+                                <div class="tooltip-content">
+                                    <strong>Electrical Outlet Malfunction</strong>
+                                    <p>Office 301 - Outlet not working, potential safety hazard</p>
+                                    <div class="tooltip-actions">
+                                        <button class="btn btn-sm btn-primary">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="defect-tooltip" id="tooltip-2" style="display: none;">
+                                <div class="tooltip-header">
+                                    <span class="defect-id">#1235</span>
+                                    <span class="defect-priority priority-medium">Medium</span>
+                                </div>
+                                <div class="tooltip-content">
+                                    <strong>HVAC Noise Issue</strong>
+                                    <p>Office 302 - Unusual noise from air vent</p>
+                                    <div class="tooltip-actions">
+                                        <button class="btn btn-sm btn-primary">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <i class="fas fa-microphone"></i>
+                    <h3>Spatial Intelligence</h3>
+                </div>
+                <div class="voice-over-content">
+                    <div class="voice-over-text">
+                        "Our floor plan integration transforms defect tracking from abstract lists to visual, location-aware management. See exactly where issues occur, identify patterns across building spaces, and navigate efficiently to problem areas."
+                    </div>
+                    <div class="voice-over-controls">
+                        <button class="btn btn-primary" onclick="playVoiceOver()">
+                            <i class="fas fa-play"></i>
+                            Play Narration
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="toggleAutoAdvance()">
+                            <i class="fas fa-forward"></i>
+                            Auto Advance: <span id="autoAdvanceStatus">ON</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floor Plan Features -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Advanced Floor Plan Features</h2>
+                <p>Comprehensive spatial tools for defect visualization and building management.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Interactive Pinning</h4>
+                    <p>Click anywhere on floor plans to pin defects with precise coordinates and room identification.</p>
+                    <div class="feature-demo">
+                        <button class="btn btn-primary btn-sm" onclick="demoPinning()">Try Pinning</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h4>Heat Maps</h4>
+                    <p>Visualize defect density and patterns with color-coded heat maps across building areas.</p>
+                    <div class="feature-demo">
+                        <button class="btn btn-warning btn-sm" onclick="showHeatMap()">Show Heat Map</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h4>Navigation Paths</h4>
+                    <p>Get optimized walking routes between multiple defect locations for efficient inspections.</p>
+                    <div class="feature-demo">
+                        <button class="btn btn-success btn-sm" onclick="showNavigation()">Show Route</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h4>Multi-Floor Views</h4>
+                    <p>Switch between floors instantly and track defects across entire building complexes.</p>
+                    <div class="feature-demo">
+                        <button class="btn btn-info btn-sm" onclick="switchFloor()">Switch Floor</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search-plus"></i>
+                    </div>
+                    <h4>Zoom & Precision</h4>
+                    <p>Zoom in for detailed work or zoom out for building-wide defect overview and patterns.</p>
+                    <div class="feature-demo">
+                        <button class="btn btn-secondary btn-sm" onclick="zoomToDefect()">Zoom to Defect</button>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4>Mobile Integration</h4>
+                    <p>GPS-enabled mobile access with automatic location detection and offline floor plan viewing.</p>
+                    <div class="feature-demo">
+                        <button class="btn btn-dark btn-sm" onclick="showMobileView()">Mobile View</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Floor Plan Viewer -->
+    <section class="demo-section bg-light">
+        <div class="container">
+            <div class="section-header">
+                <h2>Interactive Floor Plan Viewer</h2>
+                <p>Experience our powerful floor plan interface with defect visualization and management tools.</p>
+            </div>
+
+            <div class="floor-plan-viewer">
+                <div class="viewer-controls">
+                    <div class="control-group">
+                        <label>Building:</label>
+                        <select id="buildingSelect" onchange="changeBuilding()">
+                            <option value="building-a">Building A - Office Complex</option>
+                            <option value="building-b">Building B - Retail Space</option>
+                            <option value="building-c">Building C - Warehouse</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Floor:</label>
+                        <select id="floorSelect" onchange="changeFloor()">
+                            <option value="floor-1">Floor 1 - Ground Level</option>
+                            <option value="floor-2">Floor 2 - Second Level</option>
+                            <option value="floor-3">Floor 3 - Third Level</option>
+                            <option value="floor-4">Floor 4 - Fourth Level</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>View Mode:</label>
+                        <select id="viewModeSelect" onchange="changeViewMode()">
+                            <option value="defects">Defect View</option>
+                            <option value="heatmap">Heat Map</option>
+                            <option value="maintenance">Maintenance Zones</option>
+                            <option value="empty">Empty Plan</option>
+                        </select>
+                    </div>
+                    <div class="viewer-actions">
+                        <button class="btn btn-outline-primary" onclick="addDefect()">
+                            <i class="fas fa-plus"></i>
+                            Add Defect
+                        </button>
+                        <button class="btn btn-outline-success" onclick="exportFloorPlan()">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="viewer-canvas">
+                    <div class="canvas-toolbar">
+                        <div class="tool-group">
+                            <button class="tool-btn active" onclick="selectTool('select')">
+                                <i class="fas fa-mouse-pointer"></i>
+                                Select
+                            </button>
+                            <button class="tool-btn" onclick="selectTool('pin')">
+                                <i class="fas fa-map-pin"></i>
+                                Pin Defect
+                            </button>
+                            <button class="tool-btn" onclick="selectTool('measure')">
+                                <i class="fas fa-ruler"></i>
+                                Measure
+                            </button>
+                        </div>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomInViewer()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <span class="zoom-level">100%</span>
+                            <button class="zoom-btn" onclick="zoomOutViewer()">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="zoom-btn" onclick="fitToScreen()">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="canvas-area" id="floorPlanCanvas">
+                        <!-- Dynamic floor plan content will be loaded here -->
+                        <div class="loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading floor plan...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="viewer-sidebar">
+                    <div class="sidebar-section">
+                        <h5>Defect Summary</h5>
+                        <div class="defect-stats">
+                            <div class="stat-row">
+                                <span class="stat-label">Total Defects:</span>
+                                <span class="stat-value">24</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">High Priority:</span>
+                                <span class="stat-value priority-high">6</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Medium Priority:</span>
+                                <span class="stat-value priority-medium">12</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Low Priority:</span>
+                                <span class="stat-value priority-low">6</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h5>Quick Actions</h5>
+                        <div class="quick-actions">
+                            <button class="action-btn" onclick="filterByPriority('high')">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Show High Priority
+                            </button>
+                            <button class="action-btn" onclick="filterByRoom('office')">
+                                <i class="fas fa-door-open"></i>
+                                Filter by Office
+                            </button>
+                            <button class="action-btn" onclick="showRecentDefects()">
+                                <i class="fas fa-clock"></i>
+                                Recent Defects
+                            </button>
+                            <button class="action-btn" onclick="generateReport()">
+                                <i class="fas fa-file-alt"></i>
+                                Floor Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-section">
+                        <h5>Legend</h5>
+                        <div class="legend-items">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #dc2626;"></div>
+                                <span>High Priority</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #f59e0b;"></div>
+                                <span>Medium Priority</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #10b981;"></div>
+                                <span>Low Priority</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #6b7280;"></div>
+                                <span>Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Visual Floor Plans Matter</h2>
+                <p>Transform abstract defect data into actionable spatial intelligence.</p>
+            </div>
+
+            <div class="benefits-showcase">
+                <div class="benefit-highlight">
+                    <div class="highlight-visual">
+                        <div class="pattern-visualization">
+                            <div class="pattern-grid">
+                                <div class="pattern-cell high-density"></div>
+                                <div class="pattern-cell medium-density"></div>
+                                <div class="pattern-cell low-density"></div>
+                                <div class="pattern-cell high-density"></div>
+                                <div class="pattern-cell medium-density"></div>
+                                <div class="pattern-cell high-density"></div>
+                                <div class="pattern-cell low-density"></div>
+                                <div class="pattern-cell medium-density"></div>
+                                <div class="pattern-cell high-density"></div>
+                            </div>
+                            <div class="pattern-legend">
+                                <span class="legend-label">Defect Density:</span>
+                                <div class="legend-scale">
+                                    <span>Low</span>
+                                    <div class="scale-bar">
+                                        <div class="scale-segment low"></div>
+                                        <div class="scale-segment medium"></div>
+                                        <div class="scale-segment high"></div>
+                                    </div>
+                                    <span>High</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="highlight-content">
+                        <h3>Pattern Recognition</h3>
+                        <p>Identify defect patterns and recurring issues across building spaces. Spot problem areas before they become critical and optimize maintenance schedules based on spatial data.</p>
+                        <ul class="benefit-points">
+                            <li>Visual trend identification</li>
+                            <li>Proactive maintenance planning</li>
+                            <li>Resource allocation optimization</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="benefit-highlight">
+                    <div class="highlight-visual">
+                        <div class="efficiency-visualization">
+                            <div class="efficiency-metrics">
+                                <div class="metric-circle">
+                                    <div class="metric-value">65%</div>
+                                    <div class="metric-label">Time Saved</div>
+                                </div>
+                                <div class="metric-circle">
+                                    <div class="metric-value">40%</div>
+                                    <div class="metric-label">Faster Response</div>
+                                </div>
+                                <div class="metric-circle">
+                                    <div class="metric-value">80%</div>
+                                    <div class="metric-label">Accuracy Increase</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="highlight-content">
+                        <h3>Operational Efficiency</h3>
+                        <p>Reduce inspection times and improve response accuracy with precise location data. Navigate directly to defect sites and eliminate guesswork in large facilities.</p>
+                        <ul class="benefit-points">
+                            <li>GPS-guided navigation</li>
+                            <li>Reduced inspection time</li>
+                            <li>Improved first-time fix rates</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="benefit-highlight">
+                    <div class="highlight-visual">
+                        <div class="communication-visualization">
+                            <div class="communication-flow">
+                                <div class="flow-step">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    <span>Visual Context</span>
+                                </div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-step">
+                                    <i class="fas fa-users"></i>
+                                    <span>Team Communication</span>
+                                </div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-step">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Faster Resolution</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="highlight-content">
+                        <h3>Enhanced Communication</h3>
+                        <p>Share visual defect locations with team members, contractors, and stakeholders. Eliminate confusion with precise spatial references and clear visual documentation.</p>
+                        <ul class="benefit-points">
+                            <li>Clear visual communication</li>
+                            <li>Reduced miscommunication</li>
+                            <li>Better stakeholder engagement</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Bring Your Buildings to Life</h2>
+                <p>Transform static floor plans into dynamic, defect-aware building management tools.</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary btn-lg" onclick="startFloorPlanDemo()">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Start Floor Plan Demo
+                    </button>
+                    <button class="btn btn-outline-primary btn-lg" onclick="uploadFloorPlan()">
+                        <i class="fas fa-upload"></i>
+                        Upload Your Floor Plan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="presentation-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-tools"></i>
+                    <span>Defect Tracker</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#support">Support</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Defect Tracker. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/presentation.js"></script>
+    <script src="js/floor-plans.js"></script>
+</body>
+</html>

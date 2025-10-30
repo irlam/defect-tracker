@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Construction Defect Tracking System</title>
+
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/presentation.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-tools"></i>
+                Construction Defect Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="user-management.html">User Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reporting.html">Reporting</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="notifications.html">Notifications</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="display-4 fw-bold mb-4">
+                            <i class="fas fa-users-cog text-warning"></i>
+                            Advanced User Management
+                        </h1>
+                        <p class="lead mb-4">
+                            Comprehensive role-based access control with granular permissions,
+                            automated user onboarding, and secure authentication.
+                        </p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Active Users</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">12</div>
+                                <div class="stat-label">User Roles</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">99.9%</div>
+                                <div class="stat-label">Uptime</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual">
+                        <div class="user-roles-diagram">
+                            <div class="role-circle admin">
+                                <div class="role-icon">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <div class="role-label">Admin</div>
+                            </div>
+                            <div class="role-connector"></div>
+                            <div class="role-circle manager">
+                                <div class="role-icon">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="role-label">Manager</div>
+                            </div>
+                            <div class="role-connector"></div>
+                            <div class="role-circle contractor">
+                                <div class="role-icon">
+                                    <i class="fas fa-hard-hat"></i>
+                                </div>
+                                <div class="role-label">Contractor</div>
+                            </div>
+                            <div class="role-connector"></div>
+                            <div class="role-circle inspector">
+                                <div class="role-icon">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                <div class="role-label">Inspector</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <div class="voice-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3>User Management & Access Control</h3>
+                </div>
+                <div class="voice-over-content">
+                    <p class="voice-text highlight">
+                        "Our sophisticated user management system ensures that every team member has exactly the right level of access they need, and nothing more. From administrators with full system control to contractors with project-specific permissions."
+                    </p>
+                    <p class="voice-text">
+                        "Role-based access control means users automatically inherit permissions based on their job function. Project managers can oversee their projects, contractors can only access assigned defects, and inspectors have read-only access for quality assurance."
+                    </p>
+                    <p class="voice-text">
+                        "Secure authentication with multi-factor options, automated password policies, and session management keeps your data safe. User onboarding is streamlined with automated welcome emails and guided tutorials."
+                    </p>
+                    <p class="voice-text">
+                        "Comprehensive audit trails track every user action, providing complete accountability and compliance reporting. User activity monitoring helps identify training needs and system optimization opportunities."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive User Management Demo -->
+    <section class="demo-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Interactive User Management Demo</h2>
+                <p class="lead text-muted">Experience role-based access control and user administration</p>
+            </div>
+
+            <div class="user-management-dashboard">
+                <!-- User Roles Overview -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h4><i class="fas fa-shield-alt"></i> User Roles & Permissions</h4>
+                    </div>
+                    <div class="widget-content">
+                        <div class="roles-grid">
+                            <div class="role-card" data-role="admin">
+                                <div class="role-header">
+                                    <div class="role-icon">
+                                        <i class="fas fa-crown"></i>
+                                    </div>
+                                    <h5>System Administrator</h5>
+                                </div>
+                                <div class="role-permissions">
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Full System Access</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>User Management</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>System Configuration</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Backup & Restore</span>
+                                    </div>
+                                </div>
+                                <div class="role-stats">
+                                    <span class="user-count">2 users</span>
+                                </div>
+                            </div>
+                            <div class="role-card" data-role="manager">
+                                <div class="role-header">
+                                    <div class="role-icon">
+                                        <i class="fas fa-user-tie"></i>
+                                    </div>
+                                    <h5>Project Manager</h5>
+                                </div>
+                                <div class="role-permissions">
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Create & Edit Defects</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Assign Contractors</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Approve Resolutions</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-times"></i>
+                                        <span>System Settings</span>
+                                    </div>
+                                </div>
+                                <div class="role-stats">
+                                    <span class="user-count">15 users</span>
+                                </div>
+                            </div>
+                            <div class="role-card" data-role="contractor">
+                                <div class="role-header">
+                                    <div class="role-icon">
+                                        <i class="fas fa-hard-hat"></i>
+                                    </div>
+                                    <h5>Contractor</h5>
+                                </div>
+                                <div class="role-permissions">
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>View Assigned Defects</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Update Status</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Upload Photos</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-times"></i>
+                                        <span>Delete Defects</span>
+                                    </div>
+                                </div>
+                                <div class="role-stats">
+                                    <span class="user-count">85 users</span>
+                                </div>
+                            </div>
+                            <div class="role-card" data-role="inspector">
+                                <div class="role-header">
+                                    <div class="role-icon">
+                                        <i class="fas fa-clipboard-check"></i>
+                                    </div>
+                                    <h5>Quality Inspector</h5>
+                                </div>
+                                <div class="role-permissions">
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Read-Only Access</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>View All Defects</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>Generate Reports</span>
+                                    </div>
+                                    <div class="permission-item">
+                                        <i class="fas fa-times"></i>
+                                        <span>Modify Data</span>
+                                    </div>
+                                </div>
+                                <div class="role-stats">
+                                    <span class="user-count">12 users</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Directory -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h4><i class="fas fa-address-book"></i> User Directory</h4>
+                        <div class="widget-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="filterUsers('all')">All</button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="filterUsers('active')">Active</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="filterUsers('inactive')">Inactive</button>
+                            <button class="btn btn-sm btn-success" onclick="addNewUser()">
+                                <i class="fas fa-plus"></i> Add User
+                            </button>
+                        </div>
+                    </div>
+                    <div class="widget-content">
+                        <div class="users-table">
+                            <div class="user-row" data-role="admin" data-status="active">
+                                <div class="user-avatar">
+                                    <img src="https://via.placeholder.com/40x40/2563eb/white?text=SA" alt="Sarah Admin">
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">Sarah Admin</div>
+                                    <div class="user-email">sarah.admin@company.com</div>
+                                </div>
+                                <div class="user-role">
+                                    <span class="role-badge admin">Administrator</span>
+                                </div>
+                                <div class="user-status">
+                                    <span class="status-indicator active"></span>
+                                    <span>Active</span>
+                                </div>
+                                <div class="user-last-login">2 hours ago</div>
+                                <div class="user-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editUser('sarah-admin')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser('sarah-admin')">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="user-row" data-role="manager" data-status="active">
+                                <div class="user-avatar">
+                                    <img src="https://via.placeholder.com/40x40/059669/white?text=JM" alt="John Manager">
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">John Manager</div>
+                                    <div class="user-email">john.manager@company.com</div>
+                                </div>
+                                <div class="user-role">
+                                    <span class="role-badge manager">Project Manager</span>
+                                </div>
+                                <div class="user-status">
+                                    <span class="status-indicator active"></span>
+                                    <span>Active</span>
+                                </div>
+                                <div class="user-last-login">1 day ago</div>
+                                <div class="user-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editUser('john-manager')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser('john-manager')">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="user-row" data-role="contractor" data-status="active">
+                                <div class="user-avatar">
+                                    <img src="https://via.placeholder.com/40x40/dc2626/white?text=MC" alt="Mike Contractor">
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">Mike Contractor</div>
+                                    <div class="user-email">mike@contractors.com</div>
+                                </div>
+                                <div class="user-role">
+                                    <span class="role-badge contractor">Contractor</span>
+                                </div>
+                                <div class="user-status">
+                                    <span class="status-indicator active"></span>
+                                    <span>Active</span>
+                                </div>
+                                <div class="user-last-login">3 hours ago</div>
+                                <div class="user-actions">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editUser('mike-contractor')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser('mike-contractor')">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="user-row" data-role="inspector" data-status="inactive">
+                                <div class="user-avatar">
+                                    <img src="https://via.placeholder.com/40x40/7c3aed/white?text=LI" alt="Lisa Inspector">
+                                </div>
+                                <div class="user-info">
+                                    <div class="user-name">Lisa Inspector</div>
+                                    <div class="user-email">lisa.inspector@company.com</div>
+                                </div>
+                                <div class="user-role">
+                                    <span class="role-badge inspector">Quality Inspector</span>
+                                </div>
+                                <div class="user-status">
+                                    <span class="status-indicator inactive"></span>
+                                    <span>Inactive</span>
+                                </div>
+                                <div class="user-last-login">2 weeks ago</div>
+                                <div class="user-actions">
+                                    <button class="btn btn-sm btn-outline-success" onclick="activateUser('lisa-inspector')">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('lisa-inspector')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Access Control Demo -->
+                <div class="dashboard-widget">
+                    <div class="widget-header">
+                        <h4><i class="fas fa-key"></i> Access Control Simulation</h4>
+                    </div>
+                    <div class="widget-content">
+                        <div class="access-demo">
+                            <div class="demo-controls">
+                                <label>Select User Role:</label>
+                                <select id="roleSelector" onchange="simulateAccess(this.value)">
+                                    <option value="admin">System Administrator</option>
+                                    <option value="manager">Project Manager</option>
+                                    <option value="contractor">Contractor</option>
+                                    <option value="inspector">Quality Inspector</option>
+                                </select>
+                            </div>
+                            <div class="access-matrix">
+                                <div class="matrix-row">
+                                    <div class="action-label">Create Defects</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="yes" data-contractor="no" data-inspector="no">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">Edit All Defects</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="yes" data-contractor="no" data-inspector="no">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">View Assigned Defects</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="yes" data-contractor="yes" data-inspector="yes">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">Upload Photos</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="yes" data-contractor="yes" data-inspector="no">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">Approve Resolutions</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="yes" data-contractor="no" data-inspector="no">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">User Management</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="no" data-contractor="no" data-inspector="no">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">System Settings</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="no" data-contractor="no" data-inspector="no">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="matrix-row">
+                                    <div class="action-label">Generate Reports</div>
+                                    <div class="permission-cell" data-admin="yes" data-manager="yes" data-contractor="no" data-inspector="yes">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Features Section -->
+    <section class="security-section bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Enterprise-Grade Security</h2>
+                <p class="lead text-muted">Multi-layered security with advanced authentication and monitoring</p>
+            </div>
+
+            <div class="security-features">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-fingerprint"></i>
+                            </div>
+                            <h4>Multi-Factor Auth</h4>
+                            <p>Optional 2FA with SMS, authenticator apps, and hardware keys</p>
+                            <div class="security-metric">98% adoption rate</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h4>Role-Based Access</h4>
+                            <p>Granular permissions ensure users only access what they need</p>
+                            <div class="security-metric">Zero breaches</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h4>Session Management</h4>
+                            <p>Automatic logout, concurrent session limits, and activity monitoring</p>
+                            <div class="security-metric">24/7 monitoring</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="security-card">
+                            <div class="security-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <h4>Audit Trails</h4>
+                            <p>Complete logging of all user actions for compliance and forensics</p>
+                            <div class="security-metric">100% traceable</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- User Onboarding Section -->
+    <section class="onboarding-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">Automated User Onboarding</h2>
+                <p class="lead text-muted">Streamlined user setup with guided tutorials and automated notifications</p>
+            </div>
+
+            <div class="onboarding-flow">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>User Invitation</h4>
+                        <p>Administrators send secure invitations with role assignment</p>
+                        <div class="step-demo">
+                            <div class="email-preview">
+                                <div class="email-header">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>Welcome to Construction Defect Tracker</span>
+                                </div>
+                                <div class="email-body">
+                                    <p>You've been invited to join our defect tracking system as a <strong>Project Manager</strong>.</p>
+                                    <button class="btn btn-primary btn-sm">Accept Invitation</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flow-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Account Setup</h4>
+                        <p>Guided setup with password creation and profile completion</p>
+                        <div class="step-demo">
+                            <div class="setup-form">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" value="John Manager" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" placeholder="Create strong password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone (for 2FA)</label>
+                                    <input type="tel" placeholder="+1 (555) 123-4567">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flow-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Interactive Tutorial</h4>
+                        <p>Role-specific guided tour of system features and workflows</p>
+                        <div class="step-demo">
+                            <div class="tutorial-card">
+                                <div class="tutorial-icon">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                                <h5>Welcome Tutorial</h5>
+                                <p>Learn how to create defects, assign contractors, and track progress.</p>
+                                <div class="tutorial-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 25%;"></div>
+                                    </div>
+                                    <span>Step 2 of 8</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flow-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Go Live</h4>
+                        <p>User is fully onboarded and ready to use the system</p>
+                        <div class="step-demo">
+                            <div class="success-card">
+                                <div class="success-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h5>Onboarding Complete!</h5>
+                                <p>You now have access to all project management features.</p>
+                                <button class="btn btn-success">Start Using System</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="section-header text-center mb-5">
+                <h2 class="display-5 fw-bold">User Management Benefits</h2>
+                <p class="lead text-muted">Why our user management system delivers superior security and efficiency</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>Enhanced Security</h4>
+                    <p>Multi-layered security with role-based access control and comprehensive audit trails</p>
+                    <div class="benefit-metric">Zero security incidents</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>Scalable User Base</h4>
+                    <p>Support for hundreds of concurrent users with automatic permission management</p>
+                    <div class="benefit-metric">500+ active users</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4>Rapid Onboarding</h4>
+                    <p>Automated user setup and training reduces onboarding time by 75%</p>
+                    <div class="benefit-metric">15 min setup time</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Usage Analytics</h4>
+                    <p>Detailed user activity reports help optimize workflows and identify training needs</p>
+                    <div class="benefit-metric">Real-time insights</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-gavel"></i>
+                    </div>
+                    <h4>Compliance Ready</h4>
+                    <p>Full audit trails and compliance reporting for regulatory requirements</p>
+                    <div class="benefit-metric">100% compliant</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4>Self-Service Portal</h4>
+                    <p>Users can update profiles, reset passwords, and manage preferences independently</p>
+                    <div class="benefit-metric">95% self-service</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Dashboard -->
+    <section class="back-to-dashboard">
+        <div class="container">
+            <div class="dashboard-link">
+                <a href="index.html" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+                <p>Continue exploring our comprehensive user management system</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="js/presentation.js"></script>
+    <script src="js/user-management.js"></script>
+</body>
+</html>

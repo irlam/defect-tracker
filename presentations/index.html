@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McGoff Defect Tracker - System Overview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/presentation.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-building me-2"></i>
+                McGoff Defect Tracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Dashboard Overview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="defect-creation.html">Defect Creation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="defect-management.html">Defect Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="user-management.html">User Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reporting.html">Reporting & Analytics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="notifications.html">Real-time Notifications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="floor-plans.html">Floor Plan Integration</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="mobile.html">Mobile Experience</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title animate-fade-in">
+                            <span class="text-primary">McGoff</span><br>
+                            Construction Defect Tracker
+                        </h1>
+                        <p class="hero-subtitle animate-fade-in-delay">
+                            Enterprise-grade defect management system designed specifically for construction projects.
+                            Streamline quality control, improve communication, and deliver exceptional results.
+                        </p>
+                        <div class="hero-stats animate-slide-up">
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Projects Managed</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">10K+</div>
+                                <div class="stat-label">Defects Tracked</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">98%</div>
+                                <div class="stat-label">Resolution Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-visual animate-float">
+                        <div class="dashboard-preview">
+                            <div class="preview-header">
+                                <div class="preview-title">System Dashboard</div>
+                                <div class="preview-notifications">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="notification-badge">3</span>
+                                </div>
+                            </div>
+                            <div class="preview-content">
+                                <div class="metric-cards">
+                                    <div class="metric-card active-defects">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="metric-data">
+                                            <div class="metric-value">24</div>
+                                            <div class="metric-label">Active Defects</div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-card resolved-today">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div class="metric-data">
+                                            <div class="metric-value">8</div>
+                                            <div class="metric-label">Resolved Today</div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-card critical-issues">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-fire"></i>
+                                        </div>
+                                        <div class="metric-data">
+                                            <div class="metric-value">3</div>
+                                            <div class="metric-label">Critical Issues</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-placeholder">
+                                    <div class="chart-bars">
+                                        <div class="chart-bar" style="height: 60%"></div>
+                                        <div class="chart-bar" style="height: 80%"></div>
+                                        <div class="chart-bar" style="height: 40%"></div>
+                                        <div class="chart-bar" style="height: 90%"></div>
+                                        <div class="chart-bar" style="height: 70%"></div>
+                                        <div class="chart-bar" style="height: 50%"></div>
+                                        <div class="chart-bar" style="height: 85%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Voice Over Section -->
+    <section class="voice-over-section">
+        <div class="container">
+            <div class="voice-over-card">
+                <div class="voice-over-header">
+                    <i class="fas fa-microphone"></i>
+                    <h3>System Overview Narration</h3>
+                </div>
+                <div class="voice-over-content">
+                    <div class="narration-text">
+                        <p class="highlight">"Welcome to the McGoff Construction Defect Tracker - the most advanced defect management system designed specifically for construction professionals."</p>
+
+                        <p>"Imagine a world where construction defects are caught early, resolved quickly, and communicated seamlessly across your entire team. That's exactly what our system delivers."</p>
+
+                        <p>"With over 500 projects successfully managed and 10,000+ defects tracked, our 98% resolution rate speaks to the effectiveness of our comprehensive approach."</p>
+
+                        <p>"From the moment a defect is identified on-site to its final resolution, our system ensures every stakeholder stays informed and engaged in the quality control process."</p>
+                    </div>
+                    <div class="narration-duration">
+                        <i class="fas fa-clock"></i>
+                        Duration: 45 seconds
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Grid -->
+    <section class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Core System Capabilities</h2>
+                <p>Discover the powerful features that make defect management effortless</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h4>Visual Floor Plan Integration</h4>
+                    <p>Pin defects directly on construction drawings and floor plans for precise location tracking.</p>
+                    <div class="feature-stats">
+                        <span class="stat">99.9%</span> Accuracy Rate
+                    </div>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h4>Real-Time Notifications</h4>
+                    <p>Instant alerts keep your team informed about defect status changes and new assignments.</p>
+                    <div class="feature-stats">
+                        <span class="stat">< 5 sec</span> Response Time
+                    </div>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Advanced Analytics</h4>
+                    <p>Comprehensive reporting with trend analysis and predictive insights for quality improvement.</p>
+                    <div class="feature-stats">
+                        <span class="stat">50+</span> Report Types
+                    </div>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h4>Mobile-First Design</h4>
+                    <p>Full responsive experience optimized for tablets and smartphones used on construction sites.</p>
+                    <div class="feature-stats">
+                        <span class="stat">100%</span> Mobile Compatible
+                    </div>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Enterprise Security</h4>
+                    <p>Bank-level security with role-based access control and comprehensive audit trails.</p>
+                    <div class="feature-stats">
+                        <span class="stat">256-bit</span> Encryption
+                    </div>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h4>Multi-Role Collaboration</h4>
+                    <p>Seamless collaboration between contractors, project managers, and quality control teams.</p>
+                    <div class="feature-stats">
+                        <span class="stat">5</span> User Roles
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Explanation Section -->
+    <section class="stats-explanation">
+        <div class="container">
+            <div class="stats-header">
+                <h2>Understanding Your Dashboard Stats</h2>
+                <p>Every number tells a story about your construction quality and efficiency</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-explanation-card">
+                    <div class="stat-visual">
+                        <div class="stat-circle active-defects">
+                            <span class="stat-number">24</span>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Active Defects</h4>
+                        <p>This represents defects currently in progress across all your projects. A healthy number shows your team is actively working on quality improvements.</p>
+                        <div class="stat-insight">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Insight:</strong> Lower numbers indicate efficient resolution processes
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-explanation-card">
+                    <div class="stat-visual">
+                        <div class="stat-circle resolved-today">
+                            <span class="stat-number">8</span>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Resolved Today</h4>
+                        <p>The number of defects successfully closed today. This metric shows your team's productivity and commitment to quality standards.</p>
+                        <div class="stat-insight">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Insight:</strong> Consistent daily resolution rates indicate stable processes
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-explanation-card">
+                    <div class="stat-visual">
+                        <div class="stat-circle critical-issues">
+                            <span class="stat-number">3</span>
+                        </div>
+                    </div>
+                    <div class="stat-content">
+                        <h4>Critical Issues</h4>
+                        <p>High-priority defects requiring immediate attention. These are safety or structural concerns that need urgent resolution.</p>
+                        <div class="stat-insight">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Insight:</strong> Low critical numbers show proactive quality management
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Construction Quality Management?</h2>
+                <p>Join hundreds of construction professionals who have revolutionized their defect tracking process.</p>
+                <div class="cta-buttons">
+                    <a href="defect-creation.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play"></i> Start Exploring Features
+                    </a>
+                    <a href="#contact" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-envelope"></i> Request Demo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <i class="fas fa-building"></i>
+                    <span>McGoff Defect Tracker</span>
+                </div>
+                <div class="footer-links">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#support">Support</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <i class="fab fa-linkedin"></i>
+                    <i class="fab fa-twitter"></i>
+                    <i class="fab fa-facebook"></i>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 McGoff Construction Solutions. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/presentation.js"></script>
+</body>
+</html>
