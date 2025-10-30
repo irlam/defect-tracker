@@ -29,21 +29,198 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="index.html">Dashboard</a>
+                        <a class="nav-link" href="index.html">Dashboard Overview</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="user-management.html">User Management</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reporting.html">Reporting</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="notifications.html">Notifications</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" id="presentationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-presentation me-1"></i>
+                            Presentations
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="presentationsDropdown">
+                            <li><a class="dropdown-item" href="defect-creation.html">
+                                <i class="fas fa-plus-circle text-success me-2"></i>Defect Creation
+                            </a></li>
+                            <li><a class="dropdown-item" href="defect-management.html">
+                                <i class="fas fa-tasks text-primary me-2"></i>Defect Management
+                            </a></li>
+                            <li><a class="dropdown-item active" href="user-management.html">
+                                <i class="fas fa-users text-info me-2"></i>User Management
+                            </a></li>
+                            <li><a class="dropdown-item" href="reporting.html">
+                                <i class="fas fa-chart-bar text-warning me-2"></i>Reporting & Analytics
+                            </a></li>
+                            <li><a class="dropdown-item" href="notifications.html">
+                                <i class="fas fa-bell text-danger me-2"></i>Real-time Notifications
+                            </a></li>
+                            <li><a class="dropdown-item" href="floor-plans.html">
+                                <i class="fas fa-map text-secondary me-2"></i>Floor Plan Integration
+                            </a></li>
+                            <li><a class="dropdown-item" href="mobile.html">
+                                <i class="fas fa-mobile-alt text-success me-2"></i>Mobile Experience
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item fw-bold" href="#" onclick="showPresentationGallery()">
+                                <i class="fas fa-th-large text-primary me-2"></i>View All Presentations
+                            </a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+    <!-- Presentation Gallery Modal -->
+    <div class="modal fade" id="presentationGalleryModal" tabindex="-1" aria-labelledby="presentationGalleryLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="presentationGalleryLabel">
+                        <i class="fas fa-presentation me-2"></i>
+                        System Presentations
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="presentation-grid">
+                        <!-- Dashboard Overview -->
+                        <div class="presentation-card" onclick="navigateToPresentation('index.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder dashboard-bg">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Dashboard Overview</h4>
+                                <p>Complete system overview showcasing key features, metrics, and capabilities of the defect tracking platform.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 45s</span>
+                                    <span class="features">8 Key Features</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Defect Creation -->
+                        <div class="presentation-card" onclick="navigateToPresentation('defect-creation.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder creation-bg">
+                                    <i class="fas fa-plus-circle"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Defect Creation</h4>
+                                <p>Interactive workflow demonstration showing how to create defects with photo capture, location pinning, and categorization.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 35s</span>
+                                    <span class="features">4-Step Process</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Defect Management -->
+                        <div class="presentation-card" onclick="navigateToPresentation('defect-management.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder management-bg">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Defect Management</h4>
+                                <p>Comprehensive defect lifecycle management with status tracking, contractor assignment, and quality control workflows.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 40s</span>
+                                    <span class="features">Status Tracking</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- User Management -->
+                        <div class="presentation-card" onclick="navigateToPresentation('user-management.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder user-bg">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>User Management</h4>
+                                <p>Role-based access control system with user directory, permissions management, and automated onboarding processes.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 38s</span>
+                                    <span class="features">RBAC System</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Reporting & Analytics -->
+                        <div class="presentation-card" onclick="navigateToPresentation('reporting.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder reporting-bg">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Reporting & Analytics</h4>
+                                <p>Advanced analytics dashboard with interactive charts, automated reporting, and performance metrics visualization.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 42s</span>
+                                    <span class="features">Interactive Charts</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Real-time Notifications -->
+                        <div class="presentation-card" onclick="navigateToPresentation('notifications.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder notifications-bg">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Real-time Notifications</h4>
+                                <p>Comprehensive notification system with instant alerts, customizable settings, and multi-channel communication.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 36s</span>
+                                    <span class="features">Multi-Channel</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Floor Plan Integration -->
+                        <div class="presentation-card" onclick="navigateToPresentation('floor-plans.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder floorplan-bg">
+                                    <i class="fas fa-map"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Floor Plan Integration</h4>
+                                <p>Visual defect tracking with interactive floor plans, spatial defect pinning, and heat map analytics.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 44s</span>
+                                    <span class="features">Spatial Tracking</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Mobile Experience -->
+                        <div class="presentation-card" onclick="navigateToPresentation('mobile.html')">
+                            <div class="presentation-image">
+                                <div class="image-placeholder mobile-bg">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                            </div>
+                            <div class="presentation-content">
+                                <h4>Mobile Experience</h4>
+                                <p>Mobile-first design with touch interactions, offline capability, and native mobile app features.</p>
+                                <div class="presentation-meta">
+                                    <span class="duration"><i class="fas fa-clock"></i> 39s</span>
+                                    <span class="features">Touch Optimized</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="startPresentationTour()">
+                        <i class="fas fa-play me-1"></i>
+                        Start Guided Tour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero-section bg-gradient-primary text-white">

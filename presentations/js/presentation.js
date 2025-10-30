@@ -314,3 +314,202 @@ if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').m
     document.documentElement.style.setProperty('--transition', 'none');
     document.body.classList.add('reduced-motion');
 }
+
+// Presentation Gallery Functions
+function showPresentationGallery() {
+    const modal = new bootstrap.Modal(document.getElementById('presentationGalleryModal'));
+    modal.show();
+}
+
+function navigateToPresentation(presentationUrl) {
+    // Close the modal first
+    const modal = bootstrap.Modal.getInstance(document.getElementById('presentationGalleryModal'));
+    if (modal) {
+        modal.hide();
+    }
+
+    // Navigate to the presentation
+    window.location.href = presentationUrl;
+}
+
+function startPresentationTour() {
+    // Close the modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('presentationGalleryModal'));
+    if (modal) {
+        modal.hide();
+    }
+
+    // Start a guided tour through all presentations
+    const presentations = [
+        'defect-creation.html',
+        'defect-management.html',
+        'user-management.html',
+        'reporting.html',
+        'notifications.html',
+        'floor-plans.html',
+        'mobile.html',
+        'index.html' // Back to dashboard
+    ];
+
+    let currentIndex = 0;
+    let tourInterval;
+
+    function showNextPresentation() {
+        if (currentIndex < presentations.length) {
+            // Add a loading indicator
+            showTourProgress(currentIndex + 1, presentations.length);
+
+            // Navigate to next presentation after a delay
+            setTimeout(() => {
+                window.location.href = presentations[currentIndex];
+                currentIndex++;
+            }, 2000);
+        } else {
+            // Tour complete
+            clearInterval(tourInterval);
+        }
+    }
+
+    // Start the tour
+    showNextPresentation();
+    tourInterval = setInterval(showNextPresentation, 35000); // 35 seconds per presentation + 2 second delay
+}
+
+function showTourProgress(current, total) {
+    // Remove existing progress indicator
+    const existing = document.querySelector('.tour-progress');
+    if (existing) existing.remove();
+
+    // Create progress indicator
+    const progress = document.createElement('div');
+    progress.className = 'tour-progress';
+    progress.innerHTML = `
+        <div class="tour-progress-content">
+            <div class="tour-progress-bar">
+                <div class="tour-progress-fill" style="width: ${(current/total)*100}%"></div>
+            </div>
+            <div class="tour-progress-text">
+                Guided Tour: Presentation ${current} of ${total}
+                <button onclick="stopPresentationTour()" class="tour-stop-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(progress);
+
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        if (progress.parentNode) {
+            progress.remove();
+        }
+    }, 3000);
+}
+
+function stopPresentationTour() {
+    // Remove progress indicator and stop tour
+    const progress = document.querySelector('.tour-progress');
+    if (progress) progress.remove();
+
+    // You could also clear any intervals here if needed
+    // For now, just remove the progress indicator
+}
+
+// Add tour progress styles dynamically
+const tourStyles = `
+    .tour-progress {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 25px;
+        padding: 0;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .tour-progress-content {
+        padding: 12px 20px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .tour-progress-bar {
+        width: 200px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .tour-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #34d399);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .tour-progress-text {
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .tour-stop-btn {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .tour-stop-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .tour-progress-content {
+            padding: 10px 15px;
+        }
+
+        .tour-progress-bar {
+            width: 150px;
+        }
+
+        .tour-progress-text {
+            font-size: 12px;
+        }
+    }
+`;
+
+// Add styles to document head
+const styleSheet = document.createElement('style');
+styleSheet.textContent = tourStyles;
+document.head.appendChild(styleSheet);
