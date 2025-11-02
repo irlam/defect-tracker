@@ -47,7 +47,7 @@ try {
 
     try {
         // Initialize the Navbar class
-        $navbar = new Navbar($db, $_SESSION['user_id']);
+    $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
     } catch (Exception $e) {
         error_log("Navbar Error: " . $e->getMessage());
         $error_message = "An error occurred while loading the navigation.";
@@ -89,57 +89,8 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <style>
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 260px;
-            background: #344767;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .content-wrapper {
-            margin-left: 260px;
-            padding: 20px;
-            min-height: 100vh;
-            background-color: #f8f9fa;
-        }
-
-        @media (max-width: 991.98px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease-in-out;
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .content-wrapper {
-                margin-left: 0;
-            }
-        }
-
-        .upload-preview {
-            border: 2px dashed #ccc;
-            border-radius: 4px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-preview.dragover {
-            border-color: #0d6efd;
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-    </style>
 </head>
-<body>
+<body data-bs-theme="dark">
     <?php echo $navbar->render(); ?>
 
     <div class="content-wrapper">

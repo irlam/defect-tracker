@@ -395,26 +395,7 @@ class Navbar {
 
         </script>'; // End of the script tag and the PHP echo statement.
 
-        // Add notification dropdown styles and JavaScript
-        echo '<style>
-            .notification-dropdown {
-                min-width: 350px;
-                max-width: 400px;
-            }
-            .notification-item.unread {
-                background-color: #f8f9ff;
-            }
-            .notification-item:hover {
-                background-color: #f8f9fa;
-            }
-            @media (max-width: 768px) {
-                .notification-dropdown {
-                    min-width: 300px;
-                    max-width: 350px;
-                }
-            }
-        </style>';
-
+        // Add notification dropdown JavaScript handlers
         echo '<script>
             // Handle notification dropdown clicks
             document.addEventListener("DOMContentLoaded", function() {
