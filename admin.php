@@ -25,7 +25,7 @@ $config = [
     'db_host' => '10.35.233.124:3306',
     'db_name' => 'k87747_defecttracker',
     'db_user' => 'k87747_defecttracker',
-    'db_pass' => 'Subaru5554346'
+    'db_pass' => '7Mr@ww816'
 ];
 
 try {
