@@ -59,6 +59,10 @@ $role_definitions = [
     5 => ['name' => 'Client', 'description' => 'Client access to view and comment on defects']
 ];
 
+if (!defined('APP_THEME_LOADED')) {
+    define('APP_THEME_LOADED', true);
+}
+
 // Function to check if user has a specific role
 function hasRole($role_id, $user_roles) {
     return in_array($role_id, $user_roles);
@@ -89,139 +93,6 @@ $current_time = date('d-m-Y H:i:s');
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
     
-    <!-- Inline CSS for page styling -->
-    <style>
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            min-height: 100vh;
-        }
-
-        .navbar {
-            background-color: var(--background-elevated);
-        }
-
-        .navbar .navbar-brand {
-            font-weight: 600;
-        }
-
-        .sidebar {
-            background-color: var(--background-elevated);
-            color: var(--text-color);
-            min-height: calc(100vh - var(--navbar-height));
-            box-shadow: var(--shadow-md);
-            border-right: 1px solid var(--border-color);
-        }
-
-        .sidebar-link {
-            color: var(--text-muted-color);
-            text-decoration: none;
-            padding: 12px 15px;
-            display: block;
-            transition: all var(--transition-base);
-            border-left: 3px solid transparent;
-            border-radius: var(--border-radius-sm);
-        }
-
-        .sidebar-link:hover,
-        .sidebar-link:focus,
-        .sidebar-link.active {
-            color: var(--text-color);
-            background-color: rgba(34, 211, 238, 0.12);
-            border-left-color: var(--secondary-color);
-        }
-
-        .sidebar-link i {
-            margin-right: 10px;
-        }
-
-        hr {
-            border-color: var(--border-color);
-        }
-
-        .content {
-            padding: 24px;
-        }
-
-        .admin-card {
-            transition: transform var(--transition-base), box-shadow var(--transition-base);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            background-color: var(--surface-color);
-            box-shadow: var(--shadow-md);
-            height: 100%;
-        }
-
-        .admin-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .admin-card .card-header {
-            background-color: var(--background-elevated);
-            color: var(--text-color);
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .admin-card .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-            background-color: var(--border-color);
-        }
-
-        .status-active {
-            background-color: var(--success-color);
-        }
-
-        .welcome-banner {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(14, 165, 233, 0.18));
-            color: var(--text-color);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-        }
-
-        .offcanvas-header-dark {
-            background-color: var(--background-elevated);
-            color: var(--text-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .offcanvas .list-group-item {
-            background-color: var(--surface-color);
-            color: var(--text-color);
-        }
-
-        .offcanvas .list-group-item.active {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        footer.footer-dark {
-            background-color: var(--background-elevated);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                min-height: auto;
-            }
-
-            .content {
-                margin-top: 20px;
-            }
-        }
-    </style>
 </head>
 <body data-bs-theme="dark">
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">

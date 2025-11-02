@@ -156,6 +156,11 @@ class Navbar {
         // *** MODIFICATION: Comment reflects it's showing user_type ***
         echo "<!-- DEBUG: Navbar User Type = '" . htmlspecialchars($this->userRole ?? 'NULL', ENT_QUOTES, 'UTF-8') . "' -->";
 
+        if (!defined('APP_THEME_LOADED')) {
+            echo '<link rel="stylesheet" href="/css/app.css">';
+            define('APP_THEME_LOADED', true);
+        }
+
         // Get the array defining the navigation menu structure for the current user type.
         $navbarItems = $this->getNavbarItems();
 

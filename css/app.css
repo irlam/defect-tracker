@@ -206,6 +206,8 @@ a:focus {
   background-color: var(--background-elevated);
   color: var(--text-color);
   border-right: 1px solid var(--border-color);
+  min-height: calc(100vh - var(--navbar-height));
+  box-shadow: var(--shadow-md);
 }
 
 .sidebar a,
@@ -219,6 +221,60 @@ a:focus {
   color: var(--text-color);
   background-color: rgba(34, 211, 238, 0.1);
   border-left-color: var(--secondary-color);
+}
+
+.content,
+.main-content {
+  padding: 24px;
+}
+
+.admin-card {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-md);
+  height: 100%;
+}
+
+.admin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.admin-card .card-header {
+  background-color: var(--background-elevated);
+  color: var(--text-color);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-card .card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  background-color: var(--border-color);
+}
+
+.status-active {
+  background-color: var(--success-color);
+}
+
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(14, 165, 233, 0.18));
+  color: var(--text-color);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 }
 
 .card {
@@ -252,6 +308,12 @@ a:focus {
 .offcanvas-header {
   background-color: var(--surface-color);
   color: var(--text-color);
+}
+
+.offcanvas-header-dark {
+  background-color: var(--background-elevated);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .offcanvas .btn-close {
@@ -454,6 +516,10 @@ footer.bg-light {
   color: var(--text-color) !important;
 }
 
+hr {
+  border-color: var(--border-color);
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -518,6 +584,18 @@ footer.bg-light {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    min-height: auto;
+  }
+
+  .content,
+  .main-content {
+    margin-top: 20px;
+    padding: 16px;
   }
 }
 
