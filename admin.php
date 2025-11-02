@@ -25,7 +25,7 @@ $config = [
     'db_host' => '10.35.233.124:3306',
     'db_name' => 'k87747_defecttracker',
     'db_user' => 'k87747_defecttracker',
-    'db_pass' => '7Mr@ww816'
+    'db_pass' => 'Subaru5554346'
 ];
 
 try {
@@ -87,111 +87,143 @@ $current_time = date('d-m-Y H:i:s');
     <!-- Link to external CSS files -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
     
     <!-- Inline CSS for page styling -->
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: var(--background-color);
+            color: var(--text-color);
             min-height: 100vh;
         }
-        
+
         .navbar {
-            background-color: #2c3e50;
+            background-color: var(--background-elevated);
         }
-        
+
+        .navbar .navbar-brand {
+            font-weight: 600;
+        }
+
         .sidebar {
-            background-color: #2c3e50;
-            color: white;
-            min-height: calc(100vh - 56px);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: var(--background-elevated);
+            color: var(--text-color);
+            min-height: calc(100vh - var(--navbar-height));
+            box-shadow: var(--shadow-md);
+            border-right: 1px solid var(--border-color);
         }
-        
+
         .sidebar-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-muted-color);
             text-decoration: none;
             padding: 12px 15px;
             display: block;
-            transition: all 0.3s;
+            transition: all var(--transition-base);
             border-left: 3px solid transparent;
+            border-radius: var(--border-radius-sm);
         }
-        
-        .sidebar-link:hover {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left: 3px solid #3498db;
-        }
-        
+
+        .sidebar-link:hover,
+        .sidebar-link:focus,
         .sidebar-link.active {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-left: 3px solid #3498db;
+            color: var(--text-color);
+            background-color: rgba(34, 211, 238, 0.12);
+            border-left-color: var(--secondary-color);
         }
-        
+
         .sidebar-link i {
             margin-right: 10px;
         }
-        
-        .content {
-            padding: 20px;
+
+        hr {
+            border-color: var(--border-color);
         }
-        
+
+        .content {
+            padding: 24px;
+        }
+
         .admin-card {
-            transition: all 0.3s;
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            box-shadow: var(--shadow-md);
             height: 100%;
         }
-        
+
         .admin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
-        
+
         .admin-card .card-header {
-            background-color: #2c3e50;
-            color: white;
-            border-radius: 8px 8px 0 0;
+            background-color: var(--background-elevated);
+            color: var(--text-color);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border-bottom: 1px solid var(--border-color);
         }
-        
+
         .admin-card .card-icon {
             font-size: 2.5rem;
             margin-bottom: 15px;
         }
-        
+
         .status-indicator {
             width: 10px;
             height: 10px;
             border-radius: 50%;
             display: inline-block;
             margin-right: 5px;
+            background-color: var(--border-color);
         }
-        
+
         .status-active {
-            background-color: #2ecc71;
+            background-color: var(--success-color);
         }
-        
+
         .welcome-banner {
-            background-color: #2c3e50;
-            color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(14, 165, 233, 0.18));
+            color: var(--text-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
         }
-        
+
+        .offcanvas-header-dark {
+            background-color: var(--background-elevated);
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .offcanvas .list-group-item {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+        }
+
+        .offcanvas .list-group-item.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        footer.footer-dark {
+            background-color: var(--background-elevated);
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 min-height: auto;
             }
-            
+
             .content {
                 margin-top: 20px;
             }
         }
     </style>
 </head>
-<body>
+<body data-bs-theme="dark">
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">McGoff - Construction Defect Tracker</a>
@@ -268,7 +300,7 @@ $current_time = date('d-m-Y H:i:s');
 
             <!-- Mobile Sidebar -->
             <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
-                <div class="offcanvas-header" style="background-color: #2c3e50; color: white;">
+                <div class="offcanvas-header offcanvas-header-dark">
                     <h5 class="offcanvas-title">Admin Menu</h5>
                     <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                 </div>
@@ -518,7 +550,7 @@ up-to-date building layouts for accurate defect tracking.</p>
         </div>
     </div>
 
-    <footer class="bg-light py-3 mt-4">
+    <footer class="footer-dark py-3 mt-4">
         <div class="container-fluid">
             <div class="row">
                 <div class="col text-center">

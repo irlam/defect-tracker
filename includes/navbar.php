@@ -161,7 +161,7 @@ class Navbar {
 
         // --- Begin Navbar HTML structure ---
         // Main <nav> element with Bootstrap styling for layout, color, and fixed positioning.
-        echo '<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">';
+        echo '<nav class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top" style="background-color:#0b1220;">';
         // container-fluid allows the navbar content to span the full viewport width.
         echo '<div class="container-fluid">';
 

@@ -6,25 +6,41 @@
 
 /* CSS Custom Properties for theming and consistency */
 :root {
-  /* Colors */
-  --primary-color: #2c3e50;
-  --primary-light: #34495e;
-  --primary-dark: #1a252f;
-  --secondary-color: #3498db;
-  --secondary-light: #5dade2;
-  --secondary-dark: #2980b9;
-  --success-color: #27ae60;
-  --warning-color: #f39c12;
-  --danger-color: #e74c3c;
-  --info-color: #17a2b8;
-  
+  color-scheme: dark;
+
+  /* Brand palette */
+  --primary-color: #2563eb;
+  --primary-light: #3b82f6;
+  --primary-dark: #1e3a8a;
+  --secondary-color: #22d3ee;
+  --secondary-light: #67e8f9;
+  --secondary-dark: #0ea5e9;
+  --success-color: #22c55e;
+  --warning-color: #facc15;
+  --danger-color: #f87171;
+  --info-color: #38bdf8;
+
+  /* Surfaces */
+  --background-color: #0b1220;
+  --background-elevated: #111c2f;
+  --surface-color: #16213d;
+  --surface-muted: #1a2742;
+  --surface-hover: #1f2a44;
+
   /* Grayscale */
-  --white: #ffffff;
-  --light-gray: #f8f9fa;
-  --gray: #6c757d;
-  --dark-gray: #343a40;
-  --black: #000000;
-  
+  --white: #f8fafc;
+  --light-gray: #1f2937;
+  --gray: #64748b;
+  --dark-gray: #1e293b;
+  --black: #020617;
+
+  /* Text */
+  --text-color: #e2e8f0;
+  --text-muted-color: #94a3b8;
+
+  /* Borders */
+  --border-color: rgba(148, 163, 184, 0.25);
+
   /* Layout */
   --sidebar-width: 250px;
   --navbar-height: 60px;
@@ -73,10 +89,20 @@ body {
   font-family: var(--font-family-sans);
   font-size: var(--font-size-base);
   line-height: 1.6;
-  color: var(--dark-gray);
-  background-color: var(--light-gray);
+  color: var(--text-color);
+  background-color: var(--background-color);
   margin: 0;
   padding: 0;
+}
+
+a {
+  color: var(--secondary-color);
+  transition: color var(--transition-fast);
+}
+
+a:hover,
+a:focus {
+  color: var(--secondary-light);
 }
 
 /* Focus styles for accessibility */
@@ -125,7 +151,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(11, 18, 32, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,10 +161,297 @@ body {
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--light-gray);
+  border: 3px solid var(--surface-hover);
   border-top: 3px solid var(--secondary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+/* Components ----------------------------------------------------------- */
+
+.navbar {
+  background-color: var(--background-elevated) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .navbar-text {
+  color: var(--text-color) !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus {
+  color: var(--secondary-light) !important;
+}
+
+.navbar .dropdown-menu {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.navbar .dropdown-item {
+  color: var(--text-color);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus,
+.navbar .dropdown-item.active {
+  background-color: var(--surface-hover);
+  color: var(--text-color);
+}
+
+.sidebar {
+  background-color: var(--background-elevated);
+  color: var(--text-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar a,
+.sidebar .sidebar-link {
+  color: var(--text-muted-color);
+}
+
+.sidebar .sidebar-link:hover,
+.sidebar .sidebar-link:focus,
+.sidebar .sidebar-link.active {
+  color: var(--text-color);
+  background-color: rgba(34, 211, 238, 0.1);
+  border-left-color: var(--secondary-color);
+}
+
+.card {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.card .card-header,
+.card .card-footer {
+  background-color: var(--background-elevated);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.list-group-item {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.list-group-item.active,
+.list-group-item.active:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+}
+
+.offcanvas,
+.offcanvas-header {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+.offcanvas .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.btn-primary,
+.btn-info,
+.btn-success,
+.btn-warning,
+.btn-danger,
+.btn-secondary {
+  border: none;
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--primary-light);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+.btn-info {
+  background-color: var(--info-color);
+}
+
+.btn-info:hover,
+.btn-info:focus {
+  background-color: var(--secondary-dark);
+  box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.25);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+  background-color: #16a34a;
+  box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+}
+
+.btn-warning {
+  background-color: var(--warning-color);
+  color: #0f172a;
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+  background-color: #fbbf24;
+  color: #0f172a;
+  box-shadow: 0 0 0 0.2rem rgba(250, 204, 21, 0.35);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 0.2rem rgba(248, 113, 113, 0.25);
+}
+
+.btn-outline-primary {
+  color: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: rgba(34, 211, 238, 0.12);
+  color: var(--secondary-light);
+}
+
+.btn-outline-warning {
+  color: var(--warning-color);
+  border: 1px solid rgba(250, 204, 21, 0.65);
+}
+
+.btn-outline-warning:hover,
+.btn-outline-warning:focus {
+  background-color: rgba(250, 204, 21, 0.15);
+  color: var(--warning-color);
+}
+
+.btn-outline-success {
+  color: var(--success-color);
+  border: 1px solid rgba(34, 197, 94, 0.65);
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success-color);
+}
+
+.btn-outline-danger {
+  color: var(--danger-color);
+  border: 1px solid rgba(248, 113, 113, 0.65);
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:focus {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: var(--danger-color);
+}
+
+.btn-outline-secondary {
+  color: var(--text-muted-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background-color: var(--surface-hover);
+  color: var(--text-color);
+}
+
+.btn-dark {
+  background-color: var(--background-elevated);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-dark:hover,
+.btn-dark:focus {
+  background-color: var(--surface-hover);
+  color: var(--text-color);
+  border-color: var(--border-color);
+  box-shadow: 0 0 0 0.2rem rgba(34, 211, 238, 0.1);
+}
+
+.form-control,
+.form-select,
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--surface-muted);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 0.15rem rgba(34, 211, 238, 0.2);
+}
+
+.form-control::placeholder {
+  color: var(--text-muted-color);
+}
+
+.table {
+  color: var(--text-color);
+  background-color: var(--surface-color);
+}
+
+.table thead th {
+  color: var(--text-color);
+  background-color: var(--background-elevated);
+  border-color: var(--border-color);
+}
+
+.table tbody tr {
+  border-color: var(--border-color);
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: rgba(31, 41, 55, 0.45);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.text-muted {
+  color: var(--text-muted-color) !important;
+}
+
+.text-dark,
+.text-body {
+  color: var(--text-color) !important;
+}
+
+footer,
+.footer-dark,
+footer.bg-light {
+  background-color: var(--background-elevated) !important;
+  color: var(--text-muted-color) !important;
+  border-top: 1px solid var(--border-color);
+}
+
+.bg-light {
+  background-color: var(--background-elevated) !important;
+  color: var(--text-color) !important;
 }
 
 @keyframes spin {
