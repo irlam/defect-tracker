@@ -466,79 +466,113 @@ class Navbar {
         // Use a switch statement to define the menu items based on the value of $this->userRole (which holds the user type).
         switch ($this->userRole) {
             case 'admin':
-                // Define the full navigation menu for Admin user type.
-                $items = [
-                    ['label' => 'Admin Panel', 'url' => '/admin.php'], // Link to the main administration section.
-                    ['label' => 'Dashboard', 'url' => '/dashboard.php'], // Link to the primary user dashboard.
-                    ['label' => 'Defects', 'id' => 'defectsDropdownAdmin', 'dropdown' => [ // Dropdown menu for defect-related actions.
-                        ['label' => 'Add Defects', 'url' => '/create_defect.php'],       // Link to create new defects.
-                        ['label' => 'Assign Defects', 'url' => '/assign_to_user.php'],    // Link to assign defects to users/contractors.
-                        ['label' => 'View Defects', 'url' => '/view_defect.php'],         // Link to view defects (possibly filtered).
-                        ['label' => 'View All Defects', 'url' => '/all_defects.php'],     // Link to view all defects without filters.
-                    ]], // End of 'Defects' dropdown definition for admin.
-                    ['label' => 'Messages', 'url' => '/push_notifications/index.php'], // Link for sending messages or notifications.
-                    ['label' => 'User Management', 'url' => '/user_management.php'],    // Link to manage user accounts.
-                    ['label' => 'Maintenance', 'url' => '/maintenance/maintenance.php'],// Link to system maintenance tasks.
-                    ['label' => 'Reports', 'url' => '/reports.php'],                    // Link to the reporting section.
-                    ['label' => 'Help', 'url' => '/help_index.php'],                     // Link to help documentation.
-                    ['label' => 'Logout', 'url' => '/logout.php'],                       // Link to log the user out.
-                ]; // End of 'admin' items array definition.
-                break; // Exit the switch statement for 'admin' case.
-
-            case 'manager': // Assumes 'manager' is a value in the 'user_type' column. Adjust if needed.
-                // Define the navigation menu for Manager user type.
                 $items = [
                     ['label' => 'Dashboard', 'url' => '/dashboard.php'],
-                    // Defects dropdown for the manager user type.
-                    ['label' => 'Defects',
-                        'id' => 'defectsDropdownManager', // Unique ID for this dropdown instance.
-                        'dropdown' => [
-                            ['label' => 'Add Defects', 'url' => '/create_defect.php'],        // Can add defects.
-                            ['label' => 'Assign Defects', 'url' => '/assign_to_user.php'],     // Can assign defects.
-                            ['label' => 'View Defects', 'url' => '/view_defect.php'],          // Can view defects (standard view).
-                            ['label' => 'View All Defects', 'url' => '/all_defects.php'],      // Can view all defects.
-                        ]
-                    ], // End of 'Defects' dropdown definition for manager.
-                    ['label' => 'Messages', 'url' => '/push_notifications/index.php'], // Can send messages.
-                    ['label' => 'Reports', 'url' => '/reports.php'],                    // Can view reports.
-                    ['label' => 'Add Users', 'url' => '/add_user.php'],                 // Can add new users.
-                    ['label' => 'Help', 'url' => '/help_index.php'],                     // Access to help.
-                    ['label' => 'Logout', 'url' => '/logout.php'],                       // Logout link.
-                ]; // End of 'manager' items array definition.
-                break; // Exit the switch statement for 'manager' case.
+                    ['label' => 'Defects', 'id' => 'defectsDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Defect Control Room', 'url' => '/defects.php'],
+                        ['label' => 'Create Defect', 'url' => '/create_defect.php'],
+                        ['label' => 'Assign Defects', 'url' => '/assign_to_user.php'],
+                        ['label' => 'Upload Completion Evidence', 'url' => '/upload_completed_images.php'],
+                        ['label' => 'Visualise Defects', 'url' => '/visualize_defects.php'],
+                        ['label' => 'Legacy Register', 'url' => '/all_defects.php'],
+                    ]],
+                    ['label' => 'Projects', 'id' => 'projectsDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Projects Directory', 'url' => '/projects.php'],
+                        ['label' => 'Project Explorer', 'url' => '/project_details.php'],
+                        ['label' => 'Floor Plans', 'url' => '/floor_plans.php'],
+                        ['label' => 'Floorplan Selector', 'url' => '/floorplan_selector.php'],
+                        ['label' => 'Upload Floor Plan', 'url' => '/upload_floor_plan.php'],
+                    ]],
+                    ['label' => 'Directory', 'id' => 'directoryDropdownAdmin', 'dropdown' => [
+                        ['label' => 'User Management', 'url' => '/user_management.php'],
+                        ['label' => 'Add User', 'url' => '/add_user.php'],
+                        ['label' => 'Role Management', 'url' => '/role_management.php'],
+                        ['label' => 'Contractors', 'url' => '/contractors.php'],
+                        ['label' => 'Add Contractor', 'url' => '/add_contractor.php'],
+                        ['label' => 'Contractor Analytics', 'url' => '/contractor_stats.php'],
+                    ]],
+                    ['label' => 'Reports', 'url' => '/reports.php'],
+                    ['label' => 'Communications', 'id' => 'commsDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Notification Centre', 'url' => '/notifications.php'],
+                        ['label' => 'Broadcast Message', 'url' => '/push_notifications/index.php'],
+                    ]],
+                    ['label' => 'System', 'id' => 'systemDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Admin Console', 'url' => '/admin.php'],
+                        ['label' => 'System Settings', 'url' => '/admin/system_settings.php'],
+                        ['label' => 'Maintenance', 'url' => '/maintenance/maintenance.php'],
+                        ['label' => 'Backup Manager', 'url' => '/backup_manager.php'],
+                        ['label' => 'System Health', 'url' => '/system-tools/system_health.php'],
+                        ['label' => 'Database Check', 'url' => '/system-tools/check_database.php'],
+                        ['label' => 'User Logs', 'url' => '/user_logs.php'],
+                    ]],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
+                ];
+                break;
 
-            case 'contractor': // Assumes 'contractor' is a value in the 'user_type' column. Adjust if needed.
-                // Define the navigation menu for Contractor user type.
+            case 'manager':
                 $items = [
-                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],           // Access to their dashboard.
-                    ['label' => 'Update Defects', 'url' => '/update_defects.php'], // Link to update defects assigned to them.
-                    ['label' => 'My Tasks', 'url' => '/my_tasks.php'],             // Link to view a list of their assigned tasks/defects.
-                    ['label' => 'Help', 'url' => '/help_index.php'],               // Access to help.
-                    ['label' => 'Logout', 'url' => '/logout.php'],                 // Logout link.
-                ]; // End of 'contractor' items array definition.
-                break; // Exit the switch statement for 'contractor' case.
+                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],
+                    ['label' => 'Defects', 'id' => 'defectsDropdownManager', 'dropdown' => [
+                        ['label' => 'Defect Control Room', 'url' => '/defects.php'],
+                        ['label' => 'Create Defect', 'url' => '/create_defect.php'],
+                        ['label' => 'Assign Defects', 'url' => '/assign_to_user.php'],
+                        ['label' => 'Upload Completion Evidence', 'url' => '/upload_completed_images.php'],
+                        ['label' => 'Visualise Defects', 'url' => '/visualize_defects.php'],
+                    ]],
+                    ['label' => 'Projects', 'id' => 'projectsDropdownManager', 'dropdown' => [
+                        ['label' => 'Projects Directory', 'url' => '/projects.php'],
+                        ['label' => 'Project Explorer', 'url' => '/project_details.php'],
+                        ['label' => 'Floor Plans', 'url' => '/floor_plans.php'],
+                        ['label' => 'Upload Floor Plan', 'url' => '/upload_floor_plan.php'],
+                    ]],
+                    ['label' => 'Directory', 'id' => 'directoryDropdownManager', 'dropdown' => [
+                        ['label' => 'User Management', 'url' => '/user_management.php'],
+                        ['label' => 'Add User', 'url' => '/add_user.php'],
+                        ['label' => 'Contractors', 'url' => '/contractors.php'],
+                        ['label' => 'Add Contractor', 'url' => '/add_contractor.php'],
+                    ]],
+                    ['label' => 'Reports', 'url' => '/reports.php'],
+                    ['label' => 'Communications', 'id' => 'commsDropdownManager', 'dropdown' => [
+                        ['label' => 'Notification Centre', 'url' => '/notifications.php'],
+                        ['label' => 'Broadcast Message', 'url' => '/push_notifications/index.php'],
+                    ]],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
+                ];
+                break;
 
-            case 'viewer': // Assumes 'viewer' is a value in the 'user_type' column. Adjust if needed.
-                // Define the navigation menu for Viewer user type (typically read-only access).
+            case 'contractor':
                 $items = [
-                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],    // Access to dashboard.
-                    ['label' => 'View Defects', 'url' => '/view_defects.php'], // Simple link to view defects.
-                    ['label' => 'Reports', 'url' => '/reports.php'],        // Access to view reports.
-                    ['label' => 'Help', 'url' => '/help_index.php'],         // Access to help.
-                    ['label' => 'Logout', 'url' => '/logout.php'],           // Logout link.
-                ]; // End of 'viewer' items array definition.
-                break; // Exit the switch statement for 'viewer' case.
+                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],
+                    ['label' => 'Assigned Defects', 'url' => '/my_tasks.php'],
+                    ['label' => 'Submit Evidence', 'url' => '/upload_completed_images.php'],
+                    ['label' => 'Notification Centre', 'url' => '/notifications.php'],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
+                ];
+                break;
 
-            case 'client': // Assumes 'client' is a value in the 'user_type' column. Adjust if needed.
-                // Define the navigation menu for Client user type.
+            case 'viewer':
                 $items = [
-                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],              // Access to their dashboard view.
-                    ['label' => 'View Defects', 'url' => '/view_defects.php'],         // Link to view defects relevant to them.
-                    ['label' => 'Comment on Defects', 'url' => '/comment_defects.php'],// Link to add comments to defects.
-                    ['label' => 'Help', 'url' => '/help_index.php'],                   // Access to help.
-                    ['label' => 'Logout', 'url' => '/logout.php'],                     // Logout link.
-                ]; // End of 'client' items array definition.
-                break; // Exit the switch statement for 'client' case.
+                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],
+                    ['label' => 'Defect Control Room', 'url' => '/defects.php'],
+                    ['label' => 'Reports', 'url' => '/reports.php'],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
+                ];
+                break;
+
+            case 'client':
+                $items = [
+                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],
+                    ['label' => 'Defect Control Room', 'url' => '/defects.php'],
+                    ['label' => 'Visualise Defects', 'url' => '/visualize_defects.php'],
+                    ['label' => 'Reports', 'url' => '/reports.php'],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
+                ];
+                break;
 
             // Default case: Provides a minimal menu for any user type not explicitly handled above,
             // or if $userRole (holding user type) ended up being null/empty despite initialization (it should default to 'viewer').
