@@ -1050,6 +1050,41 @@ body.tool-body {
   color: #f87171;
 }
 
+.system-tool-card__tag--users {
+  background: rgba(96, 165, 250, 0.22);
+  color: #93c5fd;
+}
+
+.system-tool-card__tag--projects {
+  background: rgba(45, 212, 191, 0.22);
+  color: #2dd4bf;
+}
+
+.system-tool-card__tag--contractors {
+  background: rgba(251, 191, 36, 0.22);
+  color: #fbbf24;
+}
+
+.system-tool-card__tag--floorplans {
+  background: rgba(129, 140, 248, 0.2);
+  color: #a5b4fc;
+}
+
+.system-tool-card__tag--backups {
+  background: rgba(14, 165, 233, 0.24);
+  color: #38bdf8;
+}
+
+.system-tool-card__tag--sync {
+  background: rgba(16, 185, 129, 0.22);
+  color: #34d399;
+}
+
+.system-tool-card__tag--logs {
+  background: rgba(148, 163, 184, 0.26);
+  color: #cbd5f5;
+}
+
 @media (max-width: 576px) {
   .system-tools-grid {
     grid-template-columns: 1fr;

@@ -62,7 +62,7 @@ class DatabaseOptimizer
         $suggestions = [];
 
         $query = "
-            SELECT TABLE_NAME
+            SELECT t.TABLE_NAME
             FROM information_schema.TABLES t
             LEFT JOIN information_schema.TABLE_CONSTRAINTS tc
                 ON t.TABLE_NAME = tc.TABLE_NAME 
