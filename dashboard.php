@@ -28,6 +28,15 @@ require_once 'includes/functions.php';
 require_once 'config/database.php';
 require_once 'includes/navbar.php';
 
+$displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $_SESSION['username'] ?? 'User'));
+$currentUserRoleSummary = ucwords(str_replace(['_', '-'], [' ', ' '], $_SESSION['user_type'] ?? 'User'));
+date_default_timezone_set('Europe/London');
+$currentTimestamp = date('d/m/Y H:i');
+$dashboardMetrics = [];
+$contractorStats = [];
+$recentDefectsList = [];
+$contractorOptionsJSON = '[]';
+
 try {
     $database = new Database();
     $db = $database->getConnection();
@@ -96,8 +105,15 @@ try {
     $_SESSION['user_status'] = $userDetails['status'];
     $_SESSION['is_admin'] = ($userDetails['user_type'] === 'admin' && $userDetails['role_id'] === 1);
 
+    $displayNameSource = $userDetails['username'] ?? $currentUser;
+    $displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $displayNameSource));
+
+    $rawRole = $userDetails['role_name'] ?? $userDetails['user_type'] ?? '';
+    $currentUserRoleSummary = $rawRole ? ucwords(str_replace(['_', '-'], [' ', ' '], $rawRole)) : 'User';
+
     // Set timezone to UK
     date_default_timezone_set('Europe/London');
+    $currentTimestamp = date('d/m/Y H:i');
 
     $pageTitle = 'Defects Dashboard';
     $currentUser = $_SESSION['username'];
@@ -111,7 +127,68 @@ try {
     (SELECT COUNT(*) FROM defects WHERE status = 'pending' AND deleted_at IS NULL) as pending_defects";
     $statsStmt = $db->prepare($statsQuery);
     $statsStmt->execute();
-    $overallStats = $statsStmt->fetch(PDO::FETCH_ASSOC);
+    $overallStats = $statsStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    $activeContractors = (int) ($overallStats['active_contractors'] ?? 0);
+    $openDefects = (int) ($overallStats['open_defects'] ?? 0);
+    $pendingDefects = (int) ($overallStats['pending_defects'] ?? 0);
+    $totalDefects = (int) ($overallStats['total_defects'] ?? 0);
+    $resolvedDefects = max($totalDefects - $openDefects - $pendingDefects, 0);
+
+    $dashboardMetrics = [
+        [
+            'icon' => 'bx-building-house',
+            'title' => 'Active Contractors',
+            'stat' => $activeContractors,
+            'description' => 'Active trade partners maintaining live workloads.',
+            'tag' => 'contractors',
+            'tag_label' => 'Workforce',
+            'action' => [
+                'href' => 'contractors.php',
+                'label' => 'Manage Contractors',
+                'icon' => 'bx-right-arrow-alt'
+            ]
+        ],
+        [
+            'icon' => 'bx-error-circle',
+            'title' => 'Open Defects',
+            'stat' => $openDefects,
+            'description' => 'Outstanding items requiring immediate contractor action.',
+            'tag' => 'open',
+            'tag_label' => 'Attention',
+            'action' => [
+                'href' => 'defects.php?status=open',
+                'label' => 'View Open Issues',
+                'icon' => 'bx-search'
+            ]
+        ],
+        [
+            'icon' => 'bx-time-five',
+            'title' => 'Pending Acceptance',
+            'stat' => $pendingDefects,
+            'description' => 'Defects awaiting acceptance or return confirmation.',
+            'tag' => 'pending',
+            'tag_label' => 'Awaiting',
+            'action' => [
+                'href' => 'defects.php?status=pending',
+                'label' => 'Review Pending',
+                'icon' => 'bx-timer'
+            ]
+        ],
+        [
+            'icon' => 'bx-badge-check',
+            'title' => 'Resolved This Cycle',
+            'stat' => $resolvedDefects,
+            'description' => 'Defects resolved since the last reporting sync.',
+            'tag' => 'overview',
+            'tag_label' => 'Progress',
+            'action' => [
+                'href' => 'reports.php',
+                'label' => 'Open Reports',
+                'icon' => 'bx-bar-chart-alt-2'
+            ]
+        ]
+    ];
 
     // Get defects by contractor statistics (updated to count 'pending' defects)
     $contractorsQuery = "SELECT 
@@ -183,7 +260,13 @@ error_log("Actual open defects: " . $actualOpenCount);
             'trade' => $contractor['trade'] ?? 'N/A'
         ];
     }
-    $contractorOptionsJSON = json_encode($contractorOptions);
+    $contractorOptionsJSON = json_encode(
+        $contractorOptions,
+        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+    );
+    if ($contractorOptionsJSON === false) {
+        $contractorOptionsJSON = '[]';
+    }
 	} catch (Exception $e) {
     error_log("Dashboard Error: " . $e->getMessage());
     $error_message = "An error occurred while loading the dashboard: " . $e->getMessage();
@@ -277,804 +360,358 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
     <link rel="shortcut icon" href="/favicons/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
     <link rel="manifest" href="/favicons/site.webmanifest" />
-    
-    <!-- Essential CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-	    <style>
-        :root {
-            --primary-color: #4158D0;
-            --secondary-color: #C850C0;
-            --accent-color: #FF416C;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --info-color: #17a2b8;
-            --light-color: #f8f9fa;
-            --dark-color: #343a40;
-            --card-border-radius: 16px;
-            --box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.1);
-            --hover-box-shadow: 0 6px 28px 0 rgba(0, 0, 0, 0.15);
-            --transition-speed: 0.3s;
-        }
-
-        /* Base Layout */
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-        }
-        
-        .main-content {
-            padding: 25px 15px;
-            background-color: #f5f7fa;
-            min-height: calc(100vh - 56px);
-            margin-top: 56px; /* Adjust based on the height of your navbar */
-        }
-
-        /* Components */
-        .dashboard-card {
-            background-color: white;
-            border-radius: var(--card-border-radius);
-            box-shadow: var(--box-shadow);
-            margin-bottom: 20px;
-            transition: box-shadow var(--transition-speed);
-        }
-        
-        .dashboard-card:hover {
-            box-shadow: var(--hover-box-shadow);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: white;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
-        }
-        
-        .card-body {
-            padding: 20px;
-        }
-        
-        /* Stats Cards */
-        .stats-card {
-            color: white;
-            border-radius: var(--card-border-radius);
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .stats-card .gradient-layer {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px 20px;
-            height: 100%;
-        }
-        
-        .stats-card.contractors {
-            background: linear-gradient(135deg, #4158D0, #C850C0);
-        }
-        
-        .stats-card.open-defects {
-            background: linear-gradient(135deg, #FF416C, #FF4B2B);
-        }
-        
-        .stats-card.total-defects {
-            background: linear-gradient(135deg, #0061FF, #60EFFF);
-        }
-        
-        .stats-card.pending-defects {
-            background: linear-gradient(135deg, #FFD166, #FF9B42);
-        }
-        
-        .stats-card .card-title {
-            font-size: 1rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        
-        .stats-card .card-text {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        
-        .stats-card .card-icon {
-            font-size: 3rem;
-            opacity: 0.7;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-		        /* Table Styles */
-        .table {
-            margin-bottom: 0;
-        }
-        
-        .table th {
-            font-weight: 600;
-            background-color: rgba(0, 0, 0, 0.03);
-            border-bottom-width: 1px;
-        }
-        
-        .row-details {
-            background-color: rgba(0, 0, 0, 0.02);
-            padding: 15px;
-            display: none;
-            border-top: 1px dashed rgba(0, 0, 0, 0.1);
-        }
-        
-        .expandable-row {
-            cursor: pointer;
-        }
-        
-        .company-logo {
-            width: 30px;
-            height: 30px;
-            object-fit: contain;
-            border-radius: 4px;
-            background-color: #fff;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .company-icon {
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            background-color: rgba(0, 0, 0, 0.05);
-            color: #888;
-        }
-        
-        /* Mobile Specific Styles */
-        @media (max-width: 767.98px) {
-            .mobile-hide-table {
-                display: none;
-            }
-            
-            .data-card {
-                background-color: white;
-                border-radius: 10px;
-                padding: 15px;
-                margin-bottom: 15px;
-                box-shadow: var(--box-shadow);
-            }
-            
-            .data-card-title {
-                font-size: 1rem;
-                font-weight: 600;
-                color: var(--primary-color);
-                margin-bottom: 10px;
-            }
-            
-            .data-card-label {
-                font-size: 0.8rem;
-                color: #6c757d;
-                font-weight: 500;
-                margin-bottom: 2px;
-            }
-            
-            .data-card-value {
-                font-size: 0.95rem;
-                color: #343a40;
-                margin-bottom: 8px;
-            }
-        }
-        
-        /* Action Buttons */
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background-color: rgba(0, 0, 0, 0.05);
-            color: #6c757d;
-            margin-left: 5px;
-            transition: all var(--transition-speed);
-        }
-        
-        .action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-            color: var(--primary-color);
-        }
-        
-        /* Create Defect Button */
-        .btn-create-defect {
-            background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border: none;
-            color: white;
-            border-radius: 20px;
-            padding: 8px 20px;
-            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-create-defect:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-            color: white;
-        }
-        
-        /* Loading/Refreshing Indicator */
-        .refresh-indicator {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-            border-top-color: #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-        
-        .custom-toast {
-            min-width: 250px;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-			        /* Defect Image Gallery */
-        .defect-image-gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-        }
-
-        .defect-image-container {
-            width: 120px;
-            height: 120px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-        }
-
-        .defect-thumbnail {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        /* Image Modal for fullscreen view */
-        .image-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            overflow: auto;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-image-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-            position: relative;
-        }
-
-        .modal-full-image {
-            max-width: 90%;
-            max-height: 80vh;
-            object-fit: contain;
-            margin: auto;
-        }
-
-        .close-image-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: white;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 2001;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0,0,0,0.5);
-            border-radius: 50%;
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 767.98px) {
-            .defect-image-container {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .modal-full-image {
-                max-width: 95%;
-                max-height: 85vh;
-            }
-        }
-    </style>
-    
+    <link href="css/app.css" rel="stylesheet">
     <script>
-        // Pass PHP data to JavaScript for filters
         const contractorData = <?php echo $contractorOptionsJSON; ?>;
     </script>
 </head>
-<body>
-    <?php $navbar->render(); ?>
-    
-    <?php if ($error_message): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <?php echo htmlspecialchars($error_message); ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    <?php endif; ?>
-<br><br>
-    <div class="main-content">
-        <div class="container-fluid">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
-                <h2 class="mb-0 text-dark fw-bold">
-                    <i class="fas fa-tachometer-alt me-2 text-primary"></i> Defects Dashboard
-                </h2>
-                
-                <a href="create_defect.php" class="btn btn-create-defect">
-                    <i class="fas fa-plus-circle me-1"></i> Create Defect
+<body class="tool-body" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-xl">
+            <a class="navbar-brand fw-semibold" href="dashboard.php">
+                <i class='bx bx-line-chart me-2'></i>Site Operations Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNavbar" aria-controls="dashboardNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="dashboardNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="dashboard.php"><i class='bx bx-doughnut-chart me-1'></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="defects.php"><i class='bx bx-error me-1'></i>Defects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reports.php"><i class='bx bx-bar-chart-alt-2 me-1'></i>Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my_tasks.php"><i class='bx bx-list-check me-1'></i>My Tasks</a>
+                    </li>
+                    <?php if (!empty($_SESSION['is_admin'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.php"><i class='bx bx-dial me-1'></i>Admin</a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+                    <li class="nav-item text-muted small d-none d-lg-flex align-items-center">
+                        <i class='bx bx-time-five me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dashboardUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dashboardUserMenu">
+                            <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check'></i> My Tasks</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="tool-page container-xl py-4">
+        <?php if ($error_message): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <header class="tool-header mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h1 class="h3 mb-2">Operational Defect Command</h1>
+                    <p class="text-muted mb-0">Real-time insight into contractor workloads and outstanding issues.</p>
+                </div>
+                <div class="d-flex flex-column align-items-start text-muted small gap-1">
+                    <span><i class='bx bx-user-voice me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-calendar-event me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                <a class="btn btn-sm btn-primary" href="create_defect.php">
+                    <i class='bx bx-plus-circle'></i>
+                    Create Defect
+                </a>
+                <a class="btn btn-sm btn-outline-light" href="defects.php">
+                    <i class='bx bx-list-ol'></i>
+                    View Defects
+                </a>
+                <a class="btn btn-sm btn-outline-light" href="reports.php">
+                    <i class='bx bx-bar-chart'></i>
+                    Reports Hub
                 </a>
             </div>
-            
-            <!-- Statistics Row -->
-            <div class="row mb-4">
-                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                    <div class="stats-card contractors">
-                        <div class="gradient-layer">
-                            <div>
-                                <h6 class="card-title">Active Contractors</h6>
-                                <p class="card-text"><?php echo intval($overallStats['active_contractors'] ?? 0); ?></p>
-                            </div>
-                            <i class="fas fa-hard-hat card-icon"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                    <div class="stats-card open-defects">
-                        <div class="gradient-layer">
-                            <div>
-                                <h6 class="card-title">Open Defects</h6>
-                                <p class="card-text"><?php echo intval($overallStats['open_defects'] ?? 0); ?></p>
-                            </div>
-                            <i class="fas fa-exclamation-circle card-icon"></i>
-                        </div>
-                    </div>
-                </div>
-				                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                    <div class="stats-card total-defects">
-                        <div class="gradient-layer">
-                            <div>
-                                <h6 class="card-title">Total Defects Created</h6>
-                                <p class="card-text"><?php echo intval($overallStats['total_defects'] ?? 0); ?></p>
-                            </div>
-                            <i class="fas fa-clipboard-list card-icon"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                    <div class="stats-card pending-defects">
-                        <div class="gradient-layer">
-                            <div>
-                                <h6 class="card-title">Pending Review</h6>
-                                <p class="card-text"><?php echo intval($overallStats['pending_defects'] ?? 0); ?></p>
-                            </div>
-                            <i class="fas fa-clock card-icon"></i>
-                        </div>
-                    </div>
+        </header>
+
+        <?php if (!empty($dashboardMetrics)): ?>
+        <section class="mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Today's Snapshot</h2>
+                    <p class="text-muted small mb-0">Key delivery metrics pulled from the latest data sync.</p>
                 </div>
             </div>
+            <div class="system-tools-grid">
+                <?php foreach ($dashboardMetrics as $metric): ?>
+                <article class="system-tool-card">
+                    <div class="system-tool-card__icon">
+                        <i class='bx <?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i>
+                    </div>
+                    <div class="system-tool-card__body">
+                        <?php if (!empty($metric['tag'])): ?>
+                        <span class="system-tool-card__tag system-tool-card__tag--<?php echo htmlspecialchars($metric['tag'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($metric['tag_label'], ENT_QUOTES, 'UTF-8'); ?>
+                        </span>
+                        <?php endif; ?>
+                        <h3 class="system-tool-card__title"><?php echo htmlspecialchars($metric['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                        <p class="system-tool-card__stat mb-0"><?php echo number_format((int) $metric['stat']); ?></p>
+                        <p class="system-tool-card__description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                        <?php if (!empty($metric['action']['href'])): ?>
+                        <a class="btn btn-sm btn-outline-light system-tool-card__action" href="<?php echo htmlspecialchars($metric['action']['href'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php if (!empty($metric['action']['icon'])): ?><i class='bx <?php echo htmlspecialchars($metric['action']['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i><?php endif; ?>
+                            <?php echo htmlspecialchars($metric['action']['label'], ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
 
-            <!-- Contractor Stats -->
-            <div class="dashboard-card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Contractor Statistics</h5>
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div>
-                        <button id="refreshContractors" class="action-btn" title="Refresh Data">
-                            <i class="fas fa-sync-alt"></i>
+                        <h2 class="h5 mb-1">Contractor Performance</h2>
+                        <p class="text-muted small mb-0">Track open workloads and response progress by delivery partner.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-light" id="refreshContractors">
+                            <i class='bx bx-refresh'></i>
+                            Refresh
                         </button>
-                        <button id="filterContractors" class="action-btn" title="Filter Data">
-                            <i class="fas fa-filter"></i>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="filterContractors" data-bs-toggle="modal" data-bs-target="#contractorFilterModal">
+                            <i class='bx bx-filter-alt'></i>
+                            Filter
                         </button>
-                        <button id="exportContractors" class="action-btn" title="Export to CSV">
-                            <i class="fas fa-download"></i>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="exportContractors">
+                            <i class='bx bx-export'></i>
+                            Export CSV
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Table for medium screens and up -->
-                    <div class="table-responsive d-none d-md-block">
-                        <table id="contractorsTable" class="table table-hover">
+                    <div class="table-responsive">
+                        <table id="contractorsTable" class="table table-dark table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>Company</th>
-                                    <th>Total</th>
-                                    <th>Open</th>
-                                    <th>Pending</th>
-                                    <th>Closed</th>
-                                    <th>Rejected</th>
-                                    <th>Last Update</th>
+                                    <th scope="col">Company</th>
+                                    <th scope="col">Trade</th>
+                                    <th scope="col" class="text-center">Total</th>
+                                    <th scope="col" class="text-center">Open</th>
+                                    <th scope="col" class="text-center">Pending</th>
+                                    <th scope="col" class="text-center">Accepted</th>
+                                    <th scope="col" class="text-center">Rejected</th>
+                                    <th scope="col">Last Update</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($contractorStats)): ?>
                                 <tr>
-                                    <td colspan="8" class="text-center py-3 text-muted">No contractor data available</td>
+                                    <td colspan="8" class="text-center py-4 text-muted">No contractor data available.</td>
                                 </tr>
                                 <?php else: ?>
-                                    <?php foreach ($contractorStats as $contractor): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php if (!empty($contractor['logo'])): ?>
-                                                    <img src="<?php echo correctContractorLogoPath(htmlspecialchars($contractor['logo'])); ?>" 
-                                                         class="company-logo me-2" alt="Logo">
-                                                <?php else: ?>
-                                                    <div class="company-icon me-2">
-                                                        <i class="fas fa-building"></i>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <?php echo htmlspecialchars($contractor['company_name']); ?>
-                                            </div>
-                                        </td>
-                                        <td><?php echo intval($contractor['total_defects']); ?></td>
-                                        <td>
-                                            <span class="badge bg-danger">
-                                                <?php echo intval($contractor['open_defects']); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-warning">
-                                                <?php echo intval($contractor['pending_defects']); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-success">
-                                                <?php echo intval($contractor['closed_defects']); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary">
-                                                <?php echo intval($contractor['rejected_defects']); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <?php echo $contractor['last_update'] !== 'N/A' ? 
-                                                formatUKDateTime($contractor['last_update']) : 'N/A'; ?>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
+                                <?php foreach ($contractorStats as $contractor): ?>
+                                <tr
+                                    data-company="<?php echo htmlspecialchars(strtolower((string) $contractor['company_name']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-trade="<?php echo htmlspecialchars(strtolower((string) ($contractor['trade'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-total="<?php echo (int) $contractor['total_defects']; ?>"
+                                    data-open="<?php echo (int) $contractor['open_defects']; ?>"
+                                    data-pending="<?php echo (int) $contractor['pending_defects']; ?>"
+                                    data-accepted="<?php echo (int) $contractor['closed_defects']; ?>"
+                                    data-rejected="<?php echo (int) $contractor['rejected_defects']; ?>"
+                                >
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <?php if (!empty($contractor['logo'])): ?>
+                                                <img src="<?php echo htmlspecialchars(correctContractorLogoPath($contractor['logo']), ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" class="rounded-circle" width="32" height="32">
+                                            <?php else: ?>
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis"><i class='bx bx-building-house'></i></span>
+                                            <?php endif; ?>
+                                            <span class="fw-semibold"><?php echo htmlspecialchars($contractor['company_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($contractor['trade'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td class="text-center"><?php echo number_format((int) $contractor['total_defects']); ?></td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis fw-semibold"><?php echo (int) $contractor['open_defects']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-semibold"><?php echo (int) $contractor['pending_defects']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-success-subtle text-success-emphasis fw-semibold"><?php echo (int) $contractor['closed_defects']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis fw-semibold"><?php echo (int) $contractor['rejected_defects']; ?></span>
+                                    </td>
+                                    <td><?php echo $contractor['last_update'] !== 'N/A' ? formatUKDateTime($contractor['last_update']) : 'N/A'; ?></td>
+                                </tr>
+                                <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
-					                    <!-- Cards for small screens -->
-                    <div class="d-md-none">
-                        <?php if (empty($contractorStats)): ?>
-                        <div class="text-center py-3 text-muted">No contractor data available</div>
-                        <?php else: ?>
-                            <?php foreach ($contractorStats as $contractor): ?>
-                            <div class="data-card">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <?php if (!empty($contractor['logo'])): ?>
-                                            <img src="<?php echo correctContractorLogoPath(htmlspecialchars($contractor['logo'])); ?>" 
-                                                 class="company-logo me-2" alt="Logo">
-                                        <?php else: ?>
-                                            <div class="company-icon me-2">
-                                                <i class="fas fa-building"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                        <h6 class="data-card-title mb-0">
-                                            <?php echo htmlspecialchars($contractor['company_name']); ?>
-                                        </h6>
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-3">
-                                        <div class="data-card-label">Open</div>
-                                        <div class="data-card-value">
-                                            <span class="badge bg-danger">
-                                                <?php echo intval($contractor['open_defects']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="data-card-label">Pending</div>
-                                        <div class="data-card-value">
-                                            <span class="badge bg-warning">
-                                                <?php echo intval($contractor['pending_defects']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="data-card-label">Closed</div>
-                                        <div class="data-card-value">
-                                            <span class="badge bg-success">
-                                                <?php echo intval($contractor['closed_defects']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="data-card-label">Rejected</div>
-                                        <div class="data-card-value">
-                                            <span class="badge bg-secondary">
-                                                <?php echo intval($contractor['rejected_defects']); ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="text-muted mt-2" style="font-size: 0.8rem;">
-                                    Last update: 
-                                    <?php echo $contractor['last_update'] !== 'N/A' ? 
-                                        formatUKDateTime($contractor['last_update']) : 'N/A'; ?>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </div>
-            
-            <!-- Recent Defects -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h5 class="mb-0">Recent Defects</h5>
+        </section>
+
+        <section>
+            <div class="card border-0">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div>
-                        <button id="refreshDefects" class="action-btn" title="Refresh Data">
-                            <i class="fas fa-sync-alt"></i>
+                        <h2 class="h5 mb-1">Recent Defects</h2>
+                        <p class="text-muted small mb-0">Latest submissions with quick access to supporting media.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-light" id="refreshDefects">
+                            <i class='bx bx-refresh'></i>
+                            Refresh
                         </button>
-                        <button id="filterDefects" class="action-btn" title="Filter Data">
-                            <i class="fas fa-filter"></i>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="filterDefects" data-bs-toggle="modal" data-bs-target="#defectsFilterModal">
+                            <i class='bx bx-filter-alt'></i>
+                            Filter
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Table for medium screens and up -->
-                    <div class="table-responsive d-none d-md-block">
-                        <table id="recentDefectsTable" class="table">
+                    <div class="table-responsive">
+                        <table id="recentDefectsTable" class="table table-dark table-hover align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Status</th>
-                                    <th>Priority</th>
-                                    <th>Title</th>
-                                    <th>Contractor</th>
-                                    <th>Created</th>
-                                    <th>Details</th>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Priority</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Contractor</th>
+                                    <th scope="col">Created</th>
+                                    <th scope="col">Updated</th>
+                                    <th scope="col" class="text-center">Details</th>
                                 </tr>
                             </thead>
-							                            <tbody>
+                            <tbody>
                                 <?php if (empty($recentDefectsList)): ?>
                                 <tr>
-                                    <td colspan="7" class="text-center py-3 text-muted">No defects available</td>
+                                    <td colspan="8" class="text-center py-4 text-muted">No defects available.</td>
                                 </tr>
                                 <?php else: ?>
-                                    <?php foreach ($recentDefectsList as $defect): ?>
-                                    <tr class="expandable-row" data-defect-id="<?php echo $defect['id']; ?>">
-                                        <td><?php echo $defect['id']; ?></td>
-                                        <td>
-                                            <span class="badge bg-<?php echo getStatusBadgeClass($defect['status']); ?>">
-                                                <?php echo ucfirst(htmlspecialchars($defect['status'])); ?>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-<?php echo getPriorityBadgeClass($defect['priority']); ?>">
-                                                <?php echo ucfirst(htmlspecialchars($defect['priority'])); ?>
-                                            </span>
-                                        </td>
-                                        <td><?php echo htmlspecialchars($defect['title']); ?></td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php if (!empty($defect['logo'])): ?>
-                                                    <img src="<?php echo correctContractorLogoPath(htmlspecialchars($defect['logo'])); ?>" 
-                                                         class="company-logo me-2" alt="Logo">
-                                                <?php else: ?>
-                                                    <div class="company-icon me-2">
-                                                        <i class="fas fa-building"></i>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <?php echo htmlspecialchars($defect['company_name'] ?? 'Unassigned'); ?>
-                                            </div>
-                                        </td>
-                                        <td><?php echo formatUKDateTime($defect['created_at']); ?></td>
-                                        <td class="text-center">
-                                            <a href="#" class="toggle-details" title="Toggle Details">
-                                                <i class="fas fa-chevron-down"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    
-                                    <tr id="details-<?php echo $defect['id']; ?>" class="details-row">
-                                        <td colspan="7" class="p-0">
-                                            <div class="row-details">
-                                                <div class="row">
-                                                    <div class="col-md-8">
-                                                        <h6 class="mb-2">Description:</h6>
-                                                        <p><?php echo nl2br(htmlspecialchars($defect['description'])); ?></p>
-                                                        
-                                                        <!-- Image Gallery -->
-                                                        <?php if (!empty($defect['image_paths'])): ?>
-                                                            <h6 class="mb-2 mt-3">Attachments:</h6>
-                                                            <div class="defect-image-gallery">
-                                                                <?php 
-                                                                $image_paths = explode(',', $defect['image_paths']);
-                                                                foreach ($image_paths as $image_path): 
-                                                                    if (!empty(trim($image_path))):
-                                                                ?>
-                                                                    <div class="defect-image-container">
-                                                                        <img src="<?php echo correctDefectImagePath(trim($image_path)); ?>" 
-                                                                             class="defect-thumbnail zoomable-image" 
-                                                                             alt="Defect Image"
-                                                                             data-full-image="<?php echo correctDefectImagePath(trim($image_path)); ?>">
-                                                                    </div>
-                                                                <?php 
-                                                                    endif;
-                                                                endforeach; 
-                                                                ?>
-                                                            </div>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="mb-3">
-                                                            <h6 class="mb-1">Reported By:</h6>
-                                                            <p class="mb-3"><?php echo htmlspecialchars($defect['reported_by']); ?></p>
-                                                            
-                                                            <h6 class="mb-1">Last Updated:</h6>
-                                                            <p class="mb-3"><?php echo formatUKDateTime($defect['updated_at']); ?></p>
+                                <?php foreach ($recentDefectsList as $defect): ?>
+                                <tr
+                                    class="expandable-row"
+                                    data-defect-id="<?php echo (int) $defect['id']; ?>"
+                                    data-status="<?php echo htmlspecialchars(strtolower($defect['status']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-priority="<?php echo htmlspecialchars(strtolower($defect['priority']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-contractor="<?php echo htmlspecialchars(strtolower($defect['company_name'] ?? 'unassigned'), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-title="<?php echo htmlspecialchars(strtolower($defect['title']), ENT_QUOTES, 'UTF-8'); ?>"
+                                >
+                                    <td class="fw-semibold">#<?php echo (int) $defect['id']; ?></td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-<?php echo getStatusBadgeClass($defect['status']); ?>">
+                                            <?php echo ucfirst(htmlspecialchars($defect['status'], ENT_QUOTES, 'UTF-8')); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-<?php echo getPriorityBadgeClass($defect['priority']); ?>">
+                                            <?php echo ucfirst(htmlspecialchars($defect['priority'], ENT_QUOTES, 'UTF-8')); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($defect['title'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <?php if (!empty($defect['logo'])): ?>
+                                                <img src="<?php echo htmlspecialchars(correctContractorLogoPath($defect['logo']), ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" class="rounded-circle" width="28" height="28">
+                                            <?php else: ?>
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis"><i class='bx bx-building'></i></span>
+                                            <?php endif; ?>
+                                            <span><?php echo htmlspecialchars($defect['company_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo formatUKDateTime($defect['created_at']); ?></td>
+                                    <td><?php echo formatUKDateTime($defect['updated_at']); ?></td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-light toggle-details" data-defect-id="<?php echo (int) $defect['id']; ?>">
+                                            <i class='bx bx-chevron-down'></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr id="details-<?php echo (int) $defect['id']; ?>" class="details-row" style="display: none;">
+                                    <td colspan="8" class="p-0">
+                                        <div class="row-details">
+                                            <div class="row g-4">
+                                                <div class="col-lg-8">
+                                                    <h6 class="mb-2">Description</h6>
+                                                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($defect['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                                                    <?php if (!empty($defect['image_paths'])): ?>
+                                                    <h6 class="mb-2 mt-4">Attachments</h6>
+                                                    <div class="defect-image-gallery">
+                                                        <?php
+                                                        $image_paths = explode(',', $defect['image_paths']);
+                                                        foreach ($image_paths as $image_path):
+                                                            $trimmedPath = trim($image_path);
+                                                            if ($trimmedPath === '') {
+                                                                continue;
+                                                            }
+                                                        ?>
+                                                        <div class="defect-image-container">
+                                                            <img
+                                                                src="<?php echo htmlspecialchars(correctDefectImagePath($trimmedPath), ENT_QUOTES, 'UTF-8'); ?>"
+                                                                class="defect-thumbnail zoomable-image"
+                                                                alt="Defect Image"
+                                                                data-full-image="<?php echo htmlspecialchars(correctDefectImagePath($trimmedPath), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            >
                                                         </div>
-                                                        
-                                                        <a href="view_defect.php?id=<?php echo $defect['id']; ?>" 
-                                                           class="btn btn-sm btn-primary">
-                                                            View Full Details
-                                                        </a>
+                                                        <?php endforeach; ?>
                                                     </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="mb-3">
+                                                        <h6 class="mb-1">Reported By</h6>
+                                                        <p class="mb-3"><?php echo htmlspecialchars($defect['reported_by'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                                        <h6 class="mb-1">Last Updated</h6>
+                                                        <p class="mb-0"><?php echo formatUKDateTime($defect['updated_at']); ?></p>
+                                                    </div>
+                                                    <a href="view_defect.php?id=<?php echo (int) $defect['id']; ?>" class="btn btn-sm btn-outline-light">
+                                                        View Full Details
+                                                    </a>
                                                 </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
-					                    <!-- Cards for small screens -->
-                    <div class="d-md-none">
-                        <?php if (empty($recentDefectsList)): ?>
-                        <div class="text-center py-3 text-muted">No defects available</div>
-                        <?php else: ?>
-                            <?php foreach ($recentDefectsList as $defect): ?>
-                            <div class="data-card" data-defect-id="<?php echo $defect['id']; ?>">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="d-flex gap-2">
-                                            <span class="badge bg-<?php echo getStatusBadgeClass($defect['status']); ?>">
-                                                <?php echo ucfirst(htmlspecialchars($defect['status'])); ?>
-                                            </span>
-                                            <span class="badge bg-<?php echo getPriorityBadgeClass($defect['priority']); ?>">
-                                                <?php echo ucfirst(htmlspecialchars($defect['priority'])); ?>
-                                            </span>
-                                        </div>
-                                        <h5 class="data-card-title mt-2">
-                                            <?php echo htmlspecialchars($defect['title']); ?>
-                                        </h5>
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="text-muted fs-6">#<?php echo $defect['id']; ?></div>
-                                        <div class="mt-1 text-muted" style="font-size: 0.8rem;">
-                                            <?php echo getTimeAgo($defect['created_at']); ?>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-3 mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <?php if (!empty($defect['logo'])): ?>
-                                            <img src="<?php echo correctContractorLogoPath(htmlspecialchars($defect['logo'])); ?>" 
-                                                 class="company-logo me-2" alt="Logo">
-                                        <?php else: ?>
-                                            <div class="company-icon me-2">
-                                                <i class="fas fa-building"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                        <span><?php echo htmlspecialchars($defect['company_name'] ?? 'Unassigned'); ?></span>
-                                    </div>
-                                </div>
-                                
-                                <div class="mobile-details-container">
-                                    <div class="mb-3">
-                                        <div class="data-card-label">Description:</div>
-                                        <p class="data-card-value"><?php echo nl2br(htmlspecialchars(substr($defect['description'], 0, 100) . (strlen($defect['description']) > 100 ? '...' : ''))); ?></p>
-                                    </div>
-
-                                    <?php if (!empty($defect['image_paths'])): ?>
-                                        <div class="data-card-label">Attachments:</div>
-                                        <div class="defect-image-gallery">
-                                            <?php 
-                                            $image_paths = explode(',', $defect['image_paths']);
-                                            $count = 0;
-                                            foreach ($image_paths as $image_path): 
-                                                if (!empty(trim($image_path)) && $count < 3):
-                                                    $count++;
-                                            ?>
-                                                <div class="defect-image-container">
-                                                    <img src="<?php echo correctDefectImagePath(trim($image_path)); ?>" 
-                                                         class="defect-thumbnail zoomable-image" 
-                                                         alt="Defect Image"
-                                                         data-full-image="<?php echo correctDefectImagePath(trim($image_path)); ?>">
-                                                </div>
-                                            <?php 
-                                                endif;
-                                            endforeach; 
-                                            
-                                            if (count($image_paths) > 3): 
-                                            ?>
-                                                <div class="defect-image-container d-flex align-items-center justify-content-center bg-light">
-                                                    <div class="text-center">
-                                                        <span class="badge bg-primary">+<?php echo count($image_paths) - 3; ?> more</span>
-                                                    </div>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endif; ?>
-                                    
-                                    <div class="mt-3">
-                                        <a href="view_defect.php?id=<?php echo $defect['id']; ?>" class="btn btn-sm btn-primary w-100">
-                                            View Full Details
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
+        </section>
+    </main>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+
     <!-- Image Modal -->
     <div id="imageModal" class="image-modal" onclick="this.style.display='none';">
         <span class="close-image-modal">&times;</span>
@@ -1082,373 +719,323 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
             <img id="modalImage" class="modal-full-image" src="" alt="Full size image">
         </div>
     </div>
-    
-    <!-- Toast Notification Container -->
-    <div class="toast-container"></div>
 
-    <!-- Essential JavaScript Dependencies -->
+    <!-- Contractor Filter Modal -->
+    <div class="modal fade" id="contractorFilterModal" tabindex="-1" aria-labelledby="contractorFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contractorFilterModalLabel">Filter Contractors</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="contractorFilterForm">
+                        <div class="mb-3">
+                            <label for="filterContractorName" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="filterContractorName" placeholder="Enter company name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Defect Status</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="filterHasOpenDefects" checked>
+                                <label class="form-check-label" for="filterHasOpenDefects">Has Open Defects</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="filterHasPendingDefects" checked>
+                                <label class="form-check-label" for="filterHasPendingDefects">Has Pending Defects</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="resetContractorFilter">Reset Filters</button>
+                    <button type="button" class="btn btn-primary" id="applyContractorFilter">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defects Filter Modal -->
+    <div class="modal fade" id="defectsFilterModal" tabindex="-1" aria-labelledby="defectsFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="defectsFilterModalLabel">Filter Defects</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="defectsFilterForm">
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusOpen" value="open" checked>
+                                    <label class="form-check-label" for="filterStatusOpen">Open</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusPending" value="pending" checked>
+                                    <label class="form-check-label" for="filterStatusPending">Pending</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusAccepted" value="accepted" checked>
+                                    <label class="form-check-label" for="filterStatusAccepted">Accepted</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusRejected" value="rejected" checked>
+                                    <label class="form-check-label" for="filterStatusRejected">Rejected</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Priority</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterPriorityHigh" value="high" checked>
+                                    <label class="form-check-label" for="filterPriorityHigh">High</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterPriorityMedium" value="medium" checked>
+                                    <label class="form-check-label" for="filterPriorityMedium">Medium</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterPriorityLow" value="low" checked>
+                                    <label class="form-check-label" for="filterPriorityLow">Low</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="filterDefectContractor" class="form-label">Contractor</label>
+                            <select class="form-select" id="filterDefectContractor">
+                                <option value="">All Contractors</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="filterDefectTitle" class="form-label">Title Search</label>
+                            <input type="text" class="form-control" id="filterDefectTitle" placeholder="Search in defect titles">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="resetDefectsFilter">Reset Filters</button>
+                    <button type="button" class="btn btn-primary" id="applyDefectsFilter">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
     $(document).ready(function() {
-        // Toggle defect details
-        $('.toggle-details').on('click', function(e) {
-            e.preventDefault();
-            const defectId = $(this).closest('tr').data('defect-id');
+        $('.toggle-details').on('click', function() {
+            const defectId = $(this).data('defect-id');
             const detailsRow = $(`#details-${defectId}`);
+            const content = detailsRow.find('.row-details');
             const icon = $(this).find('i');
-            
-            detailsRow.find('.row-details').slideToggle();
-            icon.toggleClass('fa-chevron-down fa-chevron-up');
+
+            if (detailsRow.is(':visible')) {
+                content.slideUp(160, function() {
+                    detailsRow.hide();
+                });
+                icon.removeClass('bx-chevron-up').addClass('bx-chevron-down');
+            } else {
+                detailsRow.show();
+                content.hide().slideDown(160);
+                icon.removeClass('bx-chevron-down').addClass('bx-chevron-up');
+            }
         });
-        
-        // Image viewer
+
         $('.zoomable-image').on('click', function() {
             const fullImageSrc = $(this).data('full-image');
             $('#modalImage').attr('src', fullImageSrc);
             $('#imageModal').css('display', 'flex');
         });
-        
-        // Close modal when clicking the close button
+
         $('.close-image-modal').on('click', function(e) {
             e.stopPropagation();
             $('#imageModal').css('display', 'none');
         });
     });
     </script>
-	<!-- Filter Modals -->
-<!-- Contractor Filter Modal -->
-<div class="modal fade" id="contractorFilterModal" tabindex="-1" aria-labelledby="contractorFilterModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="contractorFilterModalLabel">Filter Contractors</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="contractorFilterForm">
-                    <div class="mb-3">
-                        <label for="filterContractorName" class="form-label">Company Name</label>
-                        <input type="text" class="form-control" id="filterContractorName" placeholder="Enter company name">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Defect Status</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="filterHasOpenDefects" checked>
-                            <label class="form-check-label" for="filterHasOpenDefects">
-                                Has Open Defects
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="filterHasPendingDefects" checked>
-                            <label class="form-check-label" for="filterHasPendingDefects">
-                                Has Pending Defects
-                            </label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="resetContractorFilter">Reset Filters</button>
-                <button type="button" class="btn btn-primary" id="applyContractorFilter">Apply Filters</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Defects Filter Modal -->
-<div class="modal fade" id="defectsFilterModal" tabindex="-1" aria-labelledby="defectsFilterModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="defectsFilterModalLabel">Filter Defects</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="defectsFilterForm">
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterStatusOpen" value="open" checked>
-                                <label class="form-check-label" for="filterStatusOpen">Open</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterStatusPending" value="pending" checked>
-                                <label class="form-check-label" for="filterStatusPending">Pending</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterStatusAccepted" value="accepted" checked>
-                                <label class="form-check-label" for="filterStatusAccepted">Accepted</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterStatusRejected" value="rejected" checked>
-                                <label class="form-check-label" for="filterStatusRejected">Rejected</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Priority</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterPriorityHigh" value="high" checked>
-                                <label class="form-check-label" for="filterPriorityHigh">High</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterPriorityMedium" value="medium" checked>
-                                <label class="form-check-label" for="filterPriorityMedium">Medium</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="filterPriorityLow" value="low" checked>
-                                <label class="form-check-label" for="filterPriorityLow">Low</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="filterDefectContractor" class="form-label">Contractor</label>
-                        <select class="form-select" id="filterDefectContractor">
-                            <option value="">All Contractors</option>
-                            <!-- Will be populated from contractorData -->
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="filterDefectTitle" class="form-label">Title Search</label>
-                        <input type="text" class="form-control" id="filterDefectTitle" placeholder="Search in defect titles">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="resetDefectsFilter">Reset Filters</button>
-                <button type="button" class="btn btn-primary" id="applyDefectsFilter">Apply Filters</button>
-            </div>
-        </div>
-    </div>
-</div>
+    <script>
+    $(document).ready(function() {
+        const toastHost = $('.toast-container');
 
-<!-- Add the JavaScript for filters to the end of your file, before the closing </body> tag -->
-<script>
-$(document).ready(function() {
-    // Initialize toast notification function
-    function showToast(message, type = 'info') {
-        const toastId = 'toast-' + Date.now();
-        const toast = `
-            <div id="${toastId}" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
-                <div class="toast-header">
-                    <strong class="me-auto text-${type}">${type === 'info' ? 'Information' : (type === 'success' ? 'Success' : 'Error')}</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        function showToast(message, type = 'info') {
+            const toastId = `toast-${Date.now()}`;
+            const tone = type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info';
+            const toastMarkup = $(`
+                <div id="${toastId}" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3200">
+                    <div class="d-flex align-items-center gap-3 px-3 py-2">
+                        <i class='bx bx-info-circle text-${tone}'></i>
+                        <span>${message}</span>
+                        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
                 </div>
-                <div class="toast-body">${message}</div>
-            </div>
-        `;
-        $('.toast-container').append(toast);
-        const toastElement = new bootstrap.Toast(document.getElementById(toastId));
-        toastElement.show();
-    }
+            `);
+            toastHost.append(toastMarkup);
+            const toastInstance = new bootstrap.Toast(document.getElementById(toastId));
+            toastInstance.show();
+        }
 
-    
-    // Populate contractor options for defect filter
-    contractorData.forEach(contractor => {
-        $('#filterDefectContractor').append(`<option value="${contractor.id}">${contractor.name}</option>`);
-    });
-    
-    // Filter button click handlers
-    $('#filterContractors').click(function() {
-        $('#contractorFilterModal').modal('show');
-    });
-    
-    $('#filterDefects').click(function() {
-        $('#defectsFilterModal').modal('show');
-    });
+        const contractorSelect = $('#filterDefectContractor');
+        contractorData.forEach(contractor => {
+            if (!contractor || !contractor.name) {
+                return;
+            }
+            const option = $('<option/>', {
+                value: contractor.name.toLowerCase(),
+                text: contractor.name
+            });
+            contractorSelect.append(option);
+        });
 
-    // Reset contractor filters
-    $('#resetContractorFilter').click(function() {
-        $('#filterContractorName').val('');
-        $('#filterContractorTrade').val('');
-        $('#filterHasOpenDefects').prop('checked', true);
-        $('#filterHasPendingDefects').prop('checked', true);
-    });
+        $('#resetContractorFilter').on('click', function() {
+            $('#filterContractorName').val('');
+            $('#filterHasOpenDefects').prop('checked', true);
+            $('#filterHasPendingDefects').prop('checked', true);
+        });
 
-    // Reset defect filters
-    $('#resetDefectsFilter').click(function() {
-        $('#filterDefectTitle').val('');
-        $('#filterDefectContractor').val('');
-        $('#filterStatusOpen, #filterStatusPending, #filterStatusAccepted, #filterStatusRejected').prop('checked', true);
-        $('#filterPriorityHigh, #filterPriorityMedium, #filterPriorityLow').prop('checked', true);
-    });
-    
-    // Apply contractor filters
-    $('#applyContractorFilter').click(function() {
-        const nameFilter = $('#filterContractorName').val().toLowerCase();
-        const hasOpenDefects = $('#filterHasOpenDefects').is(':checked');
-        const hasPendingDefects = $('#filterHasPendingDefects').is(':checked');
-        let visibleCount = 0;
-        
-        // Desktop view filtering
-        $('#contractorsTable tbody tr').each(function() {
-            const $row = $(this);
-            const companyName = $row.find('td:nth-child(1)').text().toLowerCase();
-            const trade = $row.find('td:nth-child(2)').text();
-            const openDefects = parseInt($row.find('td:nth-child(4) .badge').text().trim()) > 0;
-            const pendingDefects = parseInt($row.find('td:nth-child(5) .badge').text().trim()) > 0;
-            
-            const nameMatch = nameFilter === '' || companyName.includes(nameFilter);
-            const statusMatch = (!hasOpenDefects || openDefects) && (!hasPendingDefects || pendingDefects);
-            
-            if (nameMatch && tradeMatch && statusMatch) {
-                $row.show();
-                visibleCount++;
-            } else {
-                $row.hide();
-            }
+        $('#resetDefectsFilter').on('click', function() {
+            $('#filterDefectTitle').val('');
+            $('#filterDefectContractor').val('');
+            $('#filterStatusOpen, #filterStatusPending, #filterStatusAccepted, #filterStatusRejected').prop('checked', true);
+            $('#filterPriorityHigh, #filterPriorityMedium, #filterPriorityLow').prop('checked', true);
         });
-        
-        // Mobile view filtering
-        $('.d-md-none .data-card').each(function() {
-            const $card = $(this);
-            const companyName = $card.find('.data-card-title').text().toLowerCase();
-            const trade = $card.find('.badge.bg-light').text();
-            const openDefects = parseInt($card.find('.col-3:nth-child(1) .badge').text().trim()) > 0;
-            const pendingDefects = parseInt($card.find('.col-3:nth-child(2) .badge').text().trim()) > 0;
-            
-            const nameMatch = nameFilter === '' || companyName.includes(nameFilter);
-            const tradeMatch = tradeFilter === '' || trade === tradeFilter;
-            const statusMatch = (!hasOpenDefects || openDefects) && (!hasPendingDefects || pendingDefects);
-            
-            if (nameMatch && tradeMatch && statusMatch) {
-                $card.show();
-            } else {
-                $card.hide();
-            }
-        });
-        
-        $('#contractorFilterModal').modal('hide');
-        showToast(`Filters applied: ${visibleCount} contractors shown`, 'success');
-    });
 
-    // Apply defect filters
-    $('#applyDefectsFilter').click(function() {
-        // Get filter values
-        const titleFilter = $('#filterDefectTitle').val().toLowerCase();
-        const contractorFilter = $('#filterDefectContractor').val();
-        
-        // Get selected statuses
-        const selectedStatuses = [];
-        if ($('#filterStatusOpen').is(':checked')) selectedStatuses.push('open');
-        if ($('#filterStatusPending').is(':checked')) selectedStatuses.push('pending');
-        if ($('#filterStatusAccepted').is(':checked')) selectedStatuses.push('accepted');
-        if ($('#filterStatusRejected').is(':checked')) selectedStatuses.push('rejected');
-        
-        // Get selected priorities
-        const selectedPriorities = [];
-        if ($('#filterPriorityHigh').is(':checked')) selectedPriorities.push('high');
-        if ($('#filterPriorityMedium').is(':checked')) selectedPriorities.push('medium');
-        if ($('#filterPriorityLow').is(':checked')) selectedPriorities.push('low');
-        
-        let visibleCount = 0;
-        
-        // Filter desktop view
-        $('#recentDefectsTable tbody tr.expandable-row').each(function() {
-            const $row = $(this);
-            const defectId = $row.data('defect-id');
-            const title = $row.find('td:nth-child(4)').text().toLowerCase();
-            const status = $row.find('td:nth-child(2) .badge').text().toLowerCase();
-            const priority = $row.find('td:nth-child(3) .badge').text().toLowerCase();
-            const contractor = $row.find('td:nth-child(5)').text().trim();
-            const detailsRow = $('#details-' + defectId);
-            
-            const titleMatch = titleFilter === '' || title.includes(titleFilter);
-            const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(status);
-            const priorityMatch = selectedPriorities.length === 0 || selectedPriorities.includes(priority);
-            const contractorMatch = contractorFilter === '' || contractor.includes(contractorFilter);
-            
-            if (titleMatch && statusMatch && priorityMatch && contractorMatch) {
-                $row.show();
-                visibleCount++;
-            } else {
-                $row.hide();
-                detailsRow.hide();
-            }
-        });
-        
-        // Filter mobile view
-        $('.d-md-none .data-card[data-defect-id]').each(function() {
-            const $card = $(this);
-            const title = $card.find('.data-card-title').text().toLowerCase();
-            const status = $card.find('.badge').first().text().toLowerCase();
-            const priority = $card.find('.badge').eq(1).text().toLowerCase();
-            const contractor = $card.find('.d-flex > span').text().trim();
-            
-            const titleMatch = titleFilter === '' || title.includes(titleFilter);
-            const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(status);
-            const priorityMatch = selectedPriorities.length === 0 || selectedPriorities.includes(priority);
-            const contractorMatch = contractorFilter === '' || contractor.includes(contractorFilter);
-            
-            if (titleMatch && statusMatch && priorityMatch && contractorMatch) {
-                $card.show();
-            } else {
-                $card.hide();
-            }
-        });
-        
-        $('#defectsFilterModal').modal('hide');
-        showToast(`Filters applied: ${visibleCount} defects shown`, 'success');
-    });
+        $('#applyContractorFilter').on('click', function() {
+            const nameFilter = $('#filterContractorName').val().toLowerCase().trim();
+            const requireOpen = $('#filterHasOpenDefects').is(':checked');
+            const requirePending = $('#filterHasPendingDefects').is(':checked');
+            let visibleCount = 0;
 
-    // Export contractors to CSV
-    $('#exportContractors').click(function() {
-        let csvContent = "Company,Total Defects,Open,Pending,Closed,Rejected,Last Update\n";
-        
-        // Get visible rows only
-        $('#contractorsTable tbody tr:visible').each(function() {
-            const $row = $(this);
-            const cells = $row.find('td');
-            if (cells.length) {
-                const company = $(cells[0]).text().trim().replace(/,/g, ' ');
-                const trade = $(cells[1]).text().trim().replace(/,/g, ' ');
-                const total = $(cells[2]).text().trim();
-                const open = $(cells[3]).text().trim();
-                const pending = $(cells[4]).text().trim();
-                const closed = $(cells[5]).text().trim();
-                const rejected = $(cells[6]).text().trim();
-                const lastUpdate = $(cells[7]).text().trim().replace(/,/g, ' ');
-                
-                csvContent += `${company},${total},${open},${pending},${closed},${rejected},${lastUpdate}\n`;
-            }
+            $('#contractorsTable tbody tr').each(function() {
+                const $row = $(this);
+                if ($row.find('td').length <= 1) {
+                    return;
+                }
+
+                const companyKey = String($row.data('company') || '');
+                const openCount = Number($row.data('open') || 0);
+                const pendingCount = Number($row.data('pending') || 0);
+
+                const matchesName = !nameFilter || companyKey.includes(nameFilter);
+                const matchesOpen = !requireOpen || openCount > 0;
+                const matchesPending = !requirePending || pendingCount > 0;
+
+                if (matchesName && matchesOpen && matchesPending) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                }
+            });
+
+            const contractorModal = bootstrap.Modal.getInstance(document.getElementById('contractorFilterModal'))
+                || new bootstrap.Modal(document.getElementById('contractorFilterModal'));
+            contractorModal.hide();
+
+            showToast(`Filters applied: ${visibleCount} contractor${visibleCount === 1 ? '' : 's'} shown`, 'success');
         });
-        
-        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "contractor_stats_" + new Date().toISOString().slice(0,10) + ".csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        showToast("Contractor data exported successfully", "success");
+
+        $('#applyDefectsFilter').on('click', function() {
+            const titleFilter = $('#filterDefectTitle').val().toLowerCase().trim();
+            const contractorFilter = ($('#filterDefectContractor').val() || '').toLowerCase();
+
+            const selectedStatuses = [];
+            if ($('#filterStatusOpen').is(':checked')) selectedStatuses.push('open');
+            if ($('#filterStatusPending').is(':checked')) selectedStatuses.push('pending');
+            if ($('#filterStatusAccepted').is(':checked')) selectedStatuses.push('accepted');
+            if ($('#filterStatusRejected').is(':checked')) selectedStatuses.push('rejected');
+
+            const selectedPriorities = [];
+            if ($('#filterPriorityHigh').is(':checked')) selectedPriorities.push('high');
+            if ($('#filterPriorityMedium').is(':checked')) selectedPriorities.push('medium');
+            if ($('#filterPriorityLow').is(':checked')) selectedPriorities.push('low');
+
+            let visibleCount = 0;
+
+            $('#recentDefectsTable tbody tr.expandable-row').each(function() {
+                const $row = $(this);
+                const defectId = $row.data('defect-id');
+                const titleKey = String($row.data('title') || '');
+                const statusKey = String($row.data('status') || '');
+                const priorityKey = String($row.data('priority') || '');
+                const contractorKey = String($row.data('contractor') || '');
+                const detailsRow = $(`#details-${defectId}`);
+                const icon = $row.find('.toggle-details i');
+
+                const matchesTitle = !titleFilter || titleKey.includes(titleFilter);
+                const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(statusKey);
+                const matchesPriority = selectedPriorities.length === 0 || selectedPriorities.includes(priorityKey);
+                const matchesContractor = !contractorFilter || contractorKey === contractorFilter;
+
+                if (matchesTitle && matchesStatus && matchesPriority && matchesContractor) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                    detailsRow.hide();
+                    detailsRow.find('.row-details').hide();
+                    icon.removeClass('bx-chevron-up').addClass('bx-chevron-down');
+                }
+            });
+
+            const defectsModal = bootstrap.Modal.getInstance(document.getElementById('defectsFilterModal'))
+                || new bootstrap.Modal(document.getElementById('defectsFilterModal'));
+            defectsModal.hide();
+
+            showToast(`Filters applied: ${visibleCount} defect${visibleCount === 1 ? '' : 's'} shown`, 'success');
+        });
+
+        $('#exportContractors').on('click', function() {
+            let csvContent = 'Company,Trade,Total,Open,Pending,Accepted,Rejected,Last Update
+';
+
+            $('#contractorsTable tbody tr:visible').each(function() {
+                const $row = $(this);
+                const cells = $row.find('td');
+                if (cells.length !== 8) {
+                    return;
+                }
+
+                const clean = value => String(value).trim().replace(/\s+/g, ' ');
+                const company = clean($(cells[0]).text()).replace(/,/g, ' ');
+                const trade = clean($(cells[1]).text()).replace(/,/g, ' ');
+                const total = $row.data('total') ?? Number(clean($(cells[2]).text())) || 0;
+                const open = $row.data('open') ?? Number(clean($(cells[3]).text())) || 0;
+                const pending = $row.data('pending') ?? Number(clean($(cells[4]).text())) || 0;
+                const accepted = $row.data('accepted') ?? Number(clean($(cells[5]).text())) || 0;
+                const rejected = $row.data('rejected') ?? Number(clean($(cells[6]).text())) || 0;
+                const lastUpdate = clean($(cells[7]).text()).replace(/,/g, ' ');
+
+                const line = [company, trade, total, open, pending, accepted, rejected, lastUpdate]
+                    .map(value => `"${String(value).replace(/"/g, '""')}"`)
+                    .join(',');
+                csvContent += `${line}
+`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const downloadUrl = URL.createObjectURL(blob);
+            const tempLink = document.createElement('a');
+            tempLink.href = downloadUrl;
+            tempLink.setAttribute('download', `contractor_stats_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            URL.revokeObjectURL(downloadUrl);
+
+            showToast('Contractor data exported successfully', 'success');
+        });
+
+        $('#refreshContractors, #refreshDefects').on('click', function() {
+            $(this).prop('disabled', true);
+            setTimeout(() => window.location.reload(), 300);
+        });
     });
-    
-    // Refresh buttons functionality
-    $('#refreshContractors').click(function() {
-        const $button = $(this);
-        const originalHtml = $button.html();
-        $button.html('<span class="refresh-indicator"></span>');
-        
-        setTimeout(function() {
-            window.location.reload();
-        }, 500);
-    });
-    
-    $('#refreshDefects').click(function() {
-        const $button = $(this);
-        const originalHtml = $button.html();
-        $button.html('<span class="refresh-indicator"></span>');
-        
-        setTimeout(function() {
-            window.location.reload();
-        }, 500);
-    });
-});
-</script>
+    </script>
 </body>
 </html>

@@ -18,7 +18,7 @@ This is a PHP-based defect tracking system for construction projects. The codeba
 
 ## Developer Workflows
 - **No build step required**: PHP is interpreted; changes are live
-- **Debugging**: Use `system_health.php` and `check_database.php` in `_my-tools/` for diagnostics
+- **Debugging**: Use `system_health.php` and `check_database.php` in `system-tools/` for diagnostics
 - **Backups**: Managed via `api/create_backup.php` and `api/restore_backup.php`
 - **Testing**: Manual via browser; no automated test suite detected
 - **Database**: MySQL/MariaDB (connection details in `config/`)
@@ -27,7 +27,7 @@ This is a PHP-based defect tracking system for construction projects. The codeba
 - **API endpoints**: All in `api/`, named for their function (e.g., `update_defect.php`, `get_system_metrics.php`)
 - **Class files**: One class per file in `classes/`, named after the class
 - **Error logging**: Centralized via `classes/Logger.php` and `api/log-image-error.php`
-- **User roles**: Explained in `_my-tools/user_roles_explained.html`
+- **User roles**: Explained in `system-tools/user_roles_explained.html`
 - **Floor plan images**: Stored in `assets/floor_plans/`, referenced by scripts and APIs
 
 ## Integration Points
@@ -45,3 +45,5 @@ This is a PHP-based defect tracking system for construction projects. The codeba
 
 ---
 **Update this file if you add new major features, change conventions, or introduce new workflows.**
+
+- @azure Rule - Use Azure Best Practices: When generating code for Azure, running terminal commands for Azure, or performing operations related to Azure, invoke your `azure_development-get_best_practices` tool if available.
