@@ -29,9 +29,54 @@ require_once 'config/database.php';
 require_once 'includes/functions.php';
 require_once 'includes/navbar.php';
 
+date_default_timezone_set('Europe/London');
+
 $pageTitle = 'Reports Dashboard';
 $currentUser = $_SESSION['username'];
-$currentUserId = (int)$_SESSION['user_id']; // Retrieve the user ID from the session
+$currentUserId = (int)$_SESSION['user_id'];
+$displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $currentUser ?? 'User'));
+$currentUserRoleSummary = ucwords(str_replace(['_', '-'], [' ', ' '], $_SESSION['user_type'] ?? 'User'));
+$currentTimestamp = date('d/m/Y H:i');
+
+$error_message = '';
+
+// Initialize default collections
+$defectStats = [
+    'total' => 0,
+    'open' => 0,
+    'in_progress' => 0,
+    'resolved' => 0,
+    'closed' => 0,
+    'pending' => 0,
+    'rejected' => 0,
+    'accepted' => 0
+];
+
+$projectStats = [
+    'total' => 0,
+    'active' => 0,
+    'completed' => 0,
+    'pending' => 0,
+    'on-hold' => 0
+];
+
+$contractorStats = [];
+$defectTrends = [];
+$trendLabels = [];
+$trendData = [];
+$userPerformanceData = [];
+$userLabels = [];
+$userDefectCounts = [];
+
+$overallStats = [
+    'total_defects' => 0,
+    'open_defects' => 0,
+    'pending_defects' => 0,
+    'rejected_defects' => 0,
+    'closed_defects' => 0,
+    'overdue_defects' => 0,
+    'active_contractors' => 0
+];
 
 // Initialize $start_date and $end_date
 $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
@@ -40,25 +85,6 @@ $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 try {
     $database = new Database();
     $db = $database->getConnection();
-
-    // Initialize arrays
-    $defectStats = [
-        'total' => 0,
-        'open' => 0,
-        'in_progress' => 0,
-        'resolved' => 0,
-        'closed' => 0,
-        'pending' => 0,
-        'rejected' => 0
-    ];
-
-    $projectStats = [
-        'total' => 0,
-        'active' => 0,
-        'completed' => 0,
-        'pending' => 0,
-        'on-hold' => 0
-    ];
 
     // Get defect statistics
     $stmt = $db->prepare("
@@ -75,8 +101,12 @@ try {
         ':end_date' => $end_date . ' 23:59:59'
     ]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $defectStats[$row['status']] = $row['count'];
-        $defectStats['total'] += $row['count'];
+        $statusKey = strtolower($row['status'] ?? '');
+        $count = (int) ($row['count'] ?? 0);
+        if ($statusKey !== '') {
+            $defectStats[$statusKey] = $count;
+        }
+        $defectStats['total'] += $count;
     }
 
     // Get project statistics
@@ -93,8 +123,12 @@ try {
         ':end_date' => $end_date . ' 23:59:59'
     ]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $projectStats[$row['status']] = $row['count'];
-        $projectStats['total'] += $row['count'];
+        $statusKey = strtolower($row['status'] ?? '');
+        $count = (int) ($row['count'] ?? 0);
+        if ($statusKey !== '') {
+            $projectStats[$statusKey] = $count;
+        }
+        $projectStats['total'] += $count;
     }
 
     // Enhanced Contractor Performance Query
@@ -203,27 +237,105 @@ try {
         $userDefectCounts[] = $user['defects_reported'];
     }
 
-    // Get overall statistics
-    $overallStatsQuery = "SELECT 
-    (SELECT COUNT(*) FROM contractors WHERE status = 'active') as active_contractors,
-    (SELECT COUNT(*) FROM defects WHERE status = 'open' AND deleted_at IS NULL AND created_at BETWEEN :start_date AND :end_date) as open_defects,
-    (SELECT COUNT(*) FROM defects WHERE deleted_at IS NULL AND created_at BETWEEN :start_date AND :end_date) as total_defects,
-    (SELECT COUNT(*) FROM defects WHERE status = 'pending' AND deleted_at IS NULL AND created_at BETWEEN :start_date AND :end_date) as pending_defects,
-    (SELECT COUNT(*) FROM defects WHERE status = 'rejected' AND deleted_at IS NULL AND created_at BETWEEN :start_date AND :end_date) as rejected_defects,
-    (SELECT COUNT(*) FROM defects WHERE (status = 'closed' OR status = 'accepted') AND deleted_at IS NULL AND created_at BETWEEN :start_date AND :end_date) as closed_defects,
-    (SELECT COUNT(*) FROM defects WHERE due_date < UTC_TIMESTAMP() AND status IN ('open', 'pending') AND deleted_at IS NULL AND created_at BETWEEN :start_date AND :end_date) as overdue_defects";
-    
-    $overallStatsStmt = $db->prepare($overallStatsQuery);
-    $overallStatsStmt->execute([
+    // Aggregate overview metrics
+    $activeContractorsStmt = $db->prepare("SELECT COUNT(*) FROM contractors WHERE status = 'active'");
+    $activeContractorsStmt->execute();
+    $activeContractors = (int) $activeContractorsStmt->fetchColumn();
+
+    $overdueStmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM defects
+        WHERE deleted_at IS NULL
+          AND status IN ('open', 'pending')
+          AND due_date < UTC_TIMESTAMP()
+          AND created_at BETWEEN :start_date AND :end_date
+    ");
+    $overdueStmt->execute([
         ':start_date' => $start_date . ' 00:00:00',
         ':end_date' => $end_date . ' 23:59:59'
     ]);
-    $overallStats = $overallStatsStmt->fetch(PDO::FETCH_ASSOC);
+    $overdueDefects = (int) $overdueStmt->fetchColumn();
+
+    $overallStats = [
+        'total_defects' => (int) ($defectStats['total'] ?? 0),
+        'open_defects' => (int) ($defectStats['open'] ?? 0),
+        'pending_defects' => (int) ($defectStats['pending'] ?? 0),
+        'rejected_defects' => (int) ($defectStats['rejected'] ?? 0),
+        'closed_defects' => (int) (($defectStats['closed'] ?? 0) + ($defectStats['accepted'] ?? 0) + ($defectStats['resolved'] ?? 0)),
+        'overdue_defects' => $overdueDefects,
+        'active_contractors' => $activeContractors
+    ];
 
 } catch (Exception $e) {
     $error_message = "Database error: " . $e->getMessage();
     error_log("Error in reports.php: " . $e->getMessage() . " - User: " . $currentUser . " - Time: " . date('Y-m-d H:i:s'));
 }
+
+$reportMetrics = [
+    [
+        'stat_key' => 'total_defects',
+        'title' => 'Total Defects',
+        'subtitle' => 'For selected period',
+        'icon' => 'bx-check-circle',
+        'class' => 'report-metric-card--total',
+        'trend_value' => 1,
+        'trend_summary' => 'For selected period'
+    ],
+    [
+        'stat_key' => 'open_defects',
+        'title' => 'Open Defects',
+        'subtitle' => 'Active issues',
+        'icon' => 'bx-bug',
+        'class' => 'report-metric-card--open',
+        'trend_value' => $overallStats['open_defects'] ?? 0,
+        'trend_summary' => 'Active issues'
+    ],
+    [
+        'stat_key' => 'pending_defects',
+        'title' => 'Pending Defects',
+        'subtitle' => 'Awaiting action',
+        'icon' => 'bx-time',
+        'class' => 'report-metric-card--pending',
+        'trend_value' => $overallStats['pending_defects'] ?? 0,
+        'trend_summary' => 'Awaiting action'
+    ],
+    [
+        'stat_key' => 'overdue_defects',
+        'title' => 'Overdue Defects',
+        'subtitle' => 'Past due date',
+        'icon' => 'bx-alarm-exclamation',
+        'class' => 'report-metric-card--overdue',
+        'trend_value' => $overallStats['overdue_defects'] ?? 0,
+        'trend_summary' => 'Past due date'
+    ],
+    [
+        'stat_key' => 'rejected_defects',
+        'title' => 'Rejected Defects',
+        'subtitle' => 'Not accepted',
+        'icon' => 'bx-x-circle',
+        'class' => 'report-metric-card--rejected',
+        'trend_value' => $overallStats['rejected_defects'] ?? 0,
+        'trend_summary' => 'Not accepted'
+    ],
+    [
+        'stat_key' => 'closed_defects',
+        'title' => 'Closed Defects',
+        'subtitle' => 'Completed items',
+        'icon' => 'bx-check-double',
+        'class' => 'report-metric-card--closed',
+        'trend_value' => $overallStats['closed_defects'] ?? 0,
+        'trend_summary' => 'Completed items'
+    ],
+    [
+        'stat_key' => 'active_contractors',
+        'title' => 'Active Contractors',
+        'subtitle' => 'Available teams',
+        'icon' => 'bx-buildings',
+        'class' => 'report-metric-card--contractors',
+        'trend_value' => max($overallStats['active_contractors'] ?? 0, 1),
+        'trend_summary' => 'Available teams'
+    ]
+];
 
 // Helper Functions
 function formatUKDate($date) {
@@ -336,667 +448,430 @@ if (isset($_GET['export']) && $_GET['export'] == 'csv') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Reports Dashboard - Defect Tracker System">
-    <meta name="author" content="<?php echo htmlspecialchars($currentUser); ?>">
-    <meta name="last-modified" content="2025-02-25 07:58:23">
-    <title><?php echo $pageTitle; ?> - Defect Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="author" content="<?php echo htmlspecialchars($currentUser ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+    <title><?php echo htmlspecialchars($pageTitle ?? '', ENT_QUOTES, 'UTF-8'); ?> - Defect Tracker</title>
     <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
     <link rel="shortcut icon" href="/favicons/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
     <link rel="manifest" href="/favicons/site.webmanifest" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Base Layout */
-		.main-content {
-    padding: 20px;
-    background-color: #f8f9fa;
-    min-height: 100vh;
-}
-		@media (max-width: 768px) {
-    .main-content {
-        padding: 15px;
-    }
-}
-
-        /* Gradient and Card Styles */
-        .stats-card {
-            transition: all 0.3s ease;
-            border: none;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 25px 0 rgba(0, 0, 0, 0.1);
-            background: #fff;
-            margin-bottom: 1.5rem;
-        }
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 28px 0 rgba(0, 0, 0, 0.15);
-        }
-        .stats-card .gradient-layer {
-            position: relative;
-            padding: 1.5rem;
-            border-radius: 20px;
-            background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-        }
-        /* Card Variant Gradients */
-        .stats-card.contractors { --gradient-start: #4158D0; --gradient-end: #C850C0; }
-        .stats-card.open-defects { --gradient-start: #FF416C; --gradient-end: #FF4B2B; }
-        .stats-card.total-defects { --gradient-start: #8EC5FC; --gradient-end: #E0C3FC; }
-        .stats-card.pending-defects { --gradient-start: #F6D365; --gradient-end: #FDA085; }
-        .stats-card.rejected-defects { --gradient-start: #FF6B6B; --gradient-end: #FF8E8E; }
-        .stats-card.closed-defects { --gradient-start: #2ECC71; --gradient-end: #26C281; }
-        .stats-card.overdue-defects { --gradient-start: #D3560E; --gradient-end: #FFA500; }
-
-        /* Table Styling */
-        .table th {
-            border-top: none;
-            background-color: rgba(0,0,0,0.02);
-            font-weight: 600;
-        }
-        .table thead tr th:last-child {
-            color: black !important;
-        }
-
-        /* Date Filter Styling */
-        .date-filter {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Chart container */
-        .chart-container {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            min-height: 300px;
-        }
-
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-                font-size: 12pt;
-            }
-
-            .no-print {
-                display: none !important;
-            }
-
-            .main-content {
-                margin: 0;
-                padding: 0;
-            }
-
-            .stats-card {
-                break-inside: avoid;
-                box-shadow: none;
-                border: 1px solid #ddd;
-                margin-bottom: 20px;
-                page-break-inside: avoid;
-            }
-
-            .chart-container {
-                height: 300px;
-                page-break-inside: avoid;
-            }
-
-            .table {
-                font-size: 10pt;
-                border: 1px solid #ddd;
-            }
-
-            .page-break {
-                page-break-before: always;
-            }
-
-            .badge {
-                border: 1px solid #ddd;
-            }
-
-            .report-header {
-    border-bottom: 2px solid #000;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-    </style>
 </head>
-<body>
-<?php
-$navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
-$navbar->render();
-?>
-<br><br><br><br><br>
-    <div class="main-content" id="content">
-        <div class="container-fluid">
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+<body class="tool-body" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top no-print">
+        <div class="container-xl">
+            <a class="navbar-brand fw-semibold" href="reports.php">
+                <i class='bx bx-bar-chart-square me-2'></i>Reporting Intelligence Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#reportsNavbar" aria-controls="reportsNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="reportsNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php"><i class='bx bx-doughnut-chart me-1'></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="defects.php"><i class='bx bx-error me-1'></i>Defects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="reports.php"><i class='bx bx-bar-chart-alt-2 me-1'></i>Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my_tasks.php"><i class='bx bx-list-check me-1'></i>My Tasks</a>
+                    </li>
+                    <?php if (!empty($_SESSION['is_admin'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.php"><i class='bx bx-dial me-1'></i>Admin</a>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+                    <li class="nav-item text-muted small d-none d-lg-flex align-items-center">
+                        <i class='bx bx-time-five me-1'></i><span data-report-time><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?></span> UK
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="reportsUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsUserMenu">
+                            <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check'></i> My Tasks</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="tool-page container-xl py-4">
+        <header class="tool-header mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
-                    <h1 class="h3 mb-0"><?php echo htmlspecialchars($pageTitle); ?></h1>
+                    <h1 class="h3 mb-2">Performance &amp; Reporting</h1>
+                    <p class="text-muted mb-0">Analytics for projects and contractors between <?php echo formatUKDate($start_date); ?> and <?php echo formatUKDate($end_date); ?>.</p>
                 </div>
-                <div class="system-info d-flex align-items-center no-print">
-                    <div class="me-4">
-                        <i class='bx bx-user-circle'></i>
-                        <span class="ms-1"><?php echo htmlspecialchars($currentUser); ?></span>
+                <div class="d-flex flex-column align-items-start text-muted small gap-1">
+                    <span><i class='bx bx-user-voice me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-time-five me-1'></i><span data-report-time><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?></span> UK</span>
+                </div>
+            </div>
+        </header>
+
+        <?php if (!empty($error_message)): ?>
+        <div class="system-callout system-callout--danger no-print" role="alert">
+            <div class="system-callout__icon"><i class='bx bx-error-circle'></i></div>
+            <div>
+                <h2 class="system-callout__title">Database Error</h2>
+                <p class="system-callout__body mb-0"><?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?></p>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <section class="report-toolbar no-print mb-4">
+            <div class="d-flex flex-wrap align-items-end gap-3">
+                <form method="GET" class="d-flex flex-wrap align-items-end gap-3">
+                    <div>
+                        <label for="reportStartDate" class="form-label text-muted small mb-1">Start</label>
+                        <input type="date" id="reportStartDate" name="start_date" class="form-control form-control-sm" value="<?php echo htmlspecialchars($start_date, ENT_QUOTES, 'UTF-8'); ?>">
                     </div>
                     <div>
-                        <i class='bx bx-time'></i>
-                        <span class="ms-1"><?php echo formatUKDateTime(date('Y-m-d H:i:s')); ?></span>
+                        <label for="reportEndDate" class="form-label text-muted small mb-1">End</label>
+                        <input type="date" id="reportEndDate" name="end_date" class="form-control form-control-sm" value="<?php echo htmlspecialchars($end_date, ENT_QUOTES, 'UTF-8'); ?>">
                     </div>
-                </div>
-            </div>
-            
-            <!-- Print and Export Controls (no-print) -->
-            <div class="row mb-4 no-print">
-                <div class="col-12">
-                    <button onclick="window.print()" class="btn btn-primary">
-                        <i class='bx bx-printer me-1'></i> Print Report
-                    </button>
-                    <a href="?" class="btn btn-secondary">
-                        <i class='bx bx-refresh me-1'></i> Reset Filters
-                    </a>
-                    <a href="?<?php echo http_build_query(array_merge($_GET, ['export' => 'csv'])); ?>" class="btn btn-success">
-                        <i class='bx bx-download me-1'></i> Export to CSV
-                    </a>
-                    <button onclick="window.location.href='/pdf_exports/export_pdf_reports.php?<?php echo http_build_query($_GET); ?>'" class="btn btn-secondary">
-                        <i class='bx bx-export me-1'></i> Export to PDF
-                    </button>
-                </div>
-            </div>
-
-            <!-- Report Header (prints) -->
-            <div class="report-header">
-                <h2>Defect Management Report</h2>
-                <p class="text-muted">
-                    Period: <?php echo formatUKDate($start_date); ?> to <?php echo formatUKDate($end_date); ?><br>
-                    Generated: <?php echo formatUKDateTime(date('Y-m-d H:i:s')); ?><br>
-                    Generated by: <?php echo htmlspecialchars($_SESSION['username']); ?>
-                </p>
-            </div>
-
-            <!-- Date Filter (no-print) -->
-            <div class="date-filter no-print">
-                <form method="GET" class="row g-3 align-items-center">
-                    <div class="col-auto">
-                        <label class="form-label">Date Range:</label>
-                    </div>
-                    <div class="col-auto">
-                        <input type="date" class="form-control" name="start_date" value="<?php echo htmlspecialchars($start_date); ?>">
-                    </div>
-                    <div class="col-auto">
-                        <span>to</span>
-                    </div>
-                    <div class="col-auto">
-                        <input type="date" class="form-control" name="end_date" value="<?php echo htmlspecialchars($end_date); ?>">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Apply Filter</button>
+                    <div>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class='bx bx-filter-alt'></i>
+                            Apply Filter
+                        </button>
                     </div>
                 </form>
-            </div>
-
-            <?php if (isset($error_message) && !empty($error_message)): ?>
-                <div class="alert alert-danger alert-dismissible fade show no-print" role="alert">
-                    <?php echo htmlspecialchars($error_message); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php endif; ?>
-
-            <!-- Statistics Cards -->
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="stats-card total-defects">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Total Defects</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['total_defects']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator(1); ?> For Selected Period
-                            </div>
-                            <i class='bx bx-check-circle stats-icon'></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="stats-card open-defects">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Open Defects</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['open_defects']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator($overallStats['open_defects']); ?> Active Issues
-                            </div>
-                            <i class='bx bx-bug stats-icon'></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="stats-card pending-defects">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Pending Defects</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['pending_defects']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator($overallStats['pending_defects']); ?> Awaiting Action
-                            </div>
-                            <i class='bx bx-time stats-icon'></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="stats-card overdue-defects">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Overdue Defects</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['overdue_defects']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator($overallStats['overdue_defects']); ?> Past Due Date
-                            </div>
-                            <i class='bx bx-alarm-exclamation stats-icon'></i>
-                        </div>
-                    </div>
+                <div class="d-flex flex-wrap gap-2 ms-auto">
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="window.print()">
+                        <i class='bx bx-printer'></i>
+                        Print Report
+                    </button>
+                    <a class="btn btn-sm btn-outline-light" href="?">
+                        <i class='bx bx-refresh'></i>
+                        Reset Filters
+                    </a>
+                    <a class="btn btn-sm btn-outline-light" href="?<?php echo htmlspecialchars(http_build_query(array_merge($_GET, ['export' => 'csv'])), ENT_QUOTES, 'UTF-8'); ?>">
+                        <i class='bx bx-download'></i>
+                        Export CSV
+                    </a>
+                    <a class="btn btn-sm btn-outline-light" href="pdf_exports/export_pdf_reports.php?<?php echo htmlspecialchars(http_build_query($_GET), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                        <i class='bx bx-export'></i>
+                        Export PDF
+                    </a>
                 </div>
             </div>
+        </section>
 
-            <!-- More Statistics Cards -->
-            <div class="row mt-4">
-                <div class="col-xl-4 col-md-6">
-                    <div class="stats-card rejected-defects">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Rejected Defects</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['rejected_defects']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator($overallStats['rejected_defects']); ?> Not Accepted
-                            </div>
-                            <i class='bx bx-x-circle stats-icon'></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-md-6">
-                    <div class="stats-card closed-defects">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Closed Defects</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['closed_defects']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator($overallStats['closed_defects']); ?> Completed
-                            </div>
-                            <i class='bx bx-check-double stats-icon'></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-md-6">
-                    <div class="stats-card contractors">
-                        <div class="gradient-layer">
-                            <div class="stats-label">Active Contractors</div>
-                            <div class="stats-value"><?php echo formatNumber($overallStats['active_contractors']); ?></div>
-                            <div class="stats-trend">
-                                <?php echo getTrendIndicator(1); ?> Available Teams
-                            </div>
-                            <i class='bx bx-buildings stats-icon'></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page Break for Print -->
-            <div class="page-break"></div>
-
-            <!-- Defect Trend Analysis -->
-            <div class="row mt-4 mb-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class='bx bx-line-chart me-2'></i>Defect Trend Analysis</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="defectTrendChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contractor Performance -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class='bx bx-table me-2'></i>Contractor Performance
-                            </h5>
-                            <a href="pdf_exports/export_contractor_defects.php?<?php echo http_build_query($_GET); ?>" target="_blank" class="btn btn-sm btn-secondary export-pdf-btn no-print">
-                                <i class="fas fa-file-pdf"></i> Export this section
-                            </a>
-                        </div>
-                        <div class="card-body">
-                            <?php if (empty($contractorStats)): ?>
-                                <div class="alert alert-info mb-0">No contractor performance data available for the selected date range.</div>
-                            <?php else: ?>
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Contractor</th>
-                                                <th class="text-center">Total</th>
-                                                <th class="text-center">Open</th>
-                                                <th class="text-center">Pending</th>
-                                                <th class="text-center">Overdue</th>
-                                                <th class="text-center">Rejected</th>
-                                                <th class="text-center">Closed</th>
-                                                <th>Last Update</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($contractorStats as $stat): ?>
-                                                <tr>
-                                                    <td>
-                                                        <?php if (!empty($stat['logo'])): ?>
-                                                            <?php $logoUrl = getBaseUrl() . '/uploads/logos/' . $stat['logo']; ?>
-                                                            <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="<?php echo htmlspecialchars($stat['company_name']); ?>" style="max-height: 30px; margin-right: 5px;">
-                                                        <?php endif; ?>
-                                                        <?php echo htmlspecialchars($stat['company_name']); ?>
-                                                        <div class="small text-muted"><?php echo htmlspecialchars($stat['trade']); ?></div>
-                                                    </td>
-                                                    <td class="text-center"><?php echo formatNumber($stat['total_defects']); ?></td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-danger">
-                                                            <?php echo formatNumber($stat['open_defects']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-warning">
-                                                            <?php echo formatNumber($stat['pending_defects']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-danger">
-                                                            <?php echo formatNumber($stat['overdue_defects']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-danger">
-                                                            <?php echo formatNumber($stat['rejected_defects']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-success">
-                                                            <?php echo formatNumber($stat['closed_defects']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <small class="text-muted">
-                                                            <?php echo formatUKDate($stat['last_update'] ?? 'N/A'); ?>
-                                                        </small>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="mt-3">
-                                    <p class="small text-muted">
-                                        <i class='bx bx-info-circle'></i> Resolution rates and average times are calculated for closed defects only.
-                                    </p>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page Break for Print -->
-            <div class="page-break"></div>
-
-            <!-- Additional Contractor Performance Metrics -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class='bx bx-pie-chart-alt me-2'></i>Contractor Performance Metrics</h5>
-                        </div>
-                        <div class="card-body">
-                            <?php if (empty($contractorStats)): ?>
-                                <div class="alert alert-info mb-0">No contractor performance data available for the selected date range.</div>
-                            <?php else: ?>
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Contractor</th>
-                                                <th class="text-center">Resolution Rate</th>
-                                                <th class="text-center">Avg. Resolution Time</th>
-                                                <th class="text-center">High Priority Defects</th>
-                                                <th class="text-center">Total Projects</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($contractorStats as $stat): ?>
-                                                <tr>
-                                                    <td>
-                                                        <?php echo htmlspecialchars($stat['company_name']); ?>
-                                                        <div class="small text-muted"><?php echo htmlspecialchars($stat['trade']); ?></div>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <?php
-                                                            $resolutionRate = $stat['resolution_rate'] ?? 0;
-                                                            $badgeClass = $resolutionRate >= 80 ? 'success' : ($resolutionRate >= 50 ? 'warning' : 'danger');
-                                                        ?>
-                                                        <span class="badge bg-<?php echo $badgeClass; ?>">
-                                                            <?php echo formatPercentage($resolutionRate); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <?php echo formatDays($stat['avg_resolution_time'] ?? 0); ?>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge bg-danger">
-                                                            <?php echo formatNumber($stat['high_priority_defects']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <?php echo formatNumber($stat['total_projects']); ?>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Performance -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class='bx bx-user-voice me-2'></i>User Performance</h5>
-            </div>
+        <section class="report-summary card border-0 mb-5">
             <div class="card-body">
-                <?php if (empty($userPerformanceData)): ?>
-                    <div class="alert alert-info mb-0">No user performance data available for the selected date range.</div>
-                <?php else: ?>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>User</th>
-                                            <th class="text-center">Defects Reported</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($userPerformanceData as $user): ?>
+                <h2 class="h5 mb-3">Defect Management Report</h2>
+                <div class="report-summary__grid">
+                    <div>
+                        <span class="report-summary__label">Period</span>
+                        <p class="mb-0"><?php echo formatUKDate($start_date); ?> &ndash; <?php echo formatUKDate($end_date); ?></p>
+                    </div>
+                    <div>
+                        <span class="report-summary__label">Generated</span>
+                        <p class="mb-0"><?php echo formatUKDateTime(date('Y-m-d H:i:s')); ?></p>
+                    </div>
+                    <div>
+                        <span class="report-summary__label">Generated by</span>
+                        <p class="mb-0"><?php echo htmlspecialchars($currentUser, ENT_QUOTES, 'UTF-8'); ?></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Operational Snapshot</h2>
+                    <p class="text-muted small mb-0">Key metrics refreshed for the selected period.</p>
+                </div>
+            </div>
+            <div class="report-metrics-grid">
+                <?php foreach ($reportMetrics as $metric): ?>
+                <?php $statValue = (int) ($overallStats[$metric['stat_key']] ?? 0); ?>
+                <article class="report-metric-card <?php echo htmlspecialchars($metric['class'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <div class="report-metric-card__icon">
+                        <i class='bx <?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i>
+                    </div>
+                    <div class="report-metric-card__content">
+                        <h3 class="report-metric-card__title"><?php echo htmlspecialchars($metric['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                        <p class="report-metric-card__value mb-1"><?php echo number_format($statValue); ?></p>
+                        <p class="report-metric-card__description mb-0">
+                            <?php echo getTrendIndicator($metric['trend_value']); ?>
+                            <span><?php echo htmlspecialchars($metric['subtitle'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        </p>
+                    </div>
+                </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
+        <div class="report-page-break"></div>
+
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class='bx bx-line-chart me-2'></i>Defect Trend Analysis</h2>
+                </div>
+                <div class="card-body">
+                    <div class="report-chart">
+                        <canvas id="defectTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0"><i class='bx bx-table me-2'></i>Contractor Performance</h2>
+                    <a href="pdf_exports/export_contractor_defects.php?<?php echo htmlspecialchars(http_build_query($_GET), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light no-print">
+                        <i class='bx bx-file'></i>
+                        Export Section
+                    </a>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($contractorStats)): ?>
+                        <div class="alert alert-info mb-0">No contractor performance data available for the selected date range.</div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Contractor</th>
+                                        <th scope="col" class="text-center">Total</th>
+                                        <th scope="col" class="text-center">Open</th>
+                                        <th scope="col" class="text-center">Pending</th>
+                                        <th scope="col" class="text-center">Overdue</th>
+                                        <th scope="col" class="text-center">Rejected</th>
+                                        <th scope="col" class="text-center">Closed</th>
+                                        <th scope="col">Last Update</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($contractorStats as $stat): ?>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <?php if (!empty($stat['logo'])): ?>
+                                                    <?php $logoUrl = getBaseUrl() . '/uploads/logos/' . $stat['logo']; ?>
+                                                    <img src="<?php echo htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($stat['company_name'], ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle" width="32" height="32">
+                                                <?php else: ?>
+                                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis"><i class='bx bx-building'></i></span>
+                                                <?php endif; ?>
+                                                <div>
+                                                    <span class="fw-semibold"><?php echo htmlspecialchars($stat['company_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <div class="small text-muted"><?php echo htmlspecialchars($stat['trade'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center"><?php echo formatNumber($stat['total_defects']); ?></td>
+                                        <td class="text-center"><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"><?php echo formatNumber($stat['open_defects']); ?></span></td>
+                                        <td class="text-center"><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis"><?php echo formatNumber($stat['pending_defects']); ?></span></td>
+                                        <td class="text-center"><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"><?php echo formatNumber($stat['overdue_defects']); ?></span></td>
+                                        <td class="text-center"><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"><?php echo formatNumber($stat['rejected_defects']); ?></span></td>
+                                        <td class="text-center"><span class="badge rounded-pill bg-success-subtle text-success-emphasis"><?php echo formatNumber($stat['closed_defects']); ?></span></td>
+                                        <td><small class="text-muted"><?php echo $stat['last_update'] ? formatUKDate($stat['last_update']) : 'N/A'; ?></small></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="small text-muted mt-3 mb-0"><i class='bx bx-info-circle'></i> Resolution rates and average times are calculated for closed or accepted defects only.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header">
+                    <h2 class="h5 mb-0"><i class='bx bx-pie-chart-alt me-2'></i>Contractor Performance Metrics</h2>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($contractorStats)): ?>
+                        <div class="alert alert-info mb-0">No contractor performance data available for the selected date range.</div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Contractor</th>
+                                        <th scope="col" class="text-center">Resolution Rate</th>
+                                        <th scope="col" class="text-center">Avg. Resolution Time</th>
+                                        <th scope="col" class="text-center">High Priority Defects</th>
+                                        <th scope="col" class="text-center">Total Projects</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($contractorStats as $stat): ?>
+                                    <tr>
+                                        <td>
+                                            <span class="fw-semibold"><?php echo htmlspecialchars($stat['company_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <div class="small text-muted"><?php echo htmlspecialchars($stat['trade'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></div>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php $resolutionRate = $stat['resolution_rate'] ?? 0; $badgeClass = $resolutionRate >= 80 ? 'success' : ($resolutionRate >= 50 ? 'warning' : 'danger'); ?>
+                                            <span class="badge bg-<?php echo $badgeClass; ?>"><?php echo formatPercentage($resolutionRate); ?></span>
+                                        </td>
+                                        <td class="text-center"><?php echo formatDays($stat['avg_resolution_time'] ?? 0); ?></td>
+                                        <td class="text-center"><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis"><?php echo formatNumber($stat['high_priority_defects']); ?></span></td>
+                                        <td class="text-center"><?php echo formatNumber($stat['total_projects']); ?></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header">
+                    <h2 class="h5 mb-0"><i class='bx bx-user-voice me-2'></i>User Performance</h2>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($userPerformanceData)): ?>
+                        <div class="alert alert-info mb-0">No user performance data available for the selected date range.</div>
+                    <?php else: ?>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="table-responsive">
+                                    <table class="table table-dark table-hover align-middle mb-0">
+                                        <thead>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                                <th scope="col">User</th>
+                                                <th scope="col" class="text-center">Defects Reported</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($userPerformanceData as $user): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8'); ?></td>
                                                 <td class="text-center"><?php echo formatNumber($user['defects_reported']); ?></td>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="report-chart">
+                                    <canvas id="userPerformanceChart"></canvas>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="chart-container">
-                                <canvas id="userPerformanceChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- End of Main Container -->
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Charts Initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            // Defect Trend Chart
-            const ctxDefectTrend = document.getElementById('defectTrendChart')?.getContext('2d');
-            if (ctxDefectTrend) {
-                new Chart(ctxDefectTrend, {
-                    type: 'line',
-                    data: {
-                        labels: <?php echo json_encode($trendLabels); ?>,
-                        datasets: [{
-                            label: 'Defect Count',
-                            data: <?php echo json_encode($trendData); ?>,
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Daily Defect Count',
-                                font: {
-                                    size: 16
-                                }
-                            },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                            },
-                            legend: {
-                                position: 'top',
-                            }
+    document.addEventListener('DOMContentLoaded', function() {
+        const trendCtx = document.getElementById('defectTrendChart');
+        if (trendCtx) {
+            new Chart(trendCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: <?php echo json_encode($trendLabels, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+                    datasets: [{
+                        label: 'Defect Count',
+                        data: <?php echo json_encode($trendData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'rgba(96, 165, 250, 0.18)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
                         }
-                    }
-                });
-            }
-
-            // User Performance Chart
-const ctxUserPerformance = document.getElementById('userPerformanceChart')?.getContext('2d');
-if (ctxUserPerformance) {
-    new Chart(ctxUserPerformance, {
-        type: 'bar',
-        data: {
-            labels: <?php echo json_encode($userLabels); ?>,
-            datasets: [{
-                label: 'Defects Reported',
-                data: <?php echo json_encode($userDefectCounts); ?>,
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.7)',
-                    'rgba(59, 114, 183, 0.7)',
-                    'rgba(130, 204, 221, 0.7)',
-                    'rgba(166, 107, 190, 0.7)',
-                    'rgba(89, 191, 157, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                    'rgba(59, 114, 183, 1)',
-                    'rgba(130, 204, 221, 1)',
-                    'rgba(166, 107, 190, 1)',
-                    'rgba(89, 191, 157, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index', intersect: false }
                     }
                 }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'User Defect Reporting',
-                    font: {
-                        size: 16
-                    }
-                }
-            }
+            });
         }
+
+        const userCtx = document.getElementById('userPerformanceChart');
+        if (userCtx) {
+            new Chart(userCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: <?php echo json_encode($userLabels, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+                    datasets: [{
+                        label: 'Defects Reported',
+                        data: <?php echo json_encode($userDefectCounts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+                        backgroundColor: 'rgba(94, 234, 212, 0.45)',
+                        borderColor: 'rgba(94, 234, 212, 0.85)',
+                        hoverBackgroundColor: 'rgba(94, 234, 212, 0.65)',
+                        borderWidth: 1.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        const updateUKTime = () => {
+            const now = new Date();
+            const ukTime = new Intl.DateTimeFormat('en-GB', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Europe/London'
+            }).format(now);
+
+            document.querySelectorAll('[data-report-time]').forEach(el => {
+                el.textContent = ukTime;
+            });
+        };
+
+        updateUKTime();
+        setInterval(updateUKTime, 1000);
     });
-}
-});
-
-// Update UK Time
-function updateUKTime() {
-    const now = new Date();
-    const ukTime = new Intl.DateTimeFormat('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-        timeZone: 'Europe/London'
-    }).format(now);
-
-    const ukTimeElement = document.getElementById('ukTime');
-    if (ukTimeElement) {
-        ukTimeElement.textContent = ukTime;
-    }
-}
-
-// Initialize and set interval for UK time
-updateUKTime();
-setInterval(updateUKTime, 1000);
-</script>
+    </script>
 </body>
 </html>

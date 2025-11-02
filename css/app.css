@@ -1845,3 +1845,246 @@ hr {
     right: 1.5rem;
   }
 }
+
+/* Reports Enhancements -------------------------------------------------- */
+
+.report-toolbar .form-control-sm {
+  min-width: 160px;
+  background-color: rgba(15, 23, 42, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  color: var(--text-color);
+}
+
+.report-summary__grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.report-summary__label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.72);
+  margin-bottom: 0.35rem;
+}
+
+.report-metrics-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.report-metric-card {
+  position: relative;
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  box-shadow: 0 22px 44px rgba(2, 6, 23, 0.55);
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.report-metric-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 55%);
+}
+
+.report-metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px rgba(2, 6, 23, 0.65);
+}
+
+.report-metric-card__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--white);
+  background: rgba(15, 23, 42, 0.32);
+  box-shadow: 0 18px 28px rgba(15, 23, 42, 0.35);
+  z-index: 1;
+}
+
+.report-metric-card__content {
+  position: relative;
+  z-index: 1;
+}
+
+.report-metric-card__title {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+.report-metric-card__value {
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.1;
+}
+
+.report-metric-card__description {
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.report-metric-card__description .bx {
+  font-size: 1.1rem;
+}
+
+.report-metric-card--total {
+  background: linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%);
+}
+
+.report-metric-card--open {
+  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
+.report-metric-card--pending {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.report-metric-card--overdue {
+  background: linear-gradient(135deg, #d3560e 0%, #ffa500 100%);
+}
+
+.report-metric-card--rejected {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+}
+
+.report-metric-card--closed {
+  background: linear-gradient(135deg, #2ecc71 0%, #26c281 100%);
+}
+
+.report-metric-card--contractors {
+  background: linear-gradient(135deg, #4158d0 0%, #c850c0 100%);
+}
+
+.system-callout {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid transparent;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.55);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+.system-callout__icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.system-callout__title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.system-callout__body {
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 0.9rem;
+}
+
+.system-callout--danger {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: linear-gradient(140deg, rgba(127, 29, 29, 0.85), rgba(220, 38, 38, 0.45));
+}
+
+.system-callout--danger .system-callout__icon {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.65);
+}
+
+.report-chart {
+  position: relative;
+  min-height: 320px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+}
+
+.report-chart canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.report-page-break {
+  height: 1px;
+  margin: var(--spacing-xl) 0;
+}
+
+.alert-info {
+  background-color: rgba(96, 165, 250, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  color: rgba(224, 231, 255, 0.92);
+}
+
+@media (max-width: 768px) {
+  .report-toolbar .form-control-sm {
+    min-width: 140px;
+  }
+
+  .report-metric-card {
+    padding: var(--spacing-md);
+  }
+}
+
+@media print {
+  body.tool-body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .no-print,
+  .navbar,
+  .btn,
+  .system-callout {
+    display: none !important;
+  }
+
+  .tool-page {
+    padding: 0 !important;
+  }
+
+  .report-metric-card,
+  .card,
+  .table {
+    box-shadow: none !important;
+    border-color: #dddddd !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .report-page-break {
+    display: block;
+    page-break-before: always;
+  }
+}
