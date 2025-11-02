@@ -10,7 +10,7 @@
     }
   },
   "forwardPorts": [80, 3306],
-  "postCreateCommand": "composer install || true",
+  "postCreateCommand": "apk update && apk add php83 php83-cli php83-common php83-mbstring php83-openssl php83-pdo php83-pdo_mysql php83-simplexml php83-tokenizer && composer install || true",
   "mounts": [
     "source=${localWorkspaceFolder}/uploads,target=/var/www/html/uploads,type=bind"
   ],

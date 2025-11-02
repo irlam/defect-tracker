@@ -22,9 +22,12 @@
   // Provide a defensive wrapper that swallows connection failures.
   const NativeWebSocket = window.WebSocket;
   window.WebSocket = function SafeWebSocket(url, protocols) {
-    if (typeof url === 'string' && /\/ws\/?$/.test(url)) {
-      console.debug(logPrefix, 'Live reload socket disabled for', url);
-      return noop();
+    if (typeof url === 'string') {
+      const normalizedUrl = url.split('?')[0];
+      if (/\/(ws|sockjs)(\/|$)/i.test(normalizedUrl)) {
+        console.debug(logPrefix, 'Live reload socket disabled for', url);
+        return noop();
+      }
     }
     try {
       return new NativeWebSocket(url, protocols);
