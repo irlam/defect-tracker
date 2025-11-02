@@ -783,6 +783,161 @@ a:focus {
   }
 }
 
+/* Admin System Tools -------------------------------------------------- */
+
+.system-tools-card {
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: linear-gradient(160deg, rgba(14, 23, 43, 0.95) 0%, rgba(9, 15, 28, 0.92) 100%);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.55);
+}
+
+.system-tools-card .card-header {
+  background: rgba(15, 23, 42, 0.85);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.system-tools-grid {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.system-tool-card {
+  position: relative;
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  background: linear-gradient(150deg, rgba(30, 64, 175, 0.35), rgba(15, 118, 110, 0.25));
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  box-shadow: 0 18px 30px rgba(15, 23, 42, 0.45);
+  overflow: hidden;
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.system-tool-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at top right, rgba(94, 234, 212, 0.18), transparent 55%);
+}
+
+.system-tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 26px 44px rgba(15, 23, 42, 0.55);
+}
+
+.system-tool-card__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--white);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(14, 165, 233, 0.85));
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.35);
+  z-index: 1;
+}
+
+.system-tool-card__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.system-tool-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.system-tool-card__description {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted-color);
+}
+
+.system-tool-card__action {
+  align-self: flex-start;
+  margin-top: var(--spacing-xs);
+  border-radius: var(--border-radius);
+  border-color: rgba(148, 163, 184, 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.system-tool-card__action:hover,
+.system-tool-card__action:focus {
+  border-color: rgba(148, 163, 184, 0.6);
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.system-tool-card__tag {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted-color);
+}
+
+.system-tool-card__tag--health {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+.system-tool-card__tag--database {
+  background: rgba(52, 211, 153, 0.18);
+  color: #34d399;
+}
+
+.system-tool-card__tag--performance {
+  background: rgba(250, 204, 21, 0.2);
+  color: #facc15;
+}
+
+.system-tool-card__tag--media {
+  background: rgba(129, 140, 248, 0.2);
+  color: #818cf8;
+}
+
+.system-tool-card__tag--insight {
+  background: rgba(45, 212, 191, 0.18);
+  color: #2dd4bf;
+}
+
+.system-tool-card__tag--tests {
+  background: rgba(148, 163, 184, 0.22);
+  color: #cbd5f5;
+}
+
+.system-tool-card__tag--report {
+  background: rgba(96, 165, 250, 0.2);
+  color: #60a5fa;
+}
+
+.system-tool-card__tag--security {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+@media (max-width: 576px) {
+  .system-tools-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1080px) {
   .login-card__layout {
     grid-template-columns: 1fr;

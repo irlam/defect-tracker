@@ -59,6 +59,65 @@ $role_definitions = [
     5 => ['name' => 'Client', 'description' => 'Client access to view and comment on defects']
 ];
 
+$systemTools = [
+    [
+        'title' => 'System Health Scan',
+        'description' => 'Run environment diagnostics covering PHP, extensions, and disk usage.',
+        'path' => 'system-tools/system_health.php',
+        'icon' => 'bx-pulse',
+        'badge' => 'health'
+    ],
+    [
+        'title' => 'Database Check',
+        'description' => 'Validate schema connectivity and run quick integrity checks.',
+        'path' => 'system-tools/check_database.php',
+        'icon' => 'bx-data',
+        'badge' => 'database'
+    ],
+    [
+        'title' => 'Database Optimizer',
+        'description' => 'Analyze and optimize key tables to maintain performance.',
+        'path' => 'system-tools/database_optimizer.php',
+        'icon' => 'bx-trending-up',
+        'badge' => 'performance'
+    ],
+    [
+        'title' => 'GD & ImageMagick',
+        'description' => 'Confirm server image libraries are available for uploads.',
+        'path' => 'system-tools/check_gd.php',
+        'icon' => 'bx-image-alt',
+        'badge' => 'media'
+    ],
+    [
+        'title' => 'File Structure Map',
+        'description' => 'Browse the application directory structure for auditing.',
+        'path' => 'system-tools/show_file_structure.php',
+        'icon' => 'bx-network-chart',
+        'badge' => 'insight'
+    ],
+    [
+        'title' => 'Functional Test Suite',
+        'description' => 'Execute scripted smoke tests to validate core workflows.',
+        'path' => 'system-tools/functional_tests.php',
+        'icon' => 'bx-check-shield',
+        'badge' => 'tests'
+    ],
+    [
+        'title' => 'System Analysis Report',
+        'description' => 'Generate comprehensive environment and configuration report.',
+        'path' => 'system-tools/system_analysis_report.php',
+        'icon' => 'bx-file-find',
+        'badge' => 'report'
+    ],
+    [
+        'title' => 'Password Utility',
+        'description' => 'Create hashed passwords for new administrator accounts.',
+        'path' => 'system-tools/hashed-password.php',
+        'icon' => 'bx-lock-alt',
+        'badge' => 'security'
+    ]
+];
+
 if (!defined('APP_THEME_LOADED')) {
     define('APP_THEME_LOADED', true);
 }
@@ -413,6 +472,42 @@ up-to-date building layouts for accurate defect tracking.</p>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <?php if ($isAdmin): ?>
+                <div class="card system-tools-card mt-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title mb-0">System Tools</h5>
+                            <small class="text-muted">Administrative diagnostics and maintenance utilities</small>
+                        </div>
+                        <span class="badge bg-gradient-info text-uppercase">Admin</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-tools-grid">
+                            <?php foreach ($systemTools as $tool): ?>
+                                <article class="system-tool-card">
+                                    <div class="system-tool-card__icon">
+                                        <i class='bx <?php echo htmlspecialchars($tool['icon']); ?>'></i>
+                                    </div>
+                                    <div class="system-tool-card__body">
+                                        <span class="system-tool-card__tag system-tool-card__tag--<?php echo htmlspecialchars($tool['badge']); ?>"><?php echo htmlspecialchars($tool['badge']); ?></span>
+                                        <h6 class="system-tool-card__title"><?php echo htmlspecialchars($tool['title']); ?></h6>
+                                        <p class="system-tool-card__description"><?php echo htmlspecialchars($tool['description']); ?></p>
+                                        <a class="btn btn-sm btn-outline-light system-tool-card__action" href="<?php echo htmlspecialchars($tool['path']); ?>" target="_blank" rel="noopener">
+                                            <i class='bx bx-caret-right-circle'></i>
+                                            Open Tool
+                                        </a>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
                             </div>
                         </div>
                     </div>
