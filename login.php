@@ -222,60 +222,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </ul>
                 </section>
 
-                <div class="login-card__content">
-                    <div class="login-demo-grid">
-                        <?php // --- Manager Demo Login Card --- ?>
-                        <article class="login-demo-card is-manager">
-                            <header class="login-demo-card__header">
-                                <i class='bx bx-user-check'></i>
-                                <div>
-                                    <p class="eyebrow">Demo access</p>
-                                    <h5 class="title">Manager</h5>
-                                </div>
-                            </header>
-                            <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
-                            <div class="demo-credentials">
-                                <?php // Clickable boxes for username/password ?>
-                                <div class="credential-box username-box" onclick="copyToClipboard('manager')" title="Click to copy username">
-                                    manager
-                                </div>
-                                <div class="credential-box password-box" onclick="copyToClipboard('manager1')" title="Click to copy password">
-                                    manager1
-                                </div>
+                <aside class="login-card__aside" aria-label="Demo accounts">
+                    <?php // --- Manager Demo Login Card --- ?>
+                    <article class="login-demo-card is-manager">
+                        <header class="login-demo-card__header">
+                            <i class='bx bx-user-check'></i>
+                            <div>
+                                <p class="eyebrow">Demo access</p>
+                                <h5 class="title">Manager</h5>
                             </div>
-                            <?php // Auto-login button for Manager ?>
-                            <button id="managerDemoLogin" class="btn btn-sm demo-button mt-3">
-                                <i class='bx bx-log-in'></i>Auto-Login
-                            </button>
-                        </article>
-
-                        <?php // --- Contractor Demo Login Card --- ?>
-                        <article class="login-demo-card is-contractor">
-                            <header class="login-demo-card__header">
-                                <i class='bx bx-hard-hat'></i>
-                                <div>
-                                    <p class="eyebrow">Demo access</p>
-                                    <h5 class="title">Contractor</h5>
-                                </div>
-                            </header>
-                            <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
-                            <div class="demo-credentials">
-                                <?php // Clickable boxes for Contractor username/password ?>
-                                <div class="credential-box username-box" onclick="copyToClipboard('contractor')" title="Click to copy username">
-                                    contractor
-                                </div>
-                                <div class="credential-box password-box" onclick="copyToClipboard('contractor1')" title="Click to copy password">
-                                    contractor1
-                                </div>
+                        </header>
+                        <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
+                        <div class="demo-credentials">
+                            <?php // Clickable boxes for username/password ?>
+                            <div class="credential-box username-box" onclick="copyToClipboard('manager')" title="Click to copy username">
+                                manager
                             </div>
-                            <?php // Auto-login button for Contractor ?>
-                            <button id="contractorDemoLogin" class="btn btn-sm demo-button mt-3">
-                                <i class='bx bx-log-in'></i>Auto-Login
-                            </button>
-                        </article>
-                    </div>
+                            <div class="credential-box password-box" onclick="copyToClipboard('manager1')" title="Click to copy password">
+                                manager1
+                            </div>
+                        </div>
+                        <?php // Auto-login button for Manager ?>
+                        <button id="managerDemoLogin" class="btn btn-sm demo-button mt-3">
+                            <i class='bx bx-log-in'></i>Auto-Login
+                        </button>
+                    </article>
 
-                    <div class="login-divider"><span>Sign in</span></div>
+                    <?php // --- Contractor Demo Login Card --- ?>
+                    <article class="login-demo-card is-contractor">
+                        <header class="login-demo-card__header">
+                            <i class='bx bx-hard-hat'></i>
+                            <div>
+                                <p class="eyebrow">Demo access</p>
+                                <h5 class="title">Contractor</h5>
+                            </div>
+                        </header>
+                        <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
+                        <div class="demo-credentials">
+                            <?php // Clickable boxes for Contractor username/password ?>
+                            <div class="credential-box username-box" onclick="copyToClipboard('contractor')" title="Click to copy username">
+                                contractor
+                            </div>
+                            <div class="credential-box password-box" onclick="copyToClipboard('contractor1')" title="Click to copy password">
+                                contractor1
+                            </div>
+                        </div>
+                        <?php // Auto-login button for Contractor ?>
+                        <button id="contractorDemoLogin" class="btn btn-sm demo-button mt-3">
+                            <i class='bx bx-log-in'></i>Auto-Login
+                        </button>
+                    </article>
+                </aside>
+
+                <div class="login-card__form">
+                    <header class="login-form-header">
+                        <h2>Sign in</h2>
+                        <p>Use your project credentials to continue.</p>
+                    </header>
 
                     <?php // --- Display Login Error Message (if any) --- ?>
                     <?php if ($error): ?>
@@ -311,10 +314,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="submit" class="btn btn-primary login-submit w-100">Login</button>
                     </form>
 
-                    <div class="login-footer text-center text-muted mt-4">
+                    <div class="login-footer text-center text-muted">
                         <small>Need access? Contact your project administrator.</small>
                     </div>
-                </div> <?php // End login-card__content ?>
+                </div> <?php // End login-card__form ?>
             </div> <?php // End login-card__layout ?>
         </div> <?php // End card ?>
     </div> <?php // End login-container ?>
