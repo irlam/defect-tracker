@@ -189,167 +189,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php // --- CSS Includes --- ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
-    <?php // --- Inline CSS for Login Page Specific Styling --- ?>
-    <style>
-        /* Center login form vertically and horizontally */
-        body {
-            background-color: #f8f9fa; /* Light background */
-            min-height: 100vh; /* Ensure body takes full viewport height */
-            display: flex;
-            align-items: center; /* Vertical centering */
-            justify-content: center; /* Horizontal centering */
-            padding: 1rem; /* Add padding for small screens */
-        }
-
-        /* Container for the login card */
-        .login-container {
-            max-width: 420px; /* Max width of the login box */
-            width: 100%; /* Use full width up to max-width */
-            position: relative; /* Needed for absolute positioning of time/user if re-added */
-        }
-
-        /* Login card styling */
-        .card {
-            border: none; /* Remove default card border */
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
-            overflow: hidden; /* Ensure header background doesn't leak past rounded corners */
-        }
-
-        /* Card header styling */
-        .card-header {
-            background-color: #2c3e50; /* Dark blue header */
-            color: white; /* White text */
-            /* border-radius: 10px 10px 0 0 !important; Prevent Bootstrap override */
-            padding: 1.5rem; /* Header padding */
-            border-bottom: none; /* Remove border below header */
-        }
-
-        /* Input field focus styling */
-        .form-control:focus {
-            box-shadow: 0 0 0 0.25rem rgba(44, 62, 80, 0.25); /* Custom focus ring color */
-            border-color: #5b7a9a; /* Border color on focus */
-        }
-        .input-group-text {
-             background-color: #e9ecef; /* Light grey background for icons */
-             border-color: #ced4da;
-        }
-
-        /* Primary button styling */
-        .btn-primary {
-            background-color: #2c3e50; /* Match header color */
-            border-color: #2c3e50;
-            padding: 0.6rem 1rem; /* Button padding */
-            font-weight: 500;
-        }
-        .btn-primary:hover {
-            background-color: #34495e; /* Slightly lighter shade on hover */
-            border-color: #34495e;
-        }
-
-        /* Logo styling */
-        .logo {
-            display: block;
-            margin: 0 auto 1.5rem; /* Center logo and add space below */
-            max-width: 100px; /* Limit logo size */
-        }
-
-        /* --- Demo Banner Styles --- */
-        .demo-banner {
-            position: relative; /* For pseudo-element positioning */
-            margin-bottom: 1.5rem; /* Space below banner */
-            border-radius: 8px; /* Rounded corners */
-            background: linear-gradient(135deg, #3498db, #2c3e50); /* Gradient background */
-            padding: 15px;
-            color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            overflow: hidden; /* Keep pseudo-elements contained */
-            animation: fadeIn 0.6s ease-out forwards; /* Fade-in animation */
-        }
-        /* Decorative pseudo-element */
-        .demo-banner::before {
-            content: '';
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            width: 70px;
-            height: 70px;
-            background-color: rgba(255, 255, 255, 0.08); /* Semi-transparent circle */
-            border-radius: 50%;
-        }
-        /* Container for credential boxes */
-        .demo-credentials {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            gap: 8px; /* Space between boxes */
-        }
-        /* Individual credential box styling */
-        .credential-box {
-            background-color: rgba(255, 255, 255, 0.15); /* Slightly transparent background */
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-family: 'Courier New', Courier, monospace; /* Monospace font */
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            flex: 1; /* Make boxes share space equally */
-            text-align: center;
-            cursor: pointer; /* Indicate clickable */
-            transition: all 0.2s ease; /* Smooth transitions */
-            font-size: 0.9rem;
-        }
-        /* Hover effect for credential boxes */
-        .credential-box:hover {
-            background-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px); /* Slight lift effect */
-        }
-        /* Auto-login button styling */
-        .demo-button {
-            background-color: rgba(255, 255, 255, 0.9); /* Off-white background */
-            color: #2c3e50; /* Dark blue text */
-            font-weight: 600;
-            margin-top: 12px;
-            transition: all 0.3s ease;
-            border: none;
-            width: 100%; /* Make button full width */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem; /* Space between icon and text */
-        }
-        /* Hover effect for auto-login button */
-        .demo-button:hover {
-            background-color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        /* Fade-in animation definition */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    <link href="css/app.css?v=20251102" rel="stylesheet">
 </head>
-<body>
+<body data-bs-theme="dark" class="login-page">
+    <div class="login-page__glow login-page__glow--one"></div>
+    <div class="login-page__glow login-page__glow--two"></div>
     <?php // --- Main Login Container --- ?>
     <div class="login-container">
 
         <?php // Removed the hardcoded time and user display divs that were here. ?>
 
-        <div class="card">
+        <div class="card login-card">
             <?php // --- Card Header with Logo and Title --- ?>
-            <div class="card-header text-center">
-                <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="logo">
-                <h4 class="mb-0">Construction Defect Tracker</h4>
-                <small class="text-light op-7">Login to your account</small> <?php // Subtitle ?>
+            <div class="card-header text-center login-card__header">
+                <span class="login-badge">Welcome back</span>
+                <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo">
+                <h1 class="login-title">Construction Defect Tracker</h1>
+                <p class="login-subtitle">Spot, track, and close defects with confidence.</p>
+                <ul class="login-quick-stats">
+                    <li>
+                        <span class="label">Active projects</span>
+                        <span class="value">24</span>
+                    </li>
+                    <li>
+                        <span class="label">Issues resolved</span>
+                        <span class="value">8.1k</span>
+                    </li>
+                    <li>
+                        <span class="label">Avg. fix time</span>
+                        <span class="value">3.2d</span>
+                    </li>
+                </ul>
             </div>
 
             <?php // --- Card Body with Demo Banners and Login Form --- ?>
             <div class="card-body p-4">
 
                 <?php // --- Manager Demo Login Banner --- ?>
-                <div class="demo-banner">
+                <div class="demo-banner is-manager">
                     <div class="d-flex align-items-center">
                         <i class='bx bx-user-check fs-4 me-2'></i> <?php // Icon ?>
                         <h5 class="mb-0">Manager Demo Access</h5>
@@ -371,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <?php // --- Contractor Demo Login Banner --- ?>
-                <div class="demo-banner" style="background: linear-gradient(135deg, #16a085, #1abc9c);"> <?php // Different gradient for Contractor ?>
+                <div class="demo-banner is-contractor"> <?php // Different gradient for Contractor ?>
                     <div class="d-flex align-items-center">
                          <i class='bx bx-hard-hat fs-4 me-2'></i> <?php // Different Icon ?>
                         <h5 class="mb-0">Contractor Demo Access</h5>
@@ -391,6 +268,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class='bx bx-log-in'></i>Auto-Login as Contractor
                     </button>
                 </div>
+
+
+                <div class="login-divider"><span>Sign in</span></div>
 
 
                 <?php // --- Display Login Error Message (if any) --- ?>
@@ -424,8 +304,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <!-- <div class="text-end mt-1"><small><a href="/forgot-password.php">Forgot Password?</a></small></div> -->
                     </div>
                     <?php // Submit Button ?>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <button type="submit" class="btn btn-primary login-submit w-100">Login</button>
                 </form>
+
+                <div class="login-footer text-center text-muted mt-4">
+                    <small>Need access? Contact your project administrator.</small>
+                </div>
 
             </div> <?php // End card-body ?>
         </div> <?php // End card ?>
