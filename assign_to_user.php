@@ -1,1279 +1,1229 @@
 <?php
 /**
- * Assign Defects to User Page - Construction Defect Tracker
- *
- * @version 1.1
- * @author irlam (Original), Gemini (Modifications & Comments)
- * @last-modified 2025-04-12 11:45:00 UTC
- *
- * --- File Description ---
- * This script provides an interface for administrators or managers to assign specific defects
- * to individual users (typically contractors or internal staff responsible for fixing defects).
- *
- * Key Functionality:
- * 1.  **Authentication & Session Management:**
- *     - Ensures a user is logged in; otherwise, redirects to `login.php`.
- *     - Starts or resumes the PHP session.
- * 2.  **Defect Listing & Filtering:**
- *     - Displays a paginated list of defects.
- *     - Provides filter options based on Project, Contractor (assigned to the defect), Status, and Priority.
- *     - Includes a search bar to filter defects by title, description, project name, or contractor name.
- *     - Remembers filter/search criteria across page loads using GET parameters.
- * 3.  **Single Defect Assignment:**
- *     - For each defect listed, it shows the currently assigned user (if any).
- *     - Provides a dropdown list of available active users (filtered by role, e.g., 'contractor').
- *     - Allows assigning a single defect to a selected user via a POST request.
- *     - Updates the `defect_assignments` table (deleting old, inserting new).
- *     - Logs the assignment action to the `activity_logs` table with details.
- * 4.  **Bulk Defect Assignment:**
- *     - Allows users to select multiple defects using checkboxes.
- *     - Provides a bulk action section (initially hidden) that appears when defects are selected.
- *     - Includes a dropdown to select a user to assign all selected defects to.
- *     - Processes bulk assignment via a POST request.
- *     - Iterates through selected defect IDs, updates `defect_assignments`, and logs each assignment in `activity_logs`.
- * 5.  **User Interface:**
- *     - Uses Bootstrap 5 for styling and layout.
- *     - Displays defects in a responsive table.
- *     - Includes a hidden details section for each defect (description, images) toggleable via a button.
- *     - Provides visual feedback (success/error messages) after assignment actions.
- *     - Implements pagination for navigating through large lists of defects.
- *     - Includes a loading overlay during form submissions.
- *     - Uses JavaScript for dynamic interactions (toggling details, image modal, bulk selection, filter submission).
- * 6.  **Data Fetching:**
- *     - Retrieves lists of active projects, contractors, defect statuses, and priorities for filter dropdowns.
- *     - Fetches the list of available users (e.g., active contractors) for assignment dropdowns.
- *     - Constructs dynamic SQL queries based on applied filters to fetch the relevant defects.
- *     - Calculates total records for pagination based on filters.
- * 7.  **Time Formatting:**
- *     - Sets the default timezone to 'Europe/London'.
- *     - Displays all relevant dates (`created_at`, `due_date`) in UK format (`d/m/Y H:i`).
- *     - Highlights past due dates.
- *
- * --- Current User Context ---
- * Current Date and Time (UTC): 2025-04-12 11:45:00
- * Current User's Login: irlam (User performing the actions on this page)
+ * assign_to_user.php
+ * Assignment operations centre for directing defects to responsible users.
  */
 
-// --- PHP Setup ---
+ini_set('output_buffering', '1');
+ob_start();
 
-// Error Reporting: Display all errors and log them. Adjust display_errors for production.
-error_reporting(E_ALL);
-ini_set('display_errors', 1); // Show errors on screen (for development)
-ini_set('log_errors', 1); // Log errors to a file
-ini_set('error_log', __DIR__ . '/logs/error.log'); // Path to error log file
+error_reporting(0);
+// ini_set('display_errors', 1);
+// ini_set('log_errors', 1);
+// ini_set('error_log', __DIR__ . '/logs/error.log');
 
-// Session Management: Start session if not already active. Needed for login state and user ID.
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// --- Authentication Check ---
-// Redirect to login page if the user is not authenticated.
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit(); // Stop script execution.
-}
-
-// Define a constant to check in included files if direct access is attempted (optional security measure).
 define('INCLUDED', true);
 
-// --- Include Required Files ---
-require_once 'includes/functions.php'; // General helper functions (like formatUKDateTime, BASE_URL).
-require_once 'config/database.php'; // Database connection class.
-require_once 'includes/navbar.php'; // Navbar rendering class.
+require_once 'includes/functions.php';
+require_once 'config/database.php';
+require_once 'config/constants.php';
 
-// --- Page Configuration & Initialization ---
-$pageTitle = 'Assign Defects to a User';
-$currentUser = $_SESSION['username']; // Username of the logged-in user.
-$message = ''; // Variable for success/error messages after POST actions.
-$messageType = ''; // Type of message ('success' or 'danger').
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+    header('Location: ' . BASE_URL . 'login.php');
+    exit();
+}
 
-// Set default timezone for date/time functions.
 date_default_timezone_set('Europe/London');
-// Get the current date and time in SQL format (YYYY-MM-DD HH:MM:SS) for database inserts/updates.
+
+$pageTitle = 'Assign Defects';
+$currentUser = $_SESSION['username'] ?? 'user';
+$currentUserId = (int) ($_SESSION['user_id'] ?? 0);
+$displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $currentUser));
+$currentUserRoleSummary = ucwords(str_replace(['_', '-'], [' ', ' '], $_SESSION['user_type'] ?? 'user'));
+$currentTimestamp = date('d/m/Y H:i');
+$currentDateTimeIso = date('c');
 $currentDateTime = date('Y-m-d H:i:s');
 
-// --- Initialize Filtering Variables ---
-// Get filter values from GET parameters, defaulting to 'all' or empty.
+$message = '';
+$messageType = '';
+
+$sessionSuccessMessage = $_SESSION['success_message'] ?? null;
+$sessionErrorMessage = $_SESSION['error_message'] ?? null;
+$sessionWarningMessage = $_SESSION['warning_message'] ?? null;
+unset($_SESSION['success_message'], $_SESSION['error_message'], $_SESSION['warning_message']);
+
 $projectFilter = $_GET['project'] ?? 'all';
 $contractorFilter = $_GET['contractor'] ?? 'all';
 $statusFilter = $_GET['status'] ?? 'all';
 $priorityFilter = $_GET['priority'] ?? 'all';
-$searchTerm = $_GET['search'] ?? '';
+$searchTerm = trim($_GET['search'] ?? '');
 
-// --- Initialize Pagination Variables ---
-$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1; // Current page number, ensuring it's at least 1.
-$recordsPerPage = 10; // Number of defects to display per page.
-$offset = ($page - 1) * $recordsPerPage; // Calculate the offset for SQL LIMIT clause.
+$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$recordsPerPage = 10;
+$offset = ($page - 1) * $recordsPerPage;
 
-// --- Main Logic Block (Database interactions, POST handling) ---
+$projects = $contractors = $statuses = $priorities = $defects = $availableUsers = [];
+$totalRecords = 0;
+$totalPages = 0;
+$startRecord = 0;
+$endRecord = 0;
+$lastUpdateDisplay = 'No updates recorded';
+$totalDefects = 0;
+$assignedDefects = 0;
+$unassignedDefects = 0;
+$criticalDefects = 0;
+$overdueDefects = 0;
+$activeDefects = 0;
+$projectCount = 0;
+$contractorCount = 0;
+
 try {
-    // Establish database connection.
     $database = new Database();
     $db = $database->getConnection();
 
-    // --- POST Request Handling ---
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = $_POST['action'] ?? '';
 
-    // --- Process Single Defect Assignment ---
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'assign_single') {
-        // Validate required POST data.
-        if (isset($_POST['defect_id']) && isset($_POST['assigned_to']) && !empty($_POST['assigned_to'])) {
-            $defectId = filter_var($_POST['defect_id'], FILTER_VALIDATE_INT);
-            $assignedToUserId = filter_var($_POST['assigned_to'], FILTER_VALIDATE_INT); // Renamed for clarity
+        if ($action === 'assign_single') {
+            $defectId = isset($_POST['defect_id']) ? filter_var($_POST['defect_id'], FILTER_VALIDATE_INT) : null;
+            $assignedToUserId = isset($_POST['assigned_to']) ? filter_var($_POST['assigned_to'], FILTER_VALIDATE_INT) : null;
 
-            // Ensure IDs are valid integers.
             if (!$defectId || !$assignedToUserId) {
-                throw new Exception("Invalid defect ID or user ID provided for assignment.");
-            }
+                $message = 'Missing or invalid assignment details.';
+                $messageType = 'warning';
+            } else {
+                $db->beginTransaction();
 
-            // --- Database Transaction for Single Assignment ---
-            $db->beginTransaction();
-            try {
-                // 1. Delete any existing assignment for this defect.
-                $deleteQuery = "DELETE FROM defect_assignments WHERE defect_id = :defect_id";
-                $deleteStmt = $db->prepare($deleteQuery);
-                $deleteStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                $deleteStmt->execute();
-
-                // 2. Insert the new assignment record.
-                $insertQuery = "INSERT INTO defect_assignments
-                              (defect_id, user_id, assigned_by, assigned_at)
-                              VALUES
-                              (:defect_id, :user_id, :assigned_by, :assigned_at)";
-                $insertStmt = $db->prepare($insertQuery);
-                $insertStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                $insertStmt->bindParam(":user_id", $assignedToUserId, PDO::PARAM_INT);
-                $insertStmt->bindParam(":assigned_by", $_SESSION['user_id'], PDO::PARAM_INT); // ID of user performing the assignment
-                $insertStmt->bindParam(":assigned_at", $currentDateTime); // Use current server time (UK timezone)
-
-                // Execute insertion and check for success.
-                if ($insertStmt->execute()) {
-                    // --- Fetch Details for Logging ---
-                    // Get details of the user being assigned to.
-                    $userQuery = "SELECT u.username, u.first_name, u.last_name, c.company_name as contractor_name
-                                  FROM users u
-                                  LEFT JOIN contractors c ON u.contractor_id = c.id
-                                  WHERE u.id = :user_id";
-                    $userStmt = $db->prepare($userQuery);
-                    $userStmt->bindParam(":user_id", $assignedToUserId, PDO::PARAM_INT);
-                    $userStmt->execute();
-                    $assignedUser = $userStmt->fetch(PDO::FETCH_ASSOC); // Renamed for clarity
-
-                    // Get details of the defect being assigned (specifically contractor company name).
-                    $defectQuery = "SELECT c.company_name
-                                    FROM defects d
-                                    LEFT JOIN contractors c ON d.contractor_id = c.id
-                                    WHERE d.id = :defect_id";
-                    $defectStmt = $db->prepare($defectQuery);
-                    $defectStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                    $defectStmt->execute();
-                    $defectDetails = $defectStmt->fetch(PDO::FETCH_ASSOC);
-
-                    // --- Log Activity ---
-                    $activityQuery = "INSERT INTO activity_logs
-                                    (defect_id, action, user_id, action_type, details, created_at)
-                                    VALUES
-                                    (:defect_id, :action, :user_id, 'ASSIGN', :details, :created_at)";
-                    $activityStmt = $db->prepare($activityQuery);
-                    $actionDescription = "Defect assigned to user"; // Description of the action
-
-                    // Prepare user and contractor names safely for the details string.
-                    $user_first_name = htmlspecialchars((string)($assignedUser['first_name'] ?? ''), ENT_QUOTES, 'UTF-8');
-                    $user_last_name = htmlspecialchars((string)($assignedUser['last_name'] ?? ''), ENT_QUOTES, 'UTF-8');
-                    $user_contractor_name = htmlspecialchars((string)($assignedUser['contractor_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8');
-                    $defect_company_name = htmlspecialchars((string)($defectDetails['company_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8');
-
-                    // Construct detailed log message.
-                    $logDetails = "Defect #{$defectId} assigned to user {$user_first_name} {$user_last_name} ({$user_contractor_name}) " .
-                                  "by user ID {$_SESSION['user_id']}. Defect originally associated with contractor: {$defect_company_name}.";
-
-                    // Bind parameters for activity log.
-                    $activityStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                    $activityStmt->bindParam(":action", $actionDescription);
-                    $activityStmt->bindParam(":user_id", $_SESSION['user_id'], PDO::PARAM_INT); // User who performed the action
-                    $activityStmt->bindParam(":details", $logDetails);
-                    $activityStmt->bindParam(":created_at", $currentDateTime);
-                    $activityStmt->execute();
-
-                    // --- Commit Transaction and Set Success Message ---
-                    $db->commit(); // Commit all changes if everything succeeded.
-                    $message = "Defect #{$defectId} successfully assigned to {$user_first_name} {$user_last_name} ({$user_contractor_name}).";
-                    $messageType = "success";
-
-                } else {
-                    // Throw exception if insertion failed.
-                    throw new Exception("Database error: Failed to insert defect assignment.");
-                }
-            } catch (Exception $e) {
-                // --- Rollback and Set Error Message ---
-                $db->rollBack(); // Undo changes if any error occurred during the transaction.
-                $message = "Error assigning defect #{$defectId}: " . $e->getMessage();
-                $messageType = "danger";
-                error_log("Single Assign Error (Defect ID: {$defectId}, User ID: {$assignedToUserId}): " . $e->getMessage());
-            }
-        } else {
-             // Handle missing POST data.
-            $message = "Missing required information for assignment.";
-            $messageType = "warning";
-        }
-    } // --- End Single Assignment Processing ---
-
-    // --- Process Bulk Defect Assignment ---
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'bulk_assign') {
-        // Validate required POST data.
-        if (isset($_POST['defect_ids']) && is_array($_POST['defect_ids']) && isset($_POST['bulk_assigned_to']) && !empty($_POST['bulk_assigned_to'])) {
-            $defectIds = $_POST['defect_ids']; // Array of defect IDs from checkboxes.
-            $bulkAssignedToUserId = filter_var($_POST['bulk_assigned_to'], FILTER_VALIDATE_INT); // User to assign to.
-
-            // Ensure at least one defect is selected and the user ID is valid.
-            if (empty($defectIds) || !$bulkAssignedToUserId) {
-                throw new Exception("No defects selected or invalid user selected for bulk assignment.");
-            }
-
-            // --- Database Transaction for Bulk Assignment ---
-            $db->beginTransaction();
-            $successCount = 0; // Counter for successfully assigned defects.
-            try {
-                // --- Fetch Details of User Being Assigned To (for logging) ---
-                $userQuery = "SELECT u.username, u.first_name, u.last_name, c.company_name as contractor_name
-                              FROM users u
-                              LEFT JOIN contractors c ON u.contractor_id = c.id
-                              WHERE u.id = :user_id";
-                $userStmt = $db->prepare($userQuery);
-                $userStmt->bindParam(":user_id", $bulkAssignedToUserId, PDO::PARAM_INT);
-                $userStmt->execute();
-                $assignedUser = $userStmt->fetch(PDO::FETCH_ASSOC); // Renamed for clarity
-                if (!$assignedUser) {
-                    throw new Exception("Selected user for bulk assignment not found.");
-                }
-                // Prepare user names for logging.
-                $user_first_name = htmlspecialchars((string)($assignedUser['first_name'] ?? ''), ENT_QUOTES, 'UTF-8');
-                $user_last_name = htmlspecialchars((string)($assignedUser['last_name'] ?? ''), ENT_QUOTES, 'UTF-8');
-                $user_contractor_name = htmlspecialchars((string)($assignedUser['contractor_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8');
-
-                // --- Prepare Statements for Efficiency ---
-                // Prepare delete, insert, defect details, and activity log statements once outside the loop.
-                $deleteStmt = $db->prepare("DELETE FROM defect_assignments WHERE defect_id = :defect_id");
-                $insertStmt = $db->prepare("INSERT INTO defect_assignments (defect_id, user_id, assigned_by, assigned_at) VALUES (:defect_id, :user_id, :assigned_by, :assigned_at)");
-                $defectStmt = $db->prepare("SELECT c.company_name FROM defects d LEFT JOIN contractors c ON d.contractor_id = c.id WHERE d.id = :defect_id");
-                $activityStmt = $db->prepare("INSERT INTO activity_logs (defect_id, action, user_id, action_type, details, created_at) VALUES (:defect_id, :action, :user_id, 'ASSIGN', :details, :created_at)");
-                $actionDescription = "Defect assigned to user (Bulk)"; // Action description for log.
-
-                // --- Loop Through Each Selected Defect ID ---
-                foreach ($defectIds as $defectIdInput) {
-                    $defectId = filter_var($defectIdInput, FILTER_VALIDATE_INT); // Sanitize each ID.
-                    if (!$defectId) continue; // Skip if the ID is invalid.
-
-                    // 1. Delete existing assignment for this defect.
-                    $deleteStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
+                try {
+                    $deleteStmt = $db->prepare('DELETE FROM defect_assignments WHERE defect_id = :defect_id');
+                    $deleteStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
                     $deleteStmt->execute();
 
-                    // 2. Insert new assignment record.
-                    $insertStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                    $insertStmt->bindParam(":user_id", $bulkAssignedToUserId, PDO::PARAM_INT);
-                    $insertStmt->bindParam(":assigned_by", $_SESSION['user_id'], PDO::PARAM_INT);
-                    $insertStmt->bindParam(":assigned_at", $currentDateTime);
+                    $insertStmt = $db->prepare('INSERT INTO defect_assignments (defect_id, user_id, assigned_by, assigned_at) VALUES (:defect_id, :user_id, :assigned_by, :assigned_at)');
+                    $insertStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                    $insertStmt->bindValue(':user_id', $assignedToUserId, PDO::PARAM_INT);
+                    $insertStmt->bindValue(':assigned_by', $currentUserId, PDO::PARAM_INT);
+                    $insertStmt->bindValue(':assigned_at', $currentDateTime);
+                    $insertStmt->execute();
 
-                    // Execute insertion and check for success.
-                    if ($insertStmt->execute()) {
-                        $successCount++; // Increment success counter.
+                    $userStmt = $db->prepare('SELECT u.username, u.first_name, u.last_name, c.company_name AS contractor_name FROM users u LEFT JOIN contractors c ON u.contractor_id = c.id WHERE u.id = :user_id');
+                    $userStmt->bindValue(':user_id', $assignedToUserId, PDO::PARAM_INT);
+                    $userStmt->execute();
+                    $assignedUser = $userStmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
-                        // --- Log Activity for this specific defect ---
-                        // Fetch defect's original contractor for log details.
-                        $defectStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                        $defectStmt->execute();
-                        $defectDetails = $defectStmt->fetch(PDO::FETCH_ASSOC);
-                        $defect_company_name = htmlspecialchars((string)($defectDetails['company_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8');
+                    $defectStmt = $db->prepare('SELECT c.company_name FROM defects d LEFT JOIN contractors c ON d.contractor_id = c.id WHERE d.id = :defect_id');
+                    $defectStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                    $defectStmt->execute();
+                    $defectDetails = $defectStmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
-                        // Construct detailed log message.
-                        $logDetails = "Defect #{$defectId} assigned to user {$user_first_name} {$user_last_name} ({$user_contractor_name}) " .
-                                      "by user ID {$_SESSION['user_id']} via bulk assignment. Defect originally associated with contractor: {$defect_company_name}.";
+                    $activityStmt = $db->prepare('INSERT INTO activity_logs (defect_id, action, user_id, action_type, details, created_at) VALUES (:defect_id, :action, :user_id, :action_type, :details, :created_at)');
+                    $actionDescription = 'Defect assigned to user';
+                    $details = sprintf(
+                        'Defect #%d assigned to user %s %s (%s) by user ID %d. Defect contractor: %s.',
+                        $defectId,
+                        htmlspecialchars((string) ($assignedUser['first_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($assignedUser['last_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($assignedUser['contractor_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8'),
+                        $currentUserId,
+                        htmlspecialchars((string) ($defectDetails['company_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8')
+                    );
 
-                        // Bind parameters and execute activity log insert.
-                        $activityStmt->bindParam(":defect_id", $defectId, PDO::PARAM_INT);
-                        $activityStmt->bindParam(":action", $actionDescription);
-                        $activityStmt->bindParam(":user_id", $_SESSION['user_id'], PDO::PARAM_INT);
-                        $activityStmt->bindParam(":details", $logDetails);
-                        $activityStmt->bindParam(":created_at", $currentDateTime);
-                        $activityStmt->execute();
-                    } else {
-                        // Log error if a specific defect assignment failed within the bulk operation.
-                        error_log("Bulk Assign Error: Failed to insert assignment for Defect ID {$defectId}.");
-                        // Optionally: throw new Exception to stop the whole bulk process on first failure.
-                    }
-                } // --- End Loop Through Defect IDs ---
+                    $activityStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                    $activityStmt->bindValue(':action', $actionDescription, PDO::PARAM_STR);
+                    $activityStmt->bindValue(':user_id', $currentUserId, PDO::PARAM_INT);
+                    $activityStmt->bindValue(':action_type', 'ASSIGN', PDO::PARAM_STR);
+                    $activityStmt->bindValue(':details', $details, PDO::PARAM_STR);
+                    $activityStmt->bindValue(':created_at', $currentDateTime, PDO::PARAM_STR);
+                    $activityStmt->execute();
 
-                // --- Commit Transaction and Set Success Message ---
-                $db->commit(); // Commit all successful changes.
-                $message = "{$successCount} defect(s) successfully assigned to {$user_first_name} {$user_last_name} ({$user_contractor_name}).";
-                $messageType = "success";
+                    $db->commit();
 
-            } catch (Exception $e) {
-                // --- Rollback and Set Error Message ---
-                $db->rollBack(); // Undo all changes if any error occurred during the transaction.
-                $message = "Error during bulk assignment: " . $e->getMessage();
-                $messageType = "danger";
-                error_log("Bulk Assign Error (User ID: {$bulkAssignedToUserId}): " . $e->getMessage());
+                    $message = sprintf(
+                        'Defect #%d successfully assigned to %s %s (%s).',
+                        $defectId,
+                        htmlspecialchars((string) ($assignedUser['first_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($assignedUser['last_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($assignedUser['contractor_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8')
+                    );
+                    $messageType = 'success';
+                } catch (Exception $singleError) {
+                    $db->rollBack();
+                    $message = 'Error assigning defect #' . $defectId . ': ' . $singleError->getMessage();
+                    $messageType = 'danger';
+                    error_log('Assign Single Error: ' . $singleError->getMessage());
+                }
             }
-        } else {
-             // Handle missing POST data for bulk action.
-            $message = "Missing required information for bulk assignment.";
-            $messageType = "warning";
         }
-    } // --- End Bulk Assignment Processing ---
 
-    // --- Data Fetching for Display ---
+        if ($action === 'bulk_assign') {
+            $bulkAssignedToUserId = isset($_POST['bulk_assigned_to']) ? filter_var($_POST['bulk_assigned_to'], FILTER_VALIDATE_INT) : null;
+            $defectIds = isset($_POST['defect_ids']) && is_array($_POST['defect_ids']) ? array_map(static function ($value) {
+                return filter_var($value, FILTER_VALIDATE_INT);
+            }, $_POST['defect_ids']) : [];
 
-    // --- Get Filter Options for Dropdowns ---
-    // Fetch active projects.
-    $projectsQuery = "SELECT id, name FROM projects WHERE status = 'active' ORDER BY name";
-    $projectsStmt = $db->prepare($projectsQuery);
-    $projectsStmt->execute();
-    $projects = $projectsStmt->fetchAll(PDO::FETCH_ASSOC);
+            $defectIds = array_filter($defectIds);
 
-    // Fetch active contractors.
-    $contractorsQuery = "SELECT id, company_name FROM contractors WHERE status = 'active' ORDER BY company_name";
-    $contractorsStmt = $db->prepare($contractorsQuery);
-    $contractorsStmt->execute();
-    $contractors = $contractorsStmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($defectIds) || !$bulkAssignedToUserId) {
+                $message = 'Missing required information for bulk assignment.';
+                $messageType = 'warning';
+            } else {
+                $db->beginTransaction();
 
-    // Fetch distinct defect statuses.
-    $statusesQuery = "SELECT DISTINCT status FROM defects WHERE status IS NOT NULL AND status != '' ORDER BY status";
-    $statusesStmt = $db->prepare($statusesQuery);
-    $statusesStmt->execute();
-    $statuses = $statusesStmt->fetchAll(PDO::FETCH_COLUMN);
+                try {
+                    $userStmt = $db->prepare('SELECT u.username, u.first_name, u.last_name, c.company_name AS contractor_name FROM users u LEFT JOIN contractors c ON u.contractor_id = c.id WHERE u.id = :user_id');
+                    $userStmt->bindValue(':user_id', $bulkAssignedToUserId, PDO::PARAM_INT);
+                    $userStmt->execute();
+                    $assignedUser = $userStmt->fetch(PDO::FETCH_ASSOC);
 
-    // Fetch distinct defect priorities.
-    $prioritiesQuery = "SELECT DISTINCT priority FROM defects WHERE priority IS NOT NULL AND priority != '' ORDER BY FIELD(priority, 'critical', 'high', 'medium', 'low')";
-    $prioritiesStmt = $db->prepare($prioritiesQuery);
-    $prioritiesStmt->execute();
-    $priorities = $prioritiesStmt->fetchAll(PDO::FETCH_COLUMN);
+                    if (!$assignedUser) {
+                        throw new Exception('Selected user for bulk assignment not found.');
+                    }
 
-    // --- Build Base Query for Fetching Defects ---
-    // Select all necessary defect details along with related project, contractor, and assignment info.
-    $baseDefectsQuery = "SELECT
-                        d.id, d.title, d.status, d.priority, d.created_at, d.due_date, d.description,
-                        p.name as project_name, p.id as project_id,
-                        c.company_name as contractor_name, c.id as contractor_id,
-                        da.user_id as assigned_user_id, -- ID of the user the defect is currently assigned to
-                        -- Use COALESCE to handle cases where user/contractor might be NULL
-                        COALESCE(u.first_name, 'Unassigned') as assigned_first_name,
-                        COALESCE(u.last_name, '') as assigned_last_name,
-                        COALESCE(cn.company_name, '') as assigned_contractor_name -- Contractor name of the assigned user
-                     FROM defects d
-                     LEFT JOIN projects p ON d.project_id = p.id
-                     LEFT JOIN contractors c ON d.contractor_id = c.id -- Contractor associated with the defect itself
-                     LEFT JOIN defect_assignments da ON d.id = da.defect_id -- Current assignment link
-                     LEFT JOIN users u ON da.user_id = u.id -- User assigned via defect_assignments
-                     LEFT JOIN contractors cn ON u.contractor_id = cn.id -- Contractor of the assigned user
-                     WHERE d.deleted_at IS NULL"; // Exclude soft-deleted defects
+                    $deleteStmt = $db->prepare('DELETE FROM defect_assignments WHERE defect_id = :defect_id');
+                    $insertStmt = $db->prepare('INSERT INTO defect_assignments (defect_id, user_id, assigned_by, assigned_at) VALUES (:defect_id, :user_id, :assigned_by, :assigned_at)');
+                    $defectInfoStmt = $db->prepare('SELECT c.company_name FROM defects d LEFT JOIN contractors c ON d.contractor_id = c.id WHERE d.id = :defect_id');
+                    $activityStmt = $db->prepare('INSERT INTO activity_logs (defect_id, action, user_id, action_type, details, created_at) VALUES (:defect_id, :action, :user_id, :action_type, :details, :created_at)');
 
-    // --- Apply Filters to the Query ---
-    $queryParams = []; // Array to hold parameters for prepared statement.
-    if ($projectFilter != 'all') {
-        $baseDefectsQuery .= " AND d.project_id = :project_id"; // Use d.project_id
-        $queryParams[':project_id'] = $projectFilter;
+                    $successCount = 0;
+
+                    foreach ($defectIds as $defectId) {
+                        $deleteStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                        $deleteStmt->execute();
+
+                        $insertStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                        $insertStmt->bindValue(':user_id', $bulkAssignedToUserId, PDO::PARAM_INT);
+                        $insertStmt->bindValue(':assigned_by', $currentUserId, PDO::PARAM_INT);
+                        $insertStmt->bindValue(':assigned_at', $currentDateTime, PDO::PARAM_STR);
+                        $insertStmt->execute();
+
+                        $defectInfoStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                        $defectInfoStmt->execute();
+                        $defectCompany = $defectInfoStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+                        $logDetails = sprintf(
+                            'Defect #%d assigned to user %s %s (%s) by user ID %d via bulk assignment. Defect contractor: %s.',
+                            $defectId,
+                            htmlspecialchars((string) ($assignedUser['first_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                            htmlspecialchars((string) ($assignedUser['last_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                            htmlspecialchars((string) ($assignedUser['contractor_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8'),
+                            $currentUserId,
+                            htmlspecialchars((string) ($defectCompany['company_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8')
+                        );
+
+                        $activityStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                        $activityStmt->bindValue(':action', 'Defect assigned to user (Bulk)', PDO::PARAM_STR);
+                        $activityStmt->bindValue(':user_id', $currentUserId, PDO::PARAM_INT);
+                        $activityStmt->bindValue(':action_type', 'ASSIGN', PDO::PARAM_STR);
+                        $activityStmt->bindValue(':details', $logDetails, PDO::PARAM_STR);
+                        $activityStmt->bindValue(':created_at', $currentDateTime, PDO::PARAM_STR);
+                        $activityStmt->execute();
+
+                        $successCount++;
+                    }
+
+                    $db->commit();
+
+                    $message = sprintf(
+                        '%d defect(s) successfully assigned to %s %s (%s).',
+                        $successCount,
+                        htmlspecialchars((string) ($assignedUser['first_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($assignedUser['last_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($assignedUser['contractor_name'] ?? 'N/A'), ENT_QUOTES, 'UTF-8')
+                    );
+                    $messageType = 'success';
+                } catch (Exception $bulkError) {
+                    $db->rollBack();
+                    $message = 'Error during bulk assignment: ' . $bulkError->getMessage();
+                    $messageType = 'danger';
+                    error_log('Bulk Assign Error: ' . $bulkError->getMessage());
+                }
+            }
+        }
     }
-    if ($contractorFilter != 'all') {
-        $baseDefectsQuery .= " AND d.contractor_id = :contractor_id"; // Filter by defect's contractor
-        $queryParams[':contractor_id'] = $contractorFilter;
+
+    $whereClauses = ['d.deleted_at IS NULL'];
+    $queryParams = [];
+
+    if ($projectFilter !== 'all') {
+        $whereClauses[] = 'd.project_id = :project_id';
+        $queryParams[':project_id'] = (int) $projectFilter;
     }
-    if ($statusFilter != 'all') {
-        $baseDefectsQuery .= " AND d.status = :status";
+
+    if ($contractorFilter !== 'all') {
+        $whereClauses[] = 'd.contractor_id = :contractor_id';
+        $queryParams[':contractor_id'] = (int) $contractorFilter;
+    }
+
+    if ($statusFilter !== 'all') {
+        $whereClauses[] = 'd.status = :status';
         $queryParams[':status'] = $statusFilter;
     }
-    if ($priorityFilter != 'all') {
-        $baseDefectsQuery .= " AND d.priority = :priority";
+
+    if ($priorityFilter !== 'all') {
+        $whereClauses[] = 'd.priority = :priority';
         $queryParams[':priority'] = $priorityFilter;
     }
-    // Apply search term filter across multiple relevant fields.
-    if (!empty($searchTerm)) {
-        $baseDefectsQuery .= " AND (d.title LIKE :search OR d.description LIKE :search OR p.name LIKE :search OR c.company_name LIKE :search)";
+
+    if ($searchTerm !== '') {
+        $whereClauses[] = '(d.title LIKE :search OR d.description LIKE :search OR p.name LIKE :search OR c.company_name LIKE :search)';
         $queryParams[':search'] = '%' . $searchTerm . '%';
     }
 
-    // --- Count Total Records for Pagination ---
-    // Need to count rows matching the filters *before* applying LIMIT.
-    $countQuery = "SELECT COUNT(*) FROM ({$baseDefectsQuery}) as filtered_defects";
+    $whereSql = implode(' AND ', $whereClauses);
+
+    $countQuery = "SELECT COUNT(*) FROM defects d LEFT JOIN projects p ON d.project_id = p.id LEFT JOIN contractors c ON d.contractor_id = c.id WHERE {$whereSql}";
     $countStmt = $db->prepare($countQuery);
-    // Bind filter parameters to the count query.
     foreach ($queryParams as $param => $value) {
-        $countStmt->bindValue($param, $value);
+        $countStmt->bindValue($param, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
     }
     $countStmt->execute();
-    $totalRecords = (int)$countStmt->fetchColumn(); // Get the total count.
-    $totalPages = ceil($totalRecords / $recordsPerPage); // Calculate total pages.
+    $totalRecords = (int) ($countStmt->fetchColumn() ?? 0);
+    $totalPages = $totalRecords > 0 ? (int) ceil($totalRecords / $recordsPerPage) : 0;
 
-    // Adjust current page if it's out of bounds after filtering.
     if ($page > $totalPages && $totalPages > 0) {
         $page = $totalPages;
-        $offset = ($page - 1) * $recordsPerPage; // Recalculate offset.
-    } elseif ($page < 1) {
+        $offset = ($page - 1) * $recordsPerPage;
+    }
+
+    if ($page < 1) {
         $page = 1;
         $offset = 0;
     }
 
-    // --- Fetch Paginated Defects ---
-    // Add ORDER BY and LIMIT clauses to the base query.
-    $defectsQuery = $baseDefectsQuery . " ORDER BY d.created_at DESC LIMIT :offset, :records_per_page";
+    $defectsQuery = "SELECT
+                        d.id,
+                        d.title,
+                        d.status,
+                        d.priority,
+                        d.created_at,
+                        d.due_date,
+                        d.description,
+                        d.project_id,
+                        d.contractor_id,
+                        p.name AS project_name,
+                        c.company_name AS contractor_name,
+                        da.user_id AS assigned_user_id,
+                        assigned_user.username AS assigned_username,
+                        assigned_user.first_name AS assigned_first_name,
+                        assigned_user.last_name AS assigned_last_name,
+                        assigned_contractor.company_name AS assigned_contractor_name,
+                        creator.username AS created_by_user,
+                        creator.first_name AS created_by_first_name,
+                        creator.last_name AS created_by_last_name
+                      FROM defects d
+                      LEFT JOIN projects p ON d.project_id = p.id
+                      LEFT JOIN contractors c ON d.contractor_id = c.id
+                      LEFT JOIN defect_assignments da ON d.id = da.defect_id
+                      LEFT JOIN users assigned_user ON da.user_id = assigned_user.id
+                      LEFT JOIN contractors assigned_contractor ON assigned_user.contractor_id = assigned_contractor.id
+                      LEFT JOIN users creator ON d.created_by = creator.id
+                      WHERE {$whereSql}
+                      ORDER BY d.created_at DESC
+                      LIMIT :offset, :limit";
+
     $defectsStmt = $db->prepare($defectsQuery);
-
-    // Bind filter parameters again for the main query.
     foreach ($queryParams as $param => $value) {
-        $defectsStmt->bindValue($param, $value);
+        $defectsStmt->bindValue($param, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
     }
-    // Bind pagination parameters (LIMIT and OFFSET must be integers).
     $defectsStmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $defectsStmt->bindValue(':records_per_page', $recordsPerPage, PDO::PARAM_INT);
-
+    $defectsStmt->bindValue(':limit', $recordsPerPage, PDO::PARAM_INT);
     $defectsStmt->execute();
-    $defects = $defectsStmt->fetchAll(PDO::FETCH_ASSOC); // Fetch the defects for the current page.
+    $defects = $defectsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-    // --- Get Available Users for Assignment Dropdowns ---
-    // Fetch active users who have the 'contractor' role (adjust role filter if needed).
-    $usersQuery = "SELECT u.id, u.username, u.first_name, u.last_name, u.role,
-                          c.company_name as contractor_name, u.contractor_id
+    $metricsQuery = "SELECT
+                        COUNT(DISTINCT d.id) AS total_defects,
+                        SUM(CASE WHEN da.user_id IS NOT NULL THEN 1 ELSE 0 END) AS assigned_defects,
+                        SUM(CASE WHEN da.user_id IS NULL THEN 1 ELSE 0 END) AS unassigned_defects,
+                        SUM(CASE WHEN d.priority = 'critical' THEN 1 ELSE 0 END) AS critical_defects,
+                        SUM(CASE WHEN d.due_date IS NOT NULL AND d.due_date < CURRENT_DATE() AND d.status NOT IN ('closed','accepted','resolved','verified') THEN 1 ELSE 0 END) AS overdue_defects,
+                        SUM(CASE WHEN d.status IN ('open','pending','in_progress') THEN 1 ELSE 0 END) AS active_defects,
+                        COUNT(DISTINCT d.project_id) AS project_count,
+                        COUNT(DISTINCT d.contractor_id) AS contractor_count,
+                        MAX(d.updated_at) AS last_update
+                      FROM defects d
+                      LEFT JOIN projects p ON d.project_id = p.id
+                      LEFT JOIN contractors c ON d.contractor_id = c.id
+                      LEFT JOIN defect_assignments da ON d.id = da.defect_id
+                      WHERE {$whereSql}";
+
+    $metricsStmt = $db->prepare($metricsQuery);
+    foreach ($queryParams as $param => $value) {
+        $metricsStmt->bindValue($param, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+    }
+    $metricsStmt->execute();
+    $metrics = $metricsStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    $totalDefects = (int) ($metrics['total_defects'] ?? 0);
+    $assignedDefects = (int) ($metrics['assigned_defects'] ?? 0);
+    $unassignedDefects = (int) ($metrics['unassigned_defects'] ?? 0);
+    $criticalDefects = (int) ($metrics['critical_defects'] ?? 0);
+    $overdueDefects = (int) ($metrics['overdue_defects'] ?? 0);
+    $activeDefects = (int) ($metrics['active_defects'] ?? 0);
+    $projectCount = (int) ($metrics['project_count'] ?? 0);
+    $contractorCount = (int) ($metrics['contractor_count'] ?? 0);
+
+    if (!empty($metrics['last_update'])) {
+        $lastUpdateDisplay = date('d M Y, H:i', strtotime($metrics['last_update'])) . ' UK';
+    }
+
+    if ($totalRecords > 0) {
+        $startRecord = $offset + 1;
+        $endRecord = min($offset + count($defects), $totalRecords);
+    }
+
+    $projectsQuery = "SELECT id, name FROM projects WHERE status = 'active' ORDER BY name";
+    $projectsStmt = $db->prepare($projectsQuery);
+    $projectsStmt->execute();
+    $projects = $projectsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $contractorsQuery = "SELECT id, company_name FROM contractors WHERE status = 'active' ORDER BY company_name";
+    $contractorsStmt = $db->prepare($contractorsQuery);
+    $contractorsStmt->execute();
+    $contractors = $contractorsStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $statusesQuery = "SELECT DISTINCT status FROM defects WHERE status IS NOT NULL AND status != '' ORDER BY status";
+    $statusesStmt = $db->prepare($statusesQuery);
+    $statusesStmt->execute();
+    $statuses = $statusesStmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
+    $prioritiesQuery = "SELECT DISTINCT priority FROM defects WHERE priority IS NOT NULL AND priority != '' ORDER BY FIELD(priority, 'critical','high','medium','low')";
+    $prioritiesStmt = $db->prepare($prioritiesQuery);
+    $prioritiesStmt->execute();
+    $priorities = $prioritiesStmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
+    $usersQuery = "SELECT u.id, u.username, u.first_name, u.last_name, u.role, u.contractor_id, c.company_name AS contractor_name
                    FROM users u
-                   LEFT JOIN contractors c ON u.contractor_id = c.id -- Join to get contractor name
-                   WHERE u.status = 'active' -- Only active users
-                   -- Filter by role if necessary, e.g., AND u.role = 'contractor' or u.user_type = 'contractor'
-                   -- Adjust this condition based on how roles/types define assignable users.
-                   -- For now, let's assume any active user is potentially assignable for flexibility.
-                   ORDER BY c.company_name, u.first_name, u.last_name"; // Order for dropdown readability.
+                   LEFT JOIN contractors c ON u.contractor_id = c.id
+                   WHERE u.status = 'active'
+                   ORDER BY c.company_name, u.first_name, u.last_name";
 
     $usersStmt = $db->prepare($usersQuery);
     $usersStmt->execute();
-    $availableUsers = $usersStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // --- Store Current Filters for Pagination Links ---
-    // Build a query string containing the current filter parameters to append to pagination links.
-    $filterParams = http_build_query([
-        'project' => $projectFilter,
-        'contractor' => $contractorFilter,
-        'status' => $statusFilter,
-        'priority' => $priorityFilter,
-        'search' => $searchTerm
-    ]);
-
-    // --- Logged-in User Info (already in session) ---
-    $loggedInUserId = $_SESSION['user_id'];
-    $loggedInUsername = $_SESSION['username'];
-
+    $availableUsers = $usersStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Exception $e) {
-    // --- Catch-all Exception Handler for Page Load ---
-    $message = "Error loading page data: " . $e->getMessage();
-    $messageType = "danger";
-    error_log("Assign To User Page Error: " . $e->getMessage() . "\nTrace: " . $e->getTraceAsString());
-    // Initialize arrays to prevent errors in HTML rendering.
+    $message = 'Error loading assignment console: ' . $e->getMessage();
+    $messageType = 'danger';
+    error_log('Assign To User Error: ' . $e->getMessage());
     $projects = $contractors = $statuses = $priorities = $defects = $availableUsers = [];
-    $totalRecords = $totalPages = 0;
-    $filterParams = '';
+    $totalRecords = $totalPages = $startRecord = $endRecord = 0;
+    $totalDefects = $assignedDefects = $unassignedDefects = $criticalDefects = $overdueDefects = $activeDefects = 0;
+    $projectCount = $contractorCount = 0;
+    $lastUpdateDisplay = 'No updates recorded';
 }
 
-// --- Initialize Navbar ---
-// Needs DB connection and user info, done after potential session updates.
-$navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
-
-// --- Helper function for UK Date Time Formatting (if not already in functions.php) ---
-if (!function_exists('formatUKDateTime')) {
-    function formatUKDateTime($dateString) {
-        if (empty($dateString) || $dateString === null) {
-            return '<span class="text-muted">Not set</span>';
+if (!function_exists('formatUkDateTimeDisplay')) {
+    function formatUkDateTimeDisplay(?string $value, string $format = 'd M Y, H:i'): string
+    {
+        if (empty($value)) {
+            return 'Not set';
         }
+
         try {
-            $date = new DateTime($dateString);
-            // Set timezone specifically for formatting output, if needed, though default is already set.
-            // $date->setTimezone(new DateTimeZone('Europe/London'));
-            return $date->format('d/m/Y H:i');
-        } catch (Exception $e) {
-            error_log("Error formatting date '{$dateString}': " . $e->getMessage());
-            return '<span class="text-danger">Invalid Date</span>';
+            $date = new DateTime($value, new DateTimeZone('Europe/London'));
+            return $date->format($format);
+        } catch (Exception $exception) {
+            error_log('Date format error: ' . $exception->getMessage());
+            return 'Invalid date';
         }
     }
 }
 
+if (!function_exists('correctDefectImagePath')) {
+    function correctDefectImagePath(string $path): string
+    {
+        return (strpos($path, 'uploads/') === 0)
+            ? BASE_URL . $path
+            : BASE_URL . 'uploads/defect_images/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('fetchDefectImages')) {
+    function fetchDefectImages(PDO $db, int $defectId): array
+    {
+        $stmt = $db->prepare('SELECT file_path FROM defect_images WHERE defect_id = :defect_id');
+        $stmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    }
+}
+
+$filterParams = http_build_query([
+    'project' => $projectFilter,
+    'contractor' => $contractorFilter,
+    'status' => $statusFilter,
+    'priority' => $priorityFilter,
+    'search' => $searchTerm,
+]);
+
+$formActionQuery = $filterParams;
+if (!empty($formActionQuery)) {
+    $formActionQuery .= '&';
+}
+$formActionQuery .= 'page=' . $page;
+
+$projectsLookup = [];
+foreach ($projects as $project) {
+    $projectsLookup[$project['id']] = $project['name'];
+}
+
+$contractorsLookup = [];
+foreach ($contractors as $contractorItem) {
+    $contractorsLookup[$contractorItem['id']] = $contractorItem['company_name'];
+}
+
+$filtersApplied = $projectFilter !== 'all'
+    || $contractorFilter !== 'all'
+    || $statusFilter !== 'all'
+    || $priorityFilter !== 'all'
+    || $searchTerm !== '';
+
+$filterSummaryParts = [];
+
+if ($projectFilter !== 'all' && isset($projectsLookup[(int) $projectFilter])) {
+    $filterSummaryParts[] = 'Project: ' . $projectsLookup[(int) $projectFilter];
+}
+
+if ($contractorFilter !== 'all' && isset($contractorsLookup[(int) $contractorFilter])) {
+    $filterSummaryParts[] = 'Contractor: ' . $contractorsLookup[(int) $contractorFilter];
+}
+
+if ($statusFilter !== 'all') {
+    $filterSummaryParts[] = 'Status: ' . ucwords(str_replace('_', ' ', $statusFilter));
+}
+
+if ($priorityFilter !== 'all') {
+    $filterSummaryParts[] = 'Priority: ' . ucfirst($priorityFilter);
+}
+
+if ($searchTerm !== '') {
+    $filterSummaryParts[] = 'Search: "' . htmlspecialchars($searchTerm, ENT_QUOTES, 'UTF-8') . '"';
+}
+
+$filterSummary = $filtersApplied ? implode(' • ', $filterSummaryParts) : 'Showing all defects matching the assignment view';
+
+$assignmentMetrics = [
+    [
+        'title' => 'Matching Defects',
+        'subtitle' => 'Current filtered scope',
+        'icon' => 'bx-target-lock',
+        'class' => 'report-metric-card--total',
+        'value' => $totalDefects,
+        'description' => 'Total items in scope',
+        'description_icon' => 'bx-slider-alt',
+    ],
+    [
+        'title' => 'Awaiting Assignment',
+        'subtitle' => 'Not yet allocated',
+        'icon' => 'bx-user-x',
+        'class' => 'report-metric-card--overdue',
+        'value' => $unassignedDefects,
+        'description' => 'Needs handover',
+        'description_icon' => 'bx-time-five',
+    ],
+    [
+        'title' => 'Assigned To Users',
+        'subtitle' => 'Live workload',
+        'icon' => 'bx-user-check',
+        'class' => 'report-metric-card--open',
+        'value' => $assignedDefects,
+        'description' => 'Currently owned',
+        'description_icon' => 'bx-group',
+    ],
+    [
+        'title' => 'Critical Priority',
+        'subtitle' => 'Highest urgency',
+        'icon' => 'bx-error',
+        'class' => 'report-metric-card--critical',
+        'value' => $criticalDefects,
+        'description' => 'Requires rapid action',
+        'description_icon' => 'bx-radar',
+    ],
+    [
+        'title' => 'Overdue Items',
+        'subtitle' => 'Past due dates',
+        'icon' => 'bx-timer',
+        'class' => 'report-metric-card--overdue',
+        'value' => $overdueDefects,
+        'description' => 'Prioritise recovery',
+        'description_icon' => 'bx-alarm-exclamation',
+    ],
+];
+
+$statusBadgeMap = [
+    'open' => 'badge rounded-pill bg-warning-subtle text-warning-emphasis',
+    'pending' => 'badge rounded-pill bg-warning-subtle text-warning-emphasis',
+    'in_progress' => 'badge rounded-pill bg-info-subtle text-info-emphasis',
+    'accepted' => 'badge rounded-pill bg-success-subtle text-success-emphasis',
+    'verified' => 'badge rounded-pill bg-success-subtle text-success-emphasis',
+    'closed' => 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis',
+    'rejected' => 'badge rounded-pill bg-danger-subtle text-danger-emphasis',
+    'completed' => 'badge rounded-pill bg-success-subtle text-success-emphasis',
+];
+
+$priorityBadgeMap = [
+    'critical' => 'badge rounded-pill bg-danger-subtle text-danger-emphasis',
+    'high' => 'badge rounded-pill bg-warning-subtle text-warning-emphasis',
+    'medium' => 'badge rounded-pill bg-primary-subtle text-primary-emphasis',
+    'low' => 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis',
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php // --- HTML Head --- ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Assignment console - Defect Tracker">
+    <meta name="author" content="<?php echo htmlspecialchars($currentUser ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="last-modified" content="<?php echo htmlspecialchars($currentDateTimeIso, ENT_QUOTES, 'UTF-8'); ?>">
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Defect Tracker</title>
-    <?php // --- CSS Includes --- ?>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <?php // --- Favicons --- ?>
-    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
-    <link rel="shortcut icon" href="/favicons/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-    <link rel="manifest" href="/favicons/site.webmanifest" />
-
-    <?php // --- Internal CSS Styles --- ?>
-    <style>
-        :root { /* Define color variables */
-            --primary-color: #3498db;
-            --secondary-color: #9b59b6;
-            --light-color: #f8f9fa;
-            --dark-color: #343a40;
-            --text-muted: #6c757d;
-            --card-border-radius: 12px;
-            --box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.075);
-        }
-        body {
-            min-height: 100vh;
-            background-color: #f4f7f6; /* Match dashboard background */
-            padding-top: 70px; /* Adjust for fixed navbar height */
-        }
-        /* Apply card styling to the main content container */
-        .main-content-card {
-             background-color: #ffffff;
-             border-radius: var(--card-border-radius);
-             box-shadow: var(--box-shadow);
-             margin-top: 1.5rem; /* Space below navbar/alerts */
-             border: 1px solid #e9ecef;
-        }
-        .main-content-card .card-header { /* Style header within the card */
-             background-color: #ffffff;
-             border-bottom: 1px solid #e9ecef;
-             padding: 1rem 1.25rem;
-             border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
-        }
-         .main-content-card .card-header h1 { font-size: 1.5rem; font-weight: 600; } /* Adjust header title */
-
-         .main-content-card .card-body { /* Style body within the card */
-             padding: 1.25rem;
-         }
-
-        /* Style the filter section like a card header or distinct block */
-        .filter-section {
-            background-color: #f8f9fa; /* Light background */
-            padding: 1rem 1.25rem;
-            border-radius: 8px;
-            border: 1px solid #dee2e6; /* Slightly darker border */
-            margin-bottom: 1.5rem;
-        }
-         .filter-section .form-label { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
-
-        /* Bulk actions section styling */
-        .bulk-actions {
-            background-color: #e9ecef; /* Slightly darker background */
-            padding: 1rem 1.25rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            display: none; /* Initially hidden */
-            border: 1px solid #ced4da;
-        }
-
-        /* Table styles */
-        .table { font-size: 0.875rem; }
-        .table thead th {
-            background-color: #f8f9fa; /* Light header */
-            position: sticky; top: 56px; /* Make header sticky below navbar */
-            z-index: 10; /* Ensure above table content */
-            border-bottom-width: 1px;
-            white-space: nowrap;
-            vertical-align: middle;
-            font-weight: 600;
-        }
-        .table td { vertical-align: middle; }
-        .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.03); }
-        .checkbox-column { width: 40px; text-align: center; }
-        .table-actions { min-width: 220px; /* Wider to fit dropdown + button */ }
-
-        /* Assign form styling within table */
-        .single-assign-form { display: flex; align-items: center; gap: 0.5rem; }
-        .single-assign-form .form-select-sm { flex-grow: 1; } /* Allow dropdown to grow */
-        .assign-btn { flex-shrink: 0; } /* Prevent button from shrinking */
-
-        /* Hidden defect details row */
-        .defect-detail-row > td { padding: 0 !important; border-top: none !important; }
-        .defect-form {
-            background-color: #fdfdfd;
-            padding: 1.5rem; /* More padding */
-            margin-top: 0; /* Remove margin */
-            border-radius: 0;
-            border: none;
-            border-top: 1px dashed #dee2e6; /* Dashed separator */
-        }
-        .defect-images img {
-            max-width: 120px; /* Smaller thumbnails */
-            height: 80px; /* Fixed height */
-            object-fit: cover;
-            margin-right: 0.5rem; margin-bottom: 0.5rem;
-            border: 1px solid #ccc; padding: 2px; border-radius: 4px;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .defect-images img:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .img-thumbnail { padding: 0.2rem; background-color: #fff; border: 1px solid #dee2e6; }
-
-        /* Pagination styling */
-        .pagination-container { margin: 1.5rem 0; }
-        .pagination .page-link { font-size: 0.875rem; }
-        .pagination .page-item.active .page-link { background-color: var(--primary-color); border-color: var(--primary-color); }
-
-        /* Loading overlay */
-        .loading-overlay { /* Style as before */ }
-        .spinner { /* Style as before */ }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .table thead { position: static; } /* Disable sticky header on mobile */
-            .filter-section .col-md-2, .bulk-actions .col-md-4, .bulk-actions .col-md-2 { margin-bottom: 0.75rem; }
-            .table-actions { min-width: auto; }
-            .single-assign-form { flex-direction: column; align-items: stretch; }
-            .single-assign-form .form-select-sm { margin-bottom: 0.5rem; margin-right: 0 !important; }
-        }
-
-        /* Highlight user from same contractor in dropdown */
-        select option.fw-bold {
-             background-color: #e9f5ff; /* Light blue background */
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+    <link rel="shortcut icon" href="/favicons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    <link href="css/app.css" rel="stylesheet">
 </head>
-<body>
-    <?php // --- Render Navbar ---
-        $navbar->render();
-    ?>
-    <div style="height: 10px;"></div> <?php // Buffer below navbar ?>
+<body class="tool-body" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top no-print">
+        <div class="container-xl">
+            <a class="navbar-brand fw-semibold" href="assign_to_user.php">
+                <i class='bx bx-user-pin me-2'></i>Assignment Console
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#assignmentNavbar" aria-controls="assignmentNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="assignmentNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php"><i class='bx bx-doughnut-chart me-1'></i>Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="defects.php"><i class='bx bx-bug me-1'></i>Defects</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="assign_to_user.php"><i class='bx bx-user-voice me-1'></i>Assign</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reports.php"><i class='bx bx-bar-chart-alt-2 me-1'></i>Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my_tasks.php"><i class='bx bx-task me-1'></i>My Tasks</a>
+                    </li>
+                    <?php if (!empty($_SESSION['is_admin'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="admin.php"><i class='bx bx-dial me-1'></i>Admin</a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+                    <li class="nav-item text-muted small d-none d-lg-flex align-items-center">
+                        <i class='bx bx-time-five me-1'></i><span data-report-time><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?></span> UK
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="assignmentUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="assignmentUserMenu">
+                            <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check'></i> My Tasks</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <!-- Loading Overlay (Initially Hidden) -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
-
-    <?php // --- Main Content Section with Card Styling --- ?>
-    <div class="container-fluid">
-        <div class="main-content-card">
-            <div class="card-header">
-                 <?php // --- Page Header --- ?>
+    <main class="tool-page container-xl py-4">
+        <header class="tool-header mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
-                    <h1 class="h3 mb-1"><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></h1>
-                    <p class="text-muted mb-0 small">
-                        Assign defects to specific users for resolution. Use filters to narrow down the list.
-                    </p>
+                    <h1 class="h3 mb-2">Assignment Operations Centre</h1>
+                    <p class="text-muted mb-0">Prioritise, assign, and balance workload across the delivery team.</p>
                 </div>
-                <div>
-                    <?php // Optional: Add other header buttons if needed ?>
+                <div class="d-flex flex-column align-items-start text-muted small gap-1">
+                    <span><i class='bx bx-user-voice me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-time-five me-1'></i><span data-report-time><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?></span> UK</span>
                 </div>
             </div>
+        </header>
 
-            <div class="card-body">
-                <?php // --- Display Success/Error Messages --- ?>
-                <?php if ($message): ?>
-                    <div class="alert alert-<?php echo htmlspecialchars($messageType, ENT_QUOTES, 'UTF-8'); ?> alert-dismissible fade show" role="alert">
-                        <?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <?php
+        $calloutQueue = [];
+
+        if ($message) {
+            $calloutQueue[] = [
+                'type' => $messageType ?: 'info',
+                'text' => $message,
+            ];
+        }
+        if ($sessionSuccessMessage) {
+            $calloutQueue[] = ['type' => 'success', 'text' => $sessionSuccessMessage];
+        }
+        if ($sessionErrorMessage) {
+            $calloutQueue[] = ['type' => 'danger', 'text' => $sessionErrorMessage];
+        }
+        if ($sessionWarningMessage) {
+            $calloutQueue[] = ['type' => 'warning', 'text' => $sessionWarningMessage];
+        }
+        ?>
+        <?php foreach ($calloutQueue as $callout): ?>
+            <?php
+            $calloutClass = 'system-callout--info';
+            if ($callout['type'] === 'success') {
+                $calloutClass = 'system-callout--success';
+            } elseif ($callout['type'] === 'danger') {
+                $calloutClass = 'system-callout--danger';
+            } elseif ($callout['type'] === 'warning') {
+                $calloutClass = 'system-callout--warning';
+            }
+            ?>
+            <div class="system-callout <?php echo $calloutClass; ?> mb-4" role="status">
+                <div class="system-callout__icon"><i class='bx bx-info-circle'></i></div>
+                <div>
+                    <p class="system-callout__body mb-0"><?php echo htmlspecialchars($callout['text'], ENT_QUOTES, 'UTF-8'); ?></p>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <section class="mb-5">
+            <div class="report-metrics-grid">
+                <?php foreach ($assignmentMetrics as $metric): ?>
+                    <article class="report-metric-card <?php echo htmlspecialchars($metric['class'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <div class="report-metric-card__icon">
+                            <i class='bx <?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i>
+                        </div>
+                        <div class="report-metric-card__content">
+                            <h3 class="report-metric-card__title"><?php echo htmlspecialchars($metric['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                            <?php if (!empty($metric['subtitle'])): ?>
+                                <p class="report-metric-card__subtitle mb-2"><?php echo htmlspecialchars($metric['subtitle'], ENT_QUOTES, 'UTF-8'); ?></p>
+                            <?php endif; ?>
+                            <p class="report-metric-card__value mb-1"><?php echo number_format((int) $metric['value']); ?></p>
+                            <p class="report-metric-card__description mb-0">
+                                <i class='bx <?php echo htmlspecialchars($metric['description_icon'], ENT_QUOTES, 'UTF-8'); ?>'></i>
+                                <span><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            </p>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="row g-4 align-items-stretch">
+                <div class="col-xl-5">
+                    <article class="system-tool-card h-100">
+                        <div class="system-tool-card__icon">
+                            <i class='bx bx-pulse'></i>
+                        </div>
+                        <div class="system-tool-card__body">
+                            <span class="system-tool-card__tag system-tool-card__tag--insight">Assignment health</span>
+                            <h2 class="system-tool-card__title">Live Work Bank</h2>
+                            <p class="system-tool-card__description">Monitor load across projects and delivery partners before assigning anew.</p>
+                            <span class="system-tool-card__stat"><?php echo number_format($assignedDefects); ?></span>
+                            <p class="text-muted small mb-3">Currently owned by named users.</p>
+                            <ul class="list-unstyled text-muted small mb-0 d-flex flex-column gap-1">
+                                <li><i class='bx bx-building-house me-1'></i><?php echo number_format($projectCount); ?> projects in view</li>
+                                <li><i class='bx bx-user-voice me-1'></i><?php echo number_format($contractorCount); ?> originating contractors</li>
+                                <li><i class='bx bx-refresh me-1'></i><?php echo htmlspecialchars($lastUpdateDisplay, ENT_QUOTES, 'UTF-8'); ?></li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-xl-7">
+                    <div class="system-callout system-callout--info h-100" role="status">
+                        <div class="system-callout__icon"><i class='bx bx-target-lock'></i></div>
+                        <div>
+                            <h2 class="system-callout__title">Immediate Focus</h2>
+                            <p class="system-callout__body mb-3">Direct attention to items without an owner and high-risk priorities before progressing new work.</p>
+                            <div class="d-flex flex-wrap gap-3 text-muted small mb-0">
+                                <span><i class='bx bx-user-x me-1'></i><?php echo number_format($unassignedDefects); ?> unassigned</span>
+                                <span><i class='bx bx-error me-1'></i><?php echo number_format($criticalDefects); ?> critical</span>
+                                <span><i class='bx bx-timer me-1'></i><?php echo number_format($overdueDefects); ?> overdue</span>
+                                <span><i class='bx bx-run me-1'></i><?php echo number_format($activeDefects); ?> active</span>
+                            </div>
+                            <p class="text-muted small mb-0 mt-3"><i class='bx bx-slider-alt me-1'></i><?php echo htmlspecialchars($filterSummary, ENT_QUOTES, 'UTF-8'); ?></p>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="filter-panel no-print mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h2 class="h6 mb-1 text-uppercase text-muted">Filters</h2>
+                    <p class="text-muted small mb-0">Refine by project, contractor, or progress to target the next assignment.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-sm btn-outline-light" href="assign_to_user.php"><i class='bx bx-reset'></i> Reset</a>
+                </div>
+            </div>
+            <form method="GET" class="filter-panel__form">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label">Project</label>
+                        <select name="project" class="form-select">
+                            <option value="all">All Projects</option>
+                            <?php foreach ($projects as $project): ?>
+                                <option value="<?php echo (int) $project['id']; ?>" <?php echo ((int) $projectFilter === (int) $project['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($project['name'], ENT_QUOTES, 'UTF-8'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-3">
+                        <label class="form-label">Contractor</label>
+                        <select name="contractor" class="form-select">
+                            <option value="all">All Contractors</option>
+                            <?php foreach ($contractors as $contractor): ?>
+                                <option value="<?php echo (int) $contractor['id']; ?>" <?php echo ((int) $contractorFilter === (int) $contractor['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($contractor['company_name'], ENT_QUOTES, 'UTF-8'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-2">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="all">All Status</option>
+                            <?php foreach ($statuses as $status): ?>
+                                <option value="<?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($statusFilter === $status) ? 'selected' : ''; ?>>
+                                    <?php echo ucwords(str_replace('_', ' ', $status)); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-2">
+                        <label class="form-label">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="all">All Priorities</option>
+                            <?php foreach ($priorities as $priority): ?>
+                                <option value="<?php echo htmlspecialchars($priority, ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($priorityFilter === $priority) ? 'selected' : ''; ?>>
+                                    <?php echo ucfirst($priority); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6 col-xl-2">
+                        <label class="form-label">Search</label>
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" value="<?php echo htmlspecialchars($searchTerm, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Search defects...">
+                            <button type="button" class="btn btn-outline-light" id="clearSearchBtn"><i class='bx bx-x'></i></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <div class="assignment-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="text-muted small">
+                <?php if ($totalRecords > 0): ?>
+                    Showing <?php echo number_format($startRecord); ?>–<?php echo number_format($endRecord); ?> of <?php echo number_format($totalRecords); ?> results
+                <?php else: ?>
+                    No defects found for the current filters
                 <?php endif; ?>
+                <?php if (!empty($lastUpdateDisplay) && $lastUpdateDisplay !== 'No updates recorded'): ?>
+                    <span class="ms-2"><i class='bx bx-refresh me-1'></i>Last update <?php echo htmlspecialchars($lastUpdateDisplay, ENT_QUOTES, 'UTF-8'); ?></span>
+                <?php endif; ?>
+            </div>
+            <div class="d-flex gap-2 align-items-center no-print">
+                <button id="toggleSelectAllBtn" type="button" class="btn btn-sm btn-outline-light">
+                    <i class='bx bx-select-multiple'></i> Select All on Page
+                </button>
+            </div>
+        </div>
 
-                <?php // --- Filters Section --- ?>
-                <div class="filter-section">
-                    <form id="filterForm" method="GET" class="row g-3 align-items-end">
-                        <?php // Project Filter Dropdown ?>
-                        <div class="col-md-2 col-sm-6">
-                            <label for="projectFilter" class="form-label">Project</label>
-                            <select id="projectFilter" name="project" class="form-select form-select-sm">
-                                <option value="all">All Projects</option>
-                                <?php foreach ($projects as $project): ?>
-                                    <option value="<?php echo $project['id']; ?>" <?php echo ($projectFilter == $project['id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($project['name'], ENT_QUOTES, 'UTF-8'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <?php // Contractor Filter Dropdown ?>
-                        <div class="col-md-2 col-sm-6">
-                            <label for="contractorFilter" class="form-label">Contractor</label>
-                            <select id="contractorFilter" name="contractor" class="form-select form-select-sm">
-                                <option value="all">All Contractors</option>
-                                <?php foreach ($contractors as $contractor): ?>
-                                    <option value="<?php echo $contractor['id']; ?>" <?php echo ($contractorFilter == $contractor['id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($contractor['company_name'], ENT_QUOTES, 'UTF-8'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <?php // Status Filter Dropdown ?>
-                        <div class="col-md-2 col-sm-6">
-                            <label for="statusFilter" class="form-label">Status</label>
-                            <select id="statusFilter" name="status" class="form-select form-select-sm">
-                                <option value="all">All Statuses</option>
-                                <?php foreach ($statuses as $status): ?>
-                                    <option value="<?php echo $status; ?>" <?php echo ($statusFilter == $status) ? 'selected' : ''; ?>>
-                                        <?php echo ucfirst(str_replace('_', ' ', $status)); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <?php // Priority Filter Dropdown ?>
-                        <div class="col-md-2 col-sm-6">
-                            <label for="priorityFilter" class="form-label">Priority</label>
-                            <select id="priorityFilter" name="priority" class="form-select form-select-sm">
-                                <option value="all">All Priorities</option>
-                                <?php foreach ($priorities as $priority): ?>
-                                    <option value="<?php echo $priority; ?>" <?php echo ($priorityFilter == $priority) ? 'selected' : ''; ?>>
-                                        <?php echo ucfirst($priority); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <?php // Search Input ?>
-                        <div class="col-md-2 col-sm-6">
-                            <label for="searchInput" class="form-label">Search</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" id="searchInput" name="search"
-                                       placeholder="Keyword..." value="<?php echo htmlspecialchars($searchTerm, ENT_QUOTES, 'UTF-8'); ?>">
-                                <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn" title="Clear Search">
-                                    <i class='bx bx-x'></i>
-                                </button>
+        <section id="bulkAssignmentPanel" class="system-callout system-callout--active mb-5 d-none">
+            <div class="system-callout__icon"><i class='bx bx-task'></i></div>
+            <div class="flex-grow-1">
+                <h2 class="system-callout__title mb-2">Bulk Assign Selected Defects</h2>
+                <p class="system-callout__body mb-3">Apply the same assignee to multiple defects in one action. Ideal for onboarding a new contractor or clearing a queue.</p>
+                <form id="bulkAssignForm" method="POST" action="assign_to_user.php?<?php echo htmlspecialchars($formActionQuery, ENT_QUOTES, 'UTF-8'); ?>" class="row g-3 align-items-center">
+                    <input type="hidden" name="action" value="bulk_assign">
+                    <div class="col-12 col-lg-4">
+                        <div class="text-muted small"><i class='bx bx-check-square me-1'></i><span id="selectedCount">0</span> defects selected</div>
+                    </div>
+                    <div class="col-12 col-lg-5">
+                        <select name="bulk_assigned_to" class="form-select" required>
+                            <option value="">Select user...</option>
+                            <?php foreach ($availableUsers as $user): ?>
+                                <option value="<?php echo (int) $user['id']; ?>">
+                                    <?php echo htmlspecialchars(trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? '')), ENT_QUOTES, 'UTF-8'); ?> (<?php echo htmlspecialchars($user['contractor_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-3 d-grid d-lg-flex gap-2">
+                        <button type="submit" class="btn btn-success flex-grow-1"><i class='bx bx-user-plus'></i> Assign Selected</button>
+                    </div>
+                    <div id="selectedDefectIds"></div>
+                </form>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h2 class="h5 mb-1"><i class='bx bx-grid-alt me-2'></i>Defect Assignment Register</h2>
+                        <p class="text-muted small mb-0">Assign, reassign, and review current ownership.</p>
+                    </div>
+                    <?php if ($totalPages > 1): ?>
+                        <div class="text-muted small">Page <?php echo number_format($page); ?> of <?php echo number_format($totalPages); ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($defects)): ?>
+                        <div class="system-callout system-callout--info" role="status">
+                            <div class="system-callout__icon"><i class='bx bx-search-alt-2'></i></div>
+                            <div>
+                                <h2 class="system-callout__title">No Defects Found</h2>
+                                <p class="system-callout__body mb-0">Adjust your filters or reset to view the full defect log.</p>
                             </div>
                         </div>
-                        <?php // Filter Submit Button ?>
-                        <div class="col-md-2 col-sm-6">
-                            <button type="submit" class="btn btn-primary btn-sm w-100 btn-filter">
-                                <i class='bx bx-filter-alt'></i> Apply Filters
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <?php // --- Bulk Actions Section (Initially Hidden) --- ?>
-                <div class="bulk-actions" id="bulkActionsSection">
-                    <form id="bulkAssignForm" method="POST" class="row g-3 align-items-center">
-                        <input type="hidden" name="action" value="bulk_assign">
-                        <?php // Selected Count Display ?>
-                        <div class="col-md-5">
-                            <div class="d-flex align-items-center">
-                                <span class="me-2"><i class='bx bx-check-square fs-5 text-primary'></i></span>
-                                <span id="selectedCount" class="fw-bold">0</span>&nbsp;defects selected
-                            </div>
-                        </div>
-                        <?php // Bulk Assign User Dropdown ?>
-                        <div class="col-md-5">
-                            <select name="bulk_assigned_to" class="form-select form-select-sm" required aria-label="Select user for bulk assignment">
-                                <option value="">Select User to Assign...</option>
-                                <?php foreach ($availableUsers as $user): ?>
-                                    <option value="<?php echo $user['id']; ?>">
-                                        <?php // Display user name and their contractor ?>
-                                        <?php echo htmlspecialchars($user['first_name'] ?? '', ENT_QUOTES, 'UTF-8') . ' ' . htmlspecialchars($user['last_name'] ?? '', ENT_QUOTES, 'UTF-8') . " (" . htmlspecialchars($user['contractor_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8') . ")"; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <?php // Bulk Assign Submit Button ?>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-success btn-sm w-100">
-                                <i class='bx bx-group'></i> Assign Selected
-                            </button>
-                        </div>
-                        <?php // Hidden div to store selected defect IDs for POST submission ?>
-                        <div id="selectedDefectIds"></div>
-                    </form>
-                </div>
-
-                <?php // --- Results Stats and Select All Button --- ?>
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <div>
-                        <span class="text-muted small">
-                            Showing <?php echo min(($page - 1) * $recordsPerPage + 1, $totalRecords); ?> - <?php echo min($page * $recordsPerPage, $totalRecords); ?> of <?php echo $totalRecords; ?> defects
-                        </span>
-                    </div>
-                    <div>
-                        <button id="toggleSelectAllBtn" class="btn btn-sm btn-outline-secondary">
-                            <i class='bx bx-select-multiple'></i> Select/Deselect All on Page
-                        </button>
-                    </div>
-                </div>
-
-                <?php // --- Defects Table --- ?>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="sticky-header">
-                            <tr>
-                                <th class="checkbox-column">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="selectAllCheckbox" title="Select/Deselect all on this page">
-                                    </div>
-                                </th>
-                                <th>Defect</th>
-                                <th>Project</th>
-                                <th>Contractor</th>
-                                <th>Priority</th>
-                                <th>Due Date (UK)</th>
-                                <th>Status</th>
-                                <th>Currently Assigned To</th>
-                                <th class="table-actions">Assign To User</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($defects)): ?>
-                                <tr>
-                                    <td colspan="9" class="text-center py-4 text-muted">
-                                        <i class='bx bx-info-circle fs-4 align-middle me-1'></i> No defects match the current filters.
-                                    </td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($defects as $defect): ?>
+                    <?php else: ?>
+                        <div class="table-responsive defect-table">
+                            <table class="table table-dark table-hover align-middle mb-0">
+                                <thead>
                                     <tr>
-                                        <?php // Checkbox for Bulk Selection ?>
-                                        <td class="checkbox-column">
+                                        <th scope="col" class="text-center" style="width: 48px;">
                                             <div class="form-check">
-                                                <input class="form-check-input defect-checkbox" type="checkbox" value="<?php echo $defect['id']; ?>" id="defect_<?php echo $defect['id']; ?>">
+                                                <input class="form-check-input" type="checkbox" id="selectAllCheckbox" title="Select/Deselect all on this page">
                                             </div>
-                                        </td>
-                                        <?php // Defect Title and Creation Date ?>
-                                        <td>
-                                            <div class="fw-bold">
-                                                <a href="view_defect.php?id=<?php echo $defect['id']; ?>" target="_blank" title="View Defect Details">
-                                                    #<?php echo htmlspecialchars($defect['id'], ENT_QUOTES, 'UTF-8'); ?>: <?php echo htmlspecialchars($defect['title'], ENT_QUOTES, 'UTF-8'); ?>
-                                                </a>
-                                            </div>
-                                            <small class="text-muted">Created: <?php echo formatUKDateTime($defect['created_at']); ?></small>
-                                        </td>
-                                        <?php // Project Name ?>
-                                        <td><?php echo htmlspecialchars($defect['project_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <?php // Contractor Name (Associated with Defect) ?>
-                                        <td><?php echo htmlspecialchars($defect['contractor_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <?php // Priority Badge ?>
-                                        <td>
-                                            <?php
-                                            $priorityClassMap = ['critical' => 'danger', 'high' => 'danger', 'medium' => 'warning', 'low' => 'success'];
-                                            $priorityClass = $priorityClassMap[strtolower($defect['priority'] ?? '')] ?? 'secondary';
-                                            ?>
-                                            <span class="badge bg-<?php echo $priorityClass; ?>"><?php echo ucfirst(htmlspecialchars($defect['priority'] ?? 'N/A')); ?></span>
-                                        </td>
-                                        <?php // Due Date (UK Format) with Overdue Highlighting ?>
-                                        <td>
-                                            <?php
-                                            $dueDateFormatted = formatUKDateTime($defect['due_date']);
-                                            $isPastDue = false;
-                                            if (!empty($defect['due_date']) && ($dueDateTimestamp = strtotime($defect['due_date'])) !== false) {
-                                                $nowTimestamp = strtotime($currentDateTime); // Use current server time
-                                                $isPastDue = $dueDateTimestamp < $nowTimestamp && !in_array($defect['status'], ['completed', 'closed', 'verified', 'rejected']); // Check if past due and not closed/rejected
-                                            }
-                                            echo '<span class="' . ($isPastDue ? 'text-danger fw-bold' : '') . '">' . $dueDateFormatted . '</span>';
-                                            if ($isPastDue) {
-                                                echo ' <span class="badge bg-danger ms-1">Overdue</span>';
-                                            }
-                                            ?>
-                                        </td>
-                                        <?php // Status Badge ?>
-                                        <td>
-                                            <?php
-                                            $statusClassMap = ['open' => 'warning', 'pending' => 'info', 'accepted' => 'success', 'rejected' => 'secondary', 'closed' => 'secondary', 'verified' => 'primary', 'in_progress' => 'primary'];
-                                            $statusClass = $statusClassMap[strtolower($defect['status'] ?? '')] ?? 'secondary';
-                                            ?>
-                                            <span class="badge bg-<?php echo $statusClass; ?>"><?php echo ucfirst(str_replace('_', ' ', htmlspecialchars($defect['status'] ?? 'N/A'))); ?></span>
-                                        </td>
-                                        <?php // Currently Assigned User ?>
-                                        <td>
-                                            <?php
-                                            $assigned_user_display = '<span class="text-muted fst-italic">Unassigned</span>';
-                                            if (!empty($defect['assigned_user_id'])) {
-                                                $assigned_user_display = htmlspecialchars($defect['assigned_first_name'] ?? '', ENT_QUOTES, 'UTF-8') . ' ' .
-                                                                         htmlspecialchars($defect['assigned_last_name'] ?? '', ENT_QUOTES, 'UTF-8') .
-                                                                         (!empty($defect['assigned_contractor_name']) ? " (" . htmlspecialchars($defect['assigned_contractor_name'], ENT_QUOTES, 'UTF-8') . ")" : '');
-                                            }
-                                            echo $assigned_user_display;
-                                            ?>
-                                        </td>
-                                        <?php // Actions Column: Assign Form and View Details Button ?>
-                                        <td class="table-actions">
-                                            <?php // Form for single assignment ?>
-                                            <form action="assign_to_user.php?<?php echo $filterParams; ?>&page=<?php echo $page; // Preserve filters/page ?>" method="POST" class="single-assign-form mb-1">
-                                                <input type="hidden" name="defect_id" value="<?php echo $defect['id']; ?>">
-                                                <input type="hidden" name="action" value="assign_single">
-                                                <select name="assigned_to" class="form-select form-select-sm" required aria-label="Assign user to defect <?php echo $defect['id']; ?>">
-                                                    <option value="">Assign to...</option>
-                                                    <?php foreach ($availableUsers as $user): ?>
-                                                        <?php
-                                                        $userDisplay = htmlspecialchars($user['first_name'] ?? '', ENT_QUOTES, 'UTF-8') . ' ' . htmlspecialchars($user['last_name'] ?? '', ENT_QUOTES, 'UTF-8') . " (" . htmlspecialchars($user['contractor_name'] ?? 'N/A', ENT_QUOTES, 'UTF-8') . ")";
-                                                        // Highlight user if they belong to the same contractor as the defect
-                                                        $isSameContractor = ($user['contractor_id'] == $defect['contractor_id']);
-                                                        ?>
-                                                        <option value="<?php echo $user['id']; ?>"
-                                                                <?php echo ($user['id'] == $defect['assigned_user_id']) ? 'selected' : ''; // Pre-select current user ?>
-                                                                <?php echo $isSameContractor ? 'class="fw-bold"' : ''; // Add class to highlight ?>
-                                                        >
-                                                            <?php echo $userDisplay; ?>
-                                                            <?php echo $isSameContractor ? ' ⭐' : ''; // Add star indicator ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                                <button type="submit" class="btn btn-primary btn-sm assign-btn" title="Assign selected user">
-                                                    <i class='bx bx-user-check'></i>
-                                                </button>
-                                            </form>
-                                            <?php // Button to toggle hidden details row ?>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm mt-1 w-100" onclick="toggleDefectForm(<?php echo $defect['id']; ?>)" title="View defect details and images">
-                                                <i class='bx bx-detail'></i> Details
-                                            </button>
-                                        </td>
+                                        </th>
+                                        <th scope="col">Defect</th>
+                                        <th scope="col">Project</th>
+                                        <th scope="col">Contractor</th>
+                                        <th scope="col" class="text-center">Status</th>
+                                        <th scope="col" class="text-center">Priority & Due</th>
+                                        <th scope="col">Assigned User</th>
+                                        <th scope="col" class="text-center no-print">Actions</th>
                                     </tr>
-                                    <?php // --- Hidden Row for Defect Details --- ?>
-                                    <tr id="defectFormRow_<?php echo $defect['id']; ?>" class="defect-detail-row" style="display: none;">
-                                        <td colspan="9"> <?php // Span across all columns ?>
-                                            <div class="defect-form">
-                                                <div class="row">
-                                                    <?php // Left side: Description and Images ?>
-                                                    <div class="col-lg-8 mb-3 mb-lg-0">
-                                                        <h6 class="mb-2 fw-bold">Description</h6>
-                                                        <div class="p-3 bg-light rounded border mb-3">
-                                                            <?php echo nl2br(htmlspecialchars($defect['description'] ?? 'No description provided.', ENT_QUOTES, 'UTF-8')); ?>
-                                                        </div>
-
-                                                        <h6 class="mb-2 fw-bold">Attachments</h6>
-                                                        <div class="defect-images d-flex flex-wrap">
-                                                            <?php
-                                                            // Fetch images associated with this defect
-                                                            $imagesQuery = "SELECT file_path FROM defect_images WHERE defect_id = :defect_id";
-                                                            $imageStmt = $db->prepare($imagesQuery);
-                                                            $imageStmt->bindParam(":defect_id", $defect['id'], PDO::PARAM_INT);
-                                                            $imageStmt->execute();
-                                                            $images = $imageStmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                            if (!empty($images)) {
-                                                                foreach ($images as $image) {
-                                                                    $imgSrc = (!empty($image['file_path'])) ? htmlspecialchars($image['file_path'], ENT_QUOTES, 'UTF-8') : '';
-                                                                    if (!empty($imgSrc)) {
-                                                                        echo '<div class="position-relative me-2 mb-2">';
-                                                                        // Make image clickable to open modal
-                                                                        echo '<img src="' . $imgSrc . '" alt="Defect Image" onclick="showImageModal(\'' . $imgSrc . '\')" class="img-thumbnail">';
-                                                                        echo '</div>';
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                echo '<p class="text-muted small">No images attached.</p>';
-                                                            }
-                                                            ?>
-                                                        </div>
-                                                    </div>
-                                                    <?php // Right side: Meta Details ?>
-                                                    <div class="col-lg-4">
-                                                         <div class="card h-100">
-                                                            <div class="card-header bg-light py-2">
-                                                                <h6 class="mb-0 small text-uppercase fw-bold">Defect Info</h6>
-                                                            </div>
-                                                            <div class="card-body p-3">
-                                                                <ul class="list-unstyled small">
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>ID:</span> <span class="fw-medium">#<?php echo $defect['id']; ?></span></li>
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>Project:</span> <span class="text-end"><?php echo htmlspecialchars($defect['project_name'] ?? 'N/A'); ?></span></li>
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>Contractor:</span> <span class="text-end"><?php echo htmlspecialchars($defect['contractor_name'] ?? 'N/A'); ?></span></li>
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>Status:</span> <span class="badge bg-<?php echo $statusClass; ?>"><?php echo ucfirst(str_replace('_', ' ', htmlspecialchars($defect['status'] ?? 'N/A'))); ?></span></li>
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>Priority:</span> <span class="badge bg-<?php echo $priorityClass; ?>"><?php echo ucfirst(htmlspecialchars($defect['priority'] ?? 'N/A')); ?></span></li>
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>Assigned:</span> <span class="text-end"><?php echo $assigned_user_display; ?></span></li>
-                                                                    <li class="mb-2 d-flex justify-content-between"><span>Created:</span> <span class="text-end"><?php echo formatUKDateTime($defect['created_at']); ?></span></li>
-                                                                    <li class="d-flex justify-content-between"><span>Due:</span> <span class="text-end <?php echo $isPastDue ? 'text-danger fw-bold' : ''; ?>"><?php echo formatUKDateTime($defect['due_date']); ?></span></li>
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($defects as $defect): ?>
+                                        <?php
+                                        $defectId = (int) ($defect['id'] ?? 0);
+                                        $statusKey = strtolower($defect['status'] ?? '');
+                                        $priorityKey = strtolower($defect['priority'] ?? '');
+                                        $statusBadgeClass = $statusBadgeMap[$statusKey] ?? 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis';
+                                        $priorityBadgeClass = $priorityBadgeMap[$priorityKey] ?? 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis';
+                                        $createdDisplay = formatUkDateTimeDisplay($defect['created_at']);
+                                        $dueDate = $defect['due_date'] ?? null;
+                                        $dueDateDisplay = $dueDate ? formatUkDateTimeDisplay($dueDate, 'd M Y') : 'No due date';
+                                        $isOverdue = false;
+                                        if (!empty($dueDate)) {
+                                            $dueTimestamp = strtotime($dueDate . ' 23:59:59');
+                                            $isOverdue = $dueTimestamp !== false && $dueTimestamp < time() && !in_array($statusKey, ['closed', 'accepted', 'verified', 'resolved', 'completed'], true);
+                                        }
+                                        $assignedUserDisplay = '<span class="text-muted">Unassigned</span>';
+                                        if (!empty($defect['assigned_user_id'])) {
+                                            $assignedName = trim(($defect['assigned_first_name'] ?? '') . ' ' . ($defect['assigned_last_name'] ?? ''));
+                                            if ($assignedName === '') {
+                                                $assignedName = $defect['assigned_username'] ?? 'Unknown';
+                                            }
+                                            $assignedUserDisplay = htmlspecialchars($assignedName, ENT_QUOTES, 'UTF-8');
+                                            if (!empty($defect['assigned_contractor_name'])) {
+                                                $assignedUserDisplay .= ' <span class="text-muted">(' . htmlspecialchars($defect['assigned_contractor_name'], ENT_QUOTES, 'UTF-8') . ')</span>';
+                                            }
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td class="text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input defect-checkbox" type="checkbox" value="<?php echo $defectId; ?>" id="defect_<?php echo $defectId; ?>">
                                                 </div>
-                                                <?php // Close and View Full Details buttons for the details section ?>
-                                                <div class="text-end mt-3">
-                                                    <a href="view_defect.php?id=<?php echo $defect['id']; ?>" class="btn btn-info btn-sm" target="_blank" title="Open full defect details in new tab">
-                                                        <i class='bx bx-link-external'></i> View Full Details
-                                                    </a>
-                                                    <button type="button" class="btn btn-secondary btn-sm" onclick="toggleDefectForm(<?php echo $defect['id']; ?>)">
-                                                        <i class='bx bx-x'></i> Close Details
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold">#<?php echo $defectId; ?> · <?php echo htmlspecialchars($defect['title'] ?? 'Untitled', ENT_QUOTES, 'UTF-8'); ?></div>
+                                                <div class="text-muted small">Created <?php echo htmlspecialchars($createdDisplay, ENT_QUOTES, 'UTF-8'); ?></div>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($defect['project_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($defect['contractor_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td class="text-center">
+                                                <span class="<?php echo $statusBadgeClass; ?>"><?php echo ucwords(str_replace('_', ' ', $defect['status'] ?? 'Unknown')); ?></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-flex flex-column gap-1 align-items-center">
+                                                    <span class="<?php echo $priorityBadgeClass; ?>"><?php echo ucfirst($priorityKey ?: 'n/a'); ?></span>
+                                                    <span class="badge rounded-pill <?php echo $isOverdue ? 'bg-danger-subtle text-danger-emphasis' : 'bg-secondary-subtle text-secondary-emphasis'; ?>">
+                                                        <i class='bx bx-calendar me-1'></i><?php echo htmlspecialchars($dueDateDisplay, ENT_QUOTES, 'UTF-8'); ?>
+                                                        <?php if ($isOverdue): ?>
+                                                            <i class='bx bx-error-circle ms-1'></i>
+                                                        <?php endif; ?>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td><?php echo $assignedUserDisplay; ?></td>
+                                            <td class="text-center no-print">
+                                                <div class="d-flex flex-column gap-2">
+                                                    <form method="POST" action="assign_to_user.php?<?php echo htmlspecialchars($formActionQuery, ENT_QUOTES, 'UTF-8'); ?>" class="d-flex gap-2 flex-column flex-lg-row align-items-stretch">
+                                                        <input type="hidden" name="action" value="assign_single">
+                                                        <input type="hidden" name="defect_id" value="<?php echo $defectId; ?>">
+                                                        <select name="assigned_to" class="form-select form-select-sm" required>
+                                                            <option value="">Assign to...</option>
+                                                            <?php foreach ($availableUsers as $user): ?>
+                                                                <?php
+                                                                $userId = (int) ($user['id'] ?? 0);
+                                                                $userDisplayName = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
+                                                                if ($userDisplayName === '') {
+                                                                    $userDisplayName = $user['username'] ?? 'User ' . $userId;
+                                                                }
+                                                                $userContractor = $user['contractor_name'] ?? 'N/A';
+                                                                $isSameContractor = !empty($defect['contractor_id']) && (int) $defect['contractor_id'] === (int) ($user['contractor_id'] ?? 0);
+                                                                ?>
+                                                                <option value="<?php echo $userId; ?>" <?php echo ($userId === (int) ($defect['assigned_user_id'] ?? 0)) ? 'selected' : ''; ?> <?php echo $isSameContractor ? 'data-highlight="true"' : ''; ?>>
+                                                                    <?php echo htmlspecialchars($userDisplayName, ENT_QUOTES, 'UTF-8'); ?> (<?php echo htmlspecialchars($userContractor, ENT_QUOTES, 'UTF-8'); ?>)<?php echo $isSameContractor ? ' ★' : ''; ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <button type="submit" class="btn btn-sm btn-primary"><i class='bx bx-user-check'></i></button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#defectModal<?php echo $defectId; ?>">
+                                                        <i class='bx bx-show-alt'></i> View Details
                                                     </button>
                                                 </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <?php if ($totalPages > 1): ?>
+                            <nav aria-label="Assignment pagination" class="mt-4">
+                                <ul class="pagination pagination-sm justify-content-center flex-wrap">
+                                    <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>&<?php echo htmlspecialchars($filterParams, ENT_QUOTES, 'UTF-8'); ?>" tabindex="-1">Previous</a>
+                                    </li>
+                                    <?php
+                                    $range = 2;
+                                    $startPage = max(1, $page - $range);
+                                    $endPage = min($totalPages, $page + $range);
+                                    if ($startPage > 1) {
+                                        echo '<li class="page-item"><a class="page-link" href="?page=1&' . htmlspecialchars($filterParams, ENT_QUOTES, 'UTF-8') . '">1</a></li>';
+                                        if ($startPage > 2) {
+                                            echo '<li class="page-item disabled"><span class="page-link">…</span></li>';
+                                        }
+                                    }
+                                    for ($i = $startPage; $i <= $endPage; $i++) {
+                                        $active = $page === $i ? ' active' : '';
+                                        echo '<li class="page-item' . $active . '"><a class="page-link" href="?page=' . $i . '&' . htmlspecialchars($filterParams, ENT_QUOTES, 'UTF-8') . '">' . $i . '</a></li>';
+                                    }
+                                    if ($endPage < $totalPages) {
+                                        if ($endPage < $totalPages - 1) {
+                                            echo '<li class="page-item disabled"><span class="page-link">…</span></li>';
+                                        }
+                                        echo '<li class="page-item"><a class="page-link" href="?page=' . $totalPages . '&' . htmlspecialchars($filterParams, ENT_QUOTES, 'UTF-8') . '">' . $totalPages . '</a></li>';
+                                    }
+                                    ?>
+                                    <li class="page-item <?php echo $page >= $totalPages ? 'disabled' : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo min($totalPages, $page + 1); ?>&<?php echo htmlspecialchars($filterParams, ENT_QUOTES, 'UTF-8'); ?>">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <?php if (!empty($defects)): ?>
+        <?php foreach ($defects as $defect): ?>
+            <?php
+            $defectId = (int) ($defect['id'] ?? 0);
+            $images = isset($db) ? fetchDefectImages($db, $defectId) : [];
+            $statusKey = strtolower($defect['status'] ?? '');
+            $priorityKey = strtolower($defect['priority'] ?? '');
+            $statusBadgeClass = $statusBadgeMap[$statusKey] ?? 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis';
+            $priorityBadgeClass = $priorityBadgeMap[$priorityKey] ?? 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis';
+            $assignedUserDisplay = 'Unassigned';
+            if (!empty($defect['assigned_user_id'])) {
+                $assignedName = trim(($defect['assigned_first_name'] ?? '') . ' ' . ($defect['assigned_last_name'] ?? ''));
+                if ($assignedName === '') {
+                    $assignedName = $defect['assigned_username'] ?? 'Unknown';
+                }
+                $assignedUserDisplay = $assignedName;
+                if (!empty($defect['assigned_contractor_name'])) {
+                    $assignedUserDisplay .= ' (' . $defect['assigned_contractor_name'] . ')';
+                }
+            }
+            ?>
+            <div class="modal fade" id="defectModal<?php echo $defectId; ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Defect #<?php echo $defectId; ?> Assignment Detail</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-4">
+                                <div class="col-xl-8">
+                                    <h5><?php echo htmlspecialchars($defect['title'] ?? 'Untitled', ENT_QUOTES, 'UTF-8'); ?></h5>
+                                    <p class="text-muted">Status: <span class="<?php echo $statusBadgeClass; ?>"><?php echo ucwords(str_replace('_', ' ', $defect['status'] ?? 'Unknown')); ?></span></p>
+                                    <div class="bg-dark-subtle text-dark-emphasis rounded-3 p-3 mb-4">
+                                        <h6 class="text-uppercase text-muted small mb-2">Description</h6>
+                                        <p class="mb-0"><?php echo nl2br(htmlspecialchars($defect['description'] ?? 'No description provided.', ENT_QUOTES, 'UTF-8')); ?></p>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-uppercase text-muted small mb-3">Attachments</h6>
+                                        <?php if (empty($images)): ?>
+                                            <p class="text-muted small">No images attached.</p>
+                                        <?php else: ?>
+                                            <div class="row g-3">
+                                                <?php foreach ($images as $imagePath): ?>
+                                                    <div class="col-6 col-md-4">
+                                                        <div class="ratio ratio-16x9">
+                                                            <img src="<?php echo htmlspecialchars(correctDefectImagePath($imagePath), ENT_QUOTES, 'UTF-8'); ?>" alt="Defect Attachment" class="object-fit-cover rounded-3 border border-secondary-subtle p-1">
+                                                        </div>
+                                                    </div>
+                                                <?php endforeach; ?>
                                             </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div> <?php // End table-responsive ?>
-
-                <?php // --- Pagination Controls --- ?>
-                <?php if ($totalPages > 1): ?>
-                    <div class="pagination-container mt-4">
-                        <nav aria-label="Defect list page navigation">
-                            <ul class="pagination justify-content-center flex-wrap">
-                                <?php // First Page Link ?>
-                                <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=1&<?php echo $filterParams; ?>" aria-label="First">
-                                        <i class='bx bx-chevrons-left'></i> First
-                                    </a>
-                                </li>
-                                <?php // Previous Page Link ?>
-                                <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $page - 1; ?>&<?php echo $filterParams; ?>" aria-label="Previous">
-                                        <i class='bx bx-chevron-left'></i> Prev
-                                    </a>
-                                </li>
-
-                                <?php
-                                // Determine the range of page numbers to display.
-                                $range = 2; // Number of pages to show before and after the current page.
-                                $startPage = max(1, $page - $range);
-                                $endPage = min($totalPages, $page + $range);
-
-                                // Show ellipsis (...) if startPage is far from 1.
-                                if ($startPage > 1) {
-                                    echo '<li class="page-item"><a class="page-link" href="?page=1&' . $filterParams . '">1</a></li>';
-                                    if ($startPage > 2) {
-                                        echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                    }
-                                }
-
-                                // Display page numbers within the calculated range.
-                                for ($i = $startPage; $i <= $endPage; $i++) {
-                                    echo '<li class="page-item ' . ($page == $i ? 'active' : '') . '">
-                                        <a class="page-link" href="?page=' . $i . '&' . $filterParams . '">' . $i . '</a>
-                                    </li>';
-                                }
-
-                                // Show ellipsis (...) if endPage is far from totalPages.
-                                if ($endPage < $totalPages) {
-                                    if ($endPage < $totalPages - 1) {
-                                        echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
-                                    }
-                                    echo '<li class="page-item"><a class="page-link" href="?page=' . $totalPages . '&' . $filterParams . '">' . $totalPages . '</a></li>';
-                                }
-                                ?>
-
-                                <?php // Next Page Link ?>
-                                <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $page + 1; ?>&<?php echo $filterParams; ?>" aria-label="Next">
-                                        Next <i class='bx bx-chevron-right'></i>
-                                    </a>
-                                </li>
-                                <?php // Last Page Link ?>
-                                <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $totalPages; ?>&<?php echo $filterParams; ?>" aria-label="Last">
-                                        Last <i class='bx bx-chevrons-right'></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <div class="col-xl-4">
+                                    <div class="card bg-dark border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <dl class="row mb-0 small text-muted">
+                                                <dt class="col-5">Project</dt>
+                                                <dd class="col-7"><?php echo htmlspecialchars($defect['project_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></dd>
+                                                <dt class="col-5">Contractor</dt>
+                                                <dd class="col-7"><?php echo htmlspecialchars($defect['contractor_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></dd>
+                                                <dt class="col-5">Priority</dt>
+                                                <dd class="col-7"><span class="<?php echo $priorityBadgeClass; ?>"><?php echo ucfirst($priorityKey ?: 'n/a'); ?></span></dd>
+                                                <dt class="col-5">Due Date</dt>
+                                                <dd class="col-7"><?php echo htmlspecialchars($dueDateDisplay, ENT_QUOTES, 'UTF-8'); ?></dd>
+                                                <dt class="col-5">Assigned</dt>
+                                                <dd class="col-7"><?php echo htmlspecialchars($assignedUserDisplay, ENT_QUOTES, 'UTF-8'); ?></dd>
+                                                <dt class="col-5">Created</dt>
+                                                <dd class="col-7"><?php echo htmlspecialchars($createdDisplay, ENT_QUOTES, 'UTF-8'); ?></dd>
+                                                <dt class="col-5">Created By</dt>
+                                                <dd class="col-7"><?php echo htmlspecialchars(trim(($defect['created_by_first_name'] ?? '') . ' ' . ($defect['created_by_last_name'] ?? '')) ?: ($defect['created_by_user'] ?? 'Unknown'), ENT_QUOTES, 'UTF-8'); ?></dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="<?php echo BASE_URL; ?>pdf_exports/pdf-defect.php?defect_id=<?php echo $defectId; ?>" class="btn btn-outline-light" target="_blank"><i class='bx bx-download me-1'></i> Download PDF</a>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
                     </div>
-                <?php endif; ?> <?php // End Pagination ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
-            </div> <?php // End card-body ?>
-        </div> <?php // End main content card ?>
-    </div> <?php // End container-fluid ?>
-
-    <?php // --- Bootstrap Modal for Image Zoom --- ?>
-    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-xl"> <?php // Use larger modal ?>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="imageModalLabel">Defect Image</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body text-center p-0"> <?php // Remove padding ?>
-            <img id="modalImage" src="" alt="Zoomed Defect Image" class="img-fluid" style="max-height: 85vh;"> <?php // Ensure image scales ?>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <?php // --- JavaScript Includes --- ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-
-    <?php // --- Inline JavaScript for Page Interactivity --- ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        /**
-         * Inline JavaScript for Assign Defects Page
-         * Handles:
-         * - Toggling visibility of defect detail rows.
-         * - Showing defect images in a modal.
-         * - Displaying a loading overlay during form submissions.
-         * - Handling filter form changes and search input with debounce.
-         * - Managing bulk defect selection (checkboxes, count display, bulk action form visibility).
-         */
         document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.querySelector('.filter-panel__form');
+            if (filterForm) {
+                filterForm.querySelectorAll('select').forEach(function(select) {
+                    select.addEventListener('change', function() {
+                        filterForm.submit();
+                    });
+                });
 
-            /**
-             * Toggles the visibility of the hidden details row for a specific defect.
-             * @param {number} defectId - The ID of the defect whose details row should be toggled.
-             */
-            window.toggleDefectForm = function(defectId) {
-                var formRow = document.getElementById("defectFormRow_" + defectId);
-                if (formRow) {
-                    var isHidden = formRow.style.display === "none" || formRow.style.display === "";
-                    // Close all other open detail rows first
-                    document.querySelectorAll('.defect-detail-row').forEach(row => {
-                        if (row.id !== "defectFormRow_" + defectId) {
-                            row.style.display = "none";
+                const searchInput = filterForm.querySelector('input[name="search"]');
+                let searchTimeout;
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(function() {
+                            filterForm.submit();
+                        }, 500);
+                    });
+                }
+
+                const clearSearchBtn = document.getElementById('clearSearchBtn');
+                if (clearSearchBtn && searchInput) {
+                    clearSearchBtn.addEventListener('click', function() {
+                        if (searchInput.value !== '') {
+                            searchInput.value = '';
+                            filterForm.submit();
                         }
                     });
-                    // Toggle the target row
-                    formRow.style.display = isHidden ? "table-row" : "none";
-                } else {
-                    console.error("Details row not found for defect ID:", defectId);
                 }
-            };
-
-            /**
-             * Displays the clicked image in a Bootstrap modal.
-             * @param {string} imgSrc - The source URL of the image to display.
-             */
-            window.showImageModal = function(imgSrc) {
-                var modalImg = document.getElementById("modalImage");
-                if (modalImg) {
-                    modalImg.src = imgSrc; // Set the image source in the modal
-                    var imageModal = new bootstrap.Modal(document.getElementById("imageModal")); // Get modal instance
-                    imageModal.show(); // Show the modal
-                } else {
-                    console.error("Image modal element not found.");
-                }
-            };
-
-            /**
-             * Shows the loading overlay. Typically called before form submission.
-             */
-            function showLoading() {
-                const overlay = document.getElementById('loadingOverlay');
-                if (overlay) overlay.style.display = 'flex';
             }
 
-            /**
-             * Hides the loading overlay. Typically called after page load or AJAX completion.
-             */
-            function hideLoading() {
-                 const overlay = document.getElementById('loadingOverlay');
-                 if (overlay) overlay.style.display = 'none';
-            }
-            // Hide loading on initial page load (in case it was somehow visible)
-            hideLoading();
-
-            // Add event listener to show loading on *any* form submission on the page.
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', showLoading);
-            });
-
-            // --- Filter Form Handling ---
-
-            // Auto-submit filter form when a dropdown value changes.
-            document.querySelectorAll('#filterForm select').forEach(select => {
-                select.addEventListener('change', function() {
-                    showLoading(); // Show loading indicator when filter changes
-                    document.getElementById('filterForm').submit();
-                });
-            });
-
-            // Handle search input with debounce to avoid submitting on every keystroke.
-            const searchInput = document.getElementById('searchInput');
-            let searchTimeout;
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout); // Clear previous timeout
-                    searchTimeout = setTimeout(() => {
-                        showLoading(); // Show loading before submitting search
-                        document.getElementById('filterForm').submit();
-                    }, 500); // Wait 500ms after user stops typing
-                });
-            }
-
-            // Handle the clear search button.
-            const clearSearchBtn = document.getElementById('clearSearchBtn');
-            if (clearSearchBtn) {
-                clearSearchBtn.addEventListener('click', function() {
-                    const searchInput = document.getElementById('searchInput');
-                    if (searchInput && searchInput.value !== '') { // Only submit if there's text to clear
-                        searchInput.value = ''; // Clear the input field
-                        showLoading(); // Show loading
-                        document.getElementById('filterForm').submit(); // Resubmit form with empty search
-                    }
-                });
-            }
-
-            // --- Bulk Selection Functionality ---
+            const defectCheckboxes = Array.from(document.querySelectorAll('.defect-checkbox'));
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            const defectCheckboxes = document.querySelectorAll('.defect-checkbox');
-            const bulkActionsSection = document.getElementById('bulkActionsSection');
-            const selectedCountSpan = document.getElementById('selectedCount');
-            const selectedDefectIdsDiv = document.getElementById('selectedDefectIds'); // Div to hold hidden inputs
             const toggleSelectAllBtn = document.getElementById('toggleSelectAllBtn');
-            const bulkAssignForm = document.getElementById('bulkAssignForm');
+            const bulkPanel = document.getElementById('bulkAssignmentPanel');
+            const selectedCountSpan = document.getElementById('selectedCount');
+            const selectedDefectIdsContainer = document.getElementById('selectedDefectIds');
 
-            /**
-             * Updates the display of the selected count and shows/hides the bulk actions section.
-             * Also updates hidden input fields within the bulk assign form.
-             */
-            function updateBulkActionsVisibility() {
-                const checkedBoxes = document.querySelectorAll('.defect-checkbox:checked');
-                const count = checkedBoxes.length;
+            function updateBulkPanel() {
+                const selected = defectCheckboxes.filter((checkbox) => checkbox.checked);
+                const count = selected.length;
 
-                if (selectedCountSpan) selectedCountSpan.textContent = count; // Update displayed count
-                if (bulkActionsSection) bulkActionsSection.style.display = count > 0 ? 'block' : 'none'; // Show/hide section
-
-                // Update the hidden input fields for the bulk assign form submission.
-                if (selectedDefectIdsDiv && bulkAssignForm) {
-                    // Clear previous hidden inputs
-                    selectedDefectIdsDiv.innerHTML = '';
-                    if (count > 0) {
-                        // Add a hidden input for each checked checkbox
-                        checkedBoxes.forEach(checkbox => {
-                            const input = document.createElement('input');
-                            input.type = 'hidden';
-                            input.name = 'defect_ids[]'; // Use array notation for PHP
-                            input.value = checkbox.value;
-                            selectedDefectIdsDiv.appendChild(input);
-                        });
-                    }
+                if (selectedCountSpan) {
+                    selectedCountSpan.textContent = count;
                 }
 
-                // Update "Select/Deselect All" button text based on current state
-                 if (toggleSelectAllBtn) {
-                     const allVisibleChecked = count === document.querySelectorAll('.defect-checkbox:visible').length && count > 0;
-                     toggleSelectAllBtn.innerHTML = allVisibleChecked ?
-                         '<i class="bx bx-checkbox-minus"></i> Deselect All on Page' :
-                         '<i class="bx bx-select-multiple"></i> Select All on Page';
-                 }
+                if (bulkPanel) {
+                    bulkPanel.classList.toggle('d-none', count === 0);
+                }
 
-                 // Update "Select All" checkbox state
-                 if (selectAllCheckbox) {
-                     const allVisible = document.querySelectorAll('.defect-checkbox:visible');
-                     selectAllCheckbox.checked = allVisible.length > 0 && count === allVisible.length;
-                     selectAllCheckbox.indeterminate = count > 0 && count < allVisible.length;
-                 }
+                if (selectedDefectIdsContainer) {
+                    selectedDefectIdsContainer.innerHTML = '';
+                    selected.forEach((checkbox) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'defect_ids[]';
+                        input.value = checkbox.value;
+                        selectedDefectIdsContainer.appendChild(input);
+                    });
+                }
 
-            } // End updateBulkActionsVisibility
+                if (selectAllCheckbox) {
+                    if (defectCheckboxes.length === 0) {
+                        selectAllCheckbox.checked = false;
+                        selectAllCheckbox.indeterminate = false;
+                    } else {
+                        selectAllCheckbox.checked = count === defectCheckboxes.length;
+                        selectAllCheckbox.indeterminate = count > 0 && count < defectCheckboxes.length;
+                    }
+                }
+            }
 
-            // Event listener for the main "Select All" checkbox in the table header.
             if (selectAllCheckbox) {
                 selectAllCheckbox.addEventListener('change', function() {
-                    // Check/uncheck all *visible* defect checkboxes on the current page.
-                    document.querySelectorAll('.defect-checkbox:visible').forEach(checkbox => {
+                    defectCheckboxes.forEach((checkbox) => {
                         checkbox.checked = selectAllCheckbox.checked;
                     });
-                    updateBulkActionsVisibility(); // Update UI accordingly.
+                    updateBulkPanel();
                 });
             }
 
-            // Event listeners for individual defect checkboxes.
-            defectCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateBulkActionsVisibility); // Update UI on change.
+            defectCheckboxes.forEach((checkbox) => {
+                checkbox.addEventListener('change', updateBulkPanel);
             });
 
-            // Event listener for the "Select/Deselect All" button.
             if (toggleSelectAllBtn) {
                 toggleSelectAllBtn.addEventListener('click', function() {
-                    // Determine if all visible checkboxes are currently checked.
-                    const visibleCheckboxes = document.querySelectorAll('.defect-checkbox:visible');
-                    const allVisibleChecked = document.querySelectorAll('.defect-checkbox:visible:checked').length === visibleCheckboxes.length;
-
-                    // Check/uncheck all visible checkboxes based on the current state.
-                    visibleCheckboxes.forEach(checkbox => {
-                        checkbox.checked = !allVisibleChecked;
+                    const shouldSelectAll = defectCheckboxes.some((checkbox) => !checkbox.checked);
+                    defectCheckboxes.forEach((checkbox) => {
+                        checkbox.checked = shouldSelectAll;
                     });
-
-                    updateBulkActionsVisibility(); // Update UI.
+                    updateBulkPanel();
                 });
             }
 
-            // Initial check to set visibility on page load (e.g., if returning after failed validation).
-            updateBulkActionsVisibility();
+            updateBulkPanel();
 
-        }); // End DOMContentLoaded
+            const timestampElement = document.createElement('div');
+            timestampElement.className = 'text-muted small mt-4 text-end';
+            timestampElement.innerHTML = 'Rendered: <?php echo addslashes($currentTimestamp); ?> UK • User: <?php echo addslashes($displayName); ?>';
+            const toolPage = document.querySelector('.tool-page');
+            if (toolPage) {
+                toolPage.appendChild(timestampElement);
+            }
+        });
     </script>
-
 </body>
 </html>
