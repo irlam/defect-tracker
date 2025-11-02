@@ -18,10 +18,10 @@ class Database {
     
     public function __construct() {
         // Load database configuration from environment variables
-        $this->host = Environment::get('DB_HOST', 'localhost:3306');
-        $this->db_name = Environment::get('DB_NAME', 'defect_tracker');
-        $this->username = Environment::get('DB_USERNAME', 'root');
-        $this->password = Environment::get('DB_PASSWORD', '');
+        $this->host = Environment::get('DB_HOST', '10.35.233.124:3306');
+        $this->db_name = Environment::get('DB_NAME', 'k87747_defecttracker');
+        $this->username = Environment::get('DB_USERNAME', 'k87747_defecttracker');
+        $this->password = Environment::get('DB_PASSWORD', 'Subaru5554346');
     }
 
     // Get database connection
