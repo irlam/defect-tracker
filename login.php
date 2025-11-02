@@ -200,118 +200,122 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php // Removed the hardcoded time and user display divs that were here. ?>
 
         <div class="card login-card">
-            <?php // --- Card Header with Logo and Title --- ?>
-            <div class="card-header text-center login-card__header">
-                <span class="login-badge">Welcome back</span>
-                <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo">
-                <h1 class="login-title">Construction Defect Tracker</h1>
-                <p class="login-subtitle">Spot, track, and close defects with confidence.</p>
-                <ul class="login-quick-stats">
-                    <li>
-                        <span class="label">Active projects</span>
-                        <span class="value">24</span>
-                    </li>
-                    <li>
-                        <span class="label">Issues resolved</span>
-                        <span class="value">8.1k</span>
-                    </li>
-                    <li>
-                        <span class="label">Avg. fix time</span>
-                        <span class="value">3.2d</span>
-                    </li>
-                </ul>
-            </div>
+            <div class="login-card__layout">
+                <section class="login-card__hero text-center">
+                    <span class="login-badge">Welcome back</span>
+                    <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo">
+                    <h1 class="login-title">Construction Defect Tracker</h1>
+                    <p class="login-subtitle">Spot, track, and close defects with confidence.</p>
+                    <ul class="login-quick-stats">
+                        <li>
+                            <span class="label">Active projects</span>
+                            <span class="value">24</span>
+                        </li>
+                        <li>
+                            <span class="label">Issues resolved</span>
+                            <span class="value">8.1k</span>
+                        </li>
+                        <li>
+                            <span class="label">Avg. fix time</span>
+                            <span class="value">3.2d</span>
+                        </li>
+                    </ul>
+                </section>
 
-            <?php // --- Card Body with Demo Banners and Login Form --- ?>
-            <div class="card-body p-4">
+                <div class="login-card__content">
+                    <div class="login-demo-grid">
+                        <?php // --- Manager Demo Login Card --- ?>
+                        <article class="login-demo-card is-manager">
+                            <header class="login-demo-card__header">
+                                <i class='bx bx-user-check'></i>
+                                <div>
+                                    <p class="eyebrow">Demo access</p>
+                                    <h5 class="title">Manager</h5>
+                                </div>
+                            </header>
+                            <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
+                            <div class="demo-credentials">
+                                <?php // Clickable boxes for username/password ?>
+                                <div class="credential-box username-box" onclick="copyToClipboard('manager')" title="Click to copy username">
+                                    manager
+                                </div>
+                                <div class="credential-box password-box" onclick="copyToClipboard('manager1')" title="Click to copy password">
+                                    manager1
+                                </div>
+                            </div>
+                            <?php // Auto-login button for Manager ?>
+                            <button id="managerDemoLogin" class="btn btn-sm demo-button mt-3">
+                                <i class='bx bx-log-in'></i>Auto-Login
+                            </button>
+                        </article>
 
-                <?php // --- Manager Demo Login Banner --- ?>
-                <div class="demo-banner is-manager">
-                    <div class="d-flex align-items-center">
-                        <i class='bx bx-user-check fs-4 me-2'></i> <?php // Icon ?>
-                        <h5 class="mb-0">Manager Demo Access</h5>
+                        <?php // --- Contractor Demo Login Card --- ?>
+                        <article class="login-demo-card is-contractor">
+                            <header class="login-demo-card__header">
+                                <i class='bx bx-hard-hat'></i>
+                                <div>
+                                    <p class="eyebrow">Demo access</p>
+                                    <h5 class="title">Contractor</h5>
+                                </div>
+                            </header>
+                            <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
+                            <div class="demo-credentials">
+                                <?php // Clickable boxes for Contractor username/password ?>
+                                <div class="credential-box username-box" onclick="copyToClipboard('contractor')" title="Click to copy username">
+                                    contractor
+                                </div>
+                                <div class="credential-box password-box" onclick="copyToClipboard('contractor1')" title="Click to copy password">
+                                    contractor1
+                                </div>
+                            </div>
+                            <?php // Auto-login button for Contractor ?>
+                            <button id="contractorDemoLogin" class="btn btn-sm demo-button mt-3">
+                                <i class='bx bx-log-in'></i>Auto-Login
+                            </button>
+                        </article>
                     </div>
-                    <p class="mb-2 mt-2 small">Click credentials to copy or use auto-login.</p>
-                    <div class="demo-credentials">
-                        <?php // Clickable boxes for username/password ?>
-                        <div class="credential-box username-box" onclick="copyToClipboard('manager')" title="Click to copy username">
-                            manager
+
+                    <div class="login-divider"><span>Sign in</span></div>
+
+                    <?php // --- Display Login Error Message (if any) --- ?>
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class='bx bx-error-circle me-1'></i> <?php // Icon ?>
+                            <?php echo htmlspecialchars($error); // Display the error message safely ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
-                        <div class="credential-box password-box" onclick="copyToClipboard('manager1')" title="Click to copy password">
-                            manager1
+                    <?php endif; ?>
+
+                    <?php // --- Actual Login Form --- ?>
+                    <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); // Post to the same page ?>">
+                        <?php // Username Input ?>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class='bx bx-user'></i></span>
+                                <input type="text" class="form-control" id="username" name="username"
+                                       value="<?php echo htmlspecialchars($username); // Pre-fill username on failed login ?>" required>
+                            </div>
                         </div>
-                    </div>
-                    <?php // Auto-login button for Manager ?>
-                    <button id="managerDemoLogin" class="btn btn-sm demo-button mt-3">
-                        <i class='bx bx-log-in'></i>Auto-Login as Manager
-                    </button>
-                </div>
-
-                <?php // --- Contractor Demo Login Banner --- ?>
-                <div class="demo-banner is-contractor"> <?php // Different gradient for Contractor ?>
-                    <div class="d-flex align-items-center">
-                         <i class='bx bx-hard-hat fs-4 me-2'></i> <?php // Different Icon ?>
-                        <h5 class="mb-0">Contractor Demo Access</h5>
-                    </div>
-                    <p class="mb-2 mt-2 small">Click credentials to copy or use auto-login.</p>
-                    <div class="demo-credentials">
-                        <?php // Clickable boxes for Contractor username/password ?>
-                        <div class="credential-box username-box" onclick="copyToClipboard('contractor')" title="Click to copy username">
-                            contractor
+                        <?php // Password Input ?>
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class='bx bx-lock-alt'></i></span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <?php // Optional: Add "Forgot Password?" link here ?>
+                            <!-- <div class="text-end mt-1"><small><a href="/forgot-password.php">Forgot Password?</a></small></div> -->
                         </div>
-                        <div class="credential-box password-box" onclick="copyToClipboard('contractor1')" title="Click to copy password">
-                            contractor1
-                        </div>
+                        <?php // Submit Button ?>
+                        <button type="submit" class="btn btn-primary login-submit w-100">Login</button>
+                    </form>
+
+                    <div class="login-footer text-center text-muted mt-4">
+                        <small>Need access? Contact your project administrator.</small>
                     </div>
-                     <?php // Auto-login button for Contractor ?>
-                    <button id="contractorDemoLogin" class="btn btn-sm demo-button mt-3">
-                        <i class='bx bx-log-in'></i>Auto-Login as Contractor
-                    </button>
-                </div>
-
-
-                <div class="login-divider"><span>Sign in</span></div>
-
-
-                <?php // --- Display Login Error Message (if any) --- ?>
-                <?php if ($error): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class='bx bx-error-circle me-1'></i> <?php // Icon ?>
-                        <?php echo htmlspecialchars($error); // Display the error message safely ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
-
-                <?php // --- Actual Login Form --- ?>
-                <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); // Post to the same page ?>">
-                    <?php // Username Input ?>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class='bx bx-user'></i></span>
-                            <input type="text" class="form-control" id="username" name="username"
-                                   value="<?php echo htmlspecialchars($username); // Pre-fill username on failed login ?>" required autofocus>
-                        </div>
-                    </div>
-                    <?php // Password Input ?>
-                    <div class="mb-4">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class='bx bx-lock-alt'></i></span>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                        </div>
-                        <?php // Optional: Add "Forgot Password?" link here ?>
-                        <!-- <div class="text-end mt-1"><small><a href="/forgot-password.php">Forgot Password?</a></small></div> -->
-                    </div>
-                    <?php // Submit Button ?>
-                    <button type="submit" class="btn btn-primary login-submit w-100">Login</button>
-                </form>
-
-                <div class="login-footer text-center text-muted mt-4">
-                    <small>Need access? Contact your project administrator.</small>
-                </div>
-
-            </div> <?php // End card-body ?>
+                </div> <?php // End login-card__content ?>
+            </div> <?php // End login-card__layout ?>
         </div> <?php // End card ?>
     </div> <?php // End login-container ?>
 

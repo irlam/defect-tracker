@@ -470,10 +470,28 @@ a:focus {
   backdrop-filter: blur(18px);
 }
 
-.login-card .card-header {
-  background: transparent;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-  padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-md);
+.login-card__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  align-items: stretch;
+}
+
+.login-card__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-md);
+  padding-right: var(--spacing-lg);
+  border-right: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.login-card__content {
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--spacing-lg);
 }
 
 .login-badge {
@@ -547,32 +565,78 @@ a:focus {
   color: var(--white);
 }
 
-.demo-banner {
+.login-demo-grid {
+  display: grid;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 576px) {
+  .login-demo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.login-demo-card {
   position: relative;
-  margin-bottom: var(--spacing-md);
   border-radius: var(--border-radius);
   padding: var(--spacing-md);
   color: var(--white);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(14, 165, 233, 0.75));
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.45);
-  overflow: hidden;
-  animation: loginPanelFade 0.6s ease-out forwards;
+  background: linear-gradient(130deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.75));
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-height: 180px;
 }
 
-.demo-banner::before {
+.login-demo-card::before {
   content: '';
   position: absolute;
-  top: -40px;
-  right: -60px;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  opacity: 0.6;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 65%);
+  opacity: 0.45;
+  pointer-events: none;
 }
 
-.demo-banner.is-contractor {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.88), rgba(20, 184, 166, 0.78));
+.login-demo-card.is-contractor {
+  background: linear-gradient(130deg, rgba(13, 148, 136, 0.92), rgba(20, 184, 166, 0.78));
+}
+
+.login-demo-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  z-index: 1;
+}
+
+.login-demo-card__header .bx {
+  font-size: 1.5rem;
+}
+
+.login-demo-card__header .eyebrow {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.login-demo-card__header .title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.login-demo-card__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 1;
 }
 
 .demo-credentials {
@@ -580,6 +644,8 @@ a:focus {
   justify-content: space-between;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
+  position: relative;
+  z-index: 1;
 }
 
 .credential-box {
@@ -605,7 +671,7 @@ a:focus {
   transform: translateY(-2px);
 }
 
-.demo-button {
+.login-demo-card .demo-button {
   margin-top: var(--spacing-sm);
   border-radius: var(--border-radius);
   border: none;
@@ -615,10 +681,12 @@ a:focus {
   letter-spacing: 0.02em;
   padding: 0.55rem 1rem;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  position: relative;
+  z-index: 1;
 }
 
-.demo-button:hover,
-.demo-button:focus {
+.login-demo-card .demo-button:hover,
+.login-demo-card .demo-button:focus {
   background: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.35);
@@ -727,6 +795,23 @@ a:focus {
   .login-divider::before,
   .login-divider::after {
     width: 25%;
+  }
+}
+
+@media (max-width: 900px) {
+  .login-card__layout {
+    grid-template-columns: 1fr;
+    padding: var(--spacing-lg);
+  }
+
+  .login-card__hero {
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    padding: 0 0 var(--spacing-lg);
+  }
+
+  .login-card__content {
+    padding: var(--spacing-lg) 0 0;
   }
 }
 
