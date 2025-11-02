@@ -399,6 +399,124 @@ a:focus {
   border: 1px solid rgba(250, 204, 21, 0.65);
 }
 
+/* System tools layout ---------------------------------------------------- */
+
+body.tool-body {
+  background-color: var(--background-color);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.tool-page {
+  flex: 1 0 auto;
+}
+
+.tool-header {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(14, 165, 233, 0.15));
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.tool-breadcrumb .breadcrumb {
+  margin-bottom: 0;
+  background-color: transparent;
+}
+
+.tool-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+  color: var(--text-muted-color);
+}
+
+.tool-breadcrumb .breadcrumb-item a {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+.tool-breadcrumb .breadcrumb-item a:hover,
+.tool-breadcrumb .breadcrumb-item a:focus {
+  color: var(--secondary-light);
+}
+
+.tool-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-lg);
+  height: 100%;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.tool-card--success {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.tool-card--warning {
+  border-color: rgba(250, 204, 21, 0.45);
+}
+
+.tool-card--danger {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.tool-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.tool-status-pill-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--success-color);
+}
+
+.tool-status-pill-warning {
+  background: rgba(250, 204, 21, 0.12);
+  color: var(--warning-color);
+}
+
+.tool-status-pill-danger {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--danger-color);
+}
+
+.tool-metric-grid {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .tool-metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .tool-metric-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.tool-footer {
+  background-color: var(--background-elevated);
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted-color);
+}
+
 /* Login Page ----------------------------------------------------------- */
 
 .login-page {
