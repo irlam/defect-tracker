@@ -4,7 +4,7 @@ return [
     'db_host' => '10.35.233.124:3306',
     'db_name' => 'k87747_defecttracker',
     'db_user' => 'k87747_defecttracker',
-    'db_pass' => '7Mr@ww816',
+    'db_pass' => 'Subaru5554346',
     'sync_table' => 'sync_queue',
     'sync_interval' => 60,  // seconds between sync attempts
     'sync_batch_size' => 10, // number of items to process in one batch

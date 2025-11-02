@@ -30,7 +30,7 @@ define('EXCLUDE_PATHS', serialize(array(
 // Database Settings
 define('DB_HOST', '10.35.233.124:3306');  // Your database host
 define('DB_USER', 'k87747_defecttracker'); // Change to your actual database username
-define('DB_PASS', '7Mr@ww816'); // Change to your actual database password
+define('DB_PASS', 'Subaru5554346'); // Change to your actual database password
 define('DB_NAME', 'k87747_defecttracker'); // Change to your actual database name
 
 // MySQL Dump Path (from diagnostics)
