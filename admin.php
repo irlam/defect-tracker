@@ -44,6 +44,7 @@ try {
 $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? '';
 $full_name = $_SESSION['full_name'] ?? '';
+$sessionUserType = $_SESSION['user_type'] ?? 'viewer';
 
 // Query to get user roles from user_roles table
 $stmt = $db->prepare("SELECT role_id FROM user_roles WHERE user_id = :user_id AND deleted_at IS NULL");
@@ -128,8 +129,8 @@ function hasRole($role_id, $user_roles) {
 }
 
 // Check if user has admin access
-$isAdmin = hasRole(1, $user_roles);
-$isManager = hasRole(2, $user_roles);
+$isAdmin = hasRole(1, $user_roles) || $sessionUserType === 'admin';
+$isManager = hasRole(2, $user_roles) || $sessionUserType === 'manager';
 
 // If user is not admin or manager, redirect to dashboard
 if (!$isAdmin && !$isManager) {
