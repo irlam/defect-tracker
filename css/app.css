@@ -1760,6 +1760,86 @@ body.tool-body {
   color: var(--text-muted-color) !important;
 }
 
+/* Defect Register & Filters ------------------------------------------------ */
+
+.filter-panel {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 28px 48px rgba(2, 6, 23, 0.45);
+  padding: clamp(1.25rem, 2vw, 2rem);
+}
+
+.filter-panel__form .row > [class^="col"],
+.filter-panel__form .row > [class*=" col"] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-panel__form .form-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(148, 163, 184, 0.9);
+  margin-bottom: 0;
+}
+
+.filter-panel__form .form-control,
+.filter-panel__form .form-select {
+  min-height: 44px;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+}
+
+.filter-panel__form .input-group .btn {
+  min-width: 46px;
+}
+
+.filter-panel__summary {
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.filter-panel__summary span {
+  background: rgba(37, 99, 235, 0.14);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: rgba(226, 232, 240, 0.92);
+  border-radius: var(--border-radius-sm);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.defect-table {
+  width: 100%;
+}
+
+.defect-table .table {
+  width: 100%;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.defect-table .table tbody tr td {
+  vertical-align: middle;
+}
+
+.defect-table .badge {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 992px) {
+  .filter-panel {
+    padding: 1rem;
+  }
+
+  .filter-panel__form .row > [class^="col"],
+  .filter-panel__form .row > [class*=" col"] {
+    gap: 0.35rem;
+  }
+}
+
 .text-dark,
 .text-body {
   color: var(--text-color) !important;

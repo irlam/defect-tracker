@@ -594,6 +594,13 @@ $priorityBadgeMap = [
                     <a class="btn btn-sm btn-outline-light" href="<?php echo BASE_URL; ?>pdf_exports/export-pdf-defects-report-filtered.php?<?php echo htmlspecialchars($exportQueryString, ENT_QUOTES, 'UTF-8'); ?>" target="_blank"><i class='bx bxs-file-pdf"></i> PDF Report</a>
                 </div>
             </div>
+            <?php if ($filtersApplied && !empty($filterSummaryParts)): ?>
+                <div class="filter-panel__summary d-flex flex-wrap gap-2 mb-3">
+                    <?php foreach ($filterSummaryParts as $summaryPart): ?>
+                        <span><?php echo htmlspecialchars($summaryPart, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
             <form method="GET" class="filter-panel__form">
                 <div class="row g-3">
                     <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
