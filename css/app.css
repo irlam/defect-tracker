@@ -2160,6 +2160,23 @@ hr {
   color: rgba(224, 231, 255, 0.92);
 }
 
+/* Defect Table Contractor Display */
+.defect-table__contractor {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.defect-table__contractor-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-sm);
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
 @media (max-width: 768px) {
   .report-toolbar .form-control-sm {
     min-width: 140px;

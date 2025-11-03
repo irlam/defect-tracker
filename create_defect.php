@@ -536,7 +536,7 @@ function getRecentDescriptions($userId, $db) {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
 	<?php $navbar->render(); ?>
 	<br><br><br><br>
     <div class="container py-4">

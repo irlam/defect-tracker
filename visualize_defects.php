@@ -107,7 +107,7 @@ if ($stmt->rowCount() > 0) {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <div class="floorplan">
         <?php if (!empty($floorplan_image)): ?>
             <img id="floorplan-image" src="/uploads/floor_plan_images/<?php echo htmlspecialchars($floorplan_image); ?>" alt="Floorplan" style="max-width: 100%;">

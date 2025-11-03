@@ -963,7 +963,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
 
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
 <?php
 // --- Navigation Bar Rendering ---
 // Instantiate the Navbar class and render the navigation menu.
