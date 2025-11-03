@@ -23,7 +23,8 @@
 
     <title>Defects Tracking Website</title>
     <!-- Include Bootstrap CSS for styling -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/app.css">
     <style>
         body, html {
             height: 100%;
@@ -44,21 +45,30 @@
         }
         .overlay {
             /* Dark overlay to make text readable */
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(11, 18, 32, 0.85);
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            color: white;
+            color: var(--text-color);
         }
         .content {
             max-width: 600px;
         }
+        .content h1 {
+            color: var(--text-color);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .content p {
+            color: var(--text-muted-color);
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
     </style>
-    
 </head>
-<body>
+<body data-bs-theme="dark">
     <div class="bg">
         <div class="overlay">
             <div class="content">
