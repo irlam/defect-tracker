@@ -202,6 +202,8 @@
     </div>
     
     <script>
+        const AUTO_RELOAD_DELAY = 2000; // 2 seconds - configurable
+        
         // Monitor online/offline status
         function updateStatus() {
             const statusText = document.getElementById('status-text');
@@ -212,10 +214,10 @@
                 statusIndicator.style.background = '#22c55e';
                 statusIndicator.style.animation = 'none';
                 
-                // Auto-reload after 2 seconds when back online
+                // Auto-reload after delay when back online
                 setTimeout(() => {
                     window.location.reload();
-                }, 2000);
+                }, AUTO_RELOAD_DELAY);
             } else {
                 statusText.textContent = 'Offline';
                 statusIndicator.style.background = '#ef4444';

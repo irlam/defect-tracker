@@ -322,14 +322,14 @@ $pageTitle = 'Training Materials';
                 </li>
                 <li>
                     <i class="fas fa-check-circle text-success"></i>
-                    <a href="/help_pages/role_capability_matrix.md" class="text-decoration-none">
+                    <a href="/help_pages/view_role_matrix.php" class="text-decoration-none">
                         Role Capability Matrix
                     </a>
                     <span class="module-status status-available">Available</span>
                 </li>
                 <li>
                     <i class="fas fa-check-circle text-success"></i>
-                    <a href="/help_pages/pwa_health_check.md" class="text-decoration-none">
+                    <a href="/help_pages/view_pwa_health.php" class="text-decoration-none">
                         PWA Features Guide
                     </a>
                     <span class="module-status status-available">Available</span>
@@ -343,7 +343,7 @@ $pageTitle = 'Training Materials';
                 </li>
                 <li>
                     <i class="fas fa-check-circle text-success"></i>
-                    <a href="/IMPROVEMENTS.md" class="text-decoration-none">
+                    <a href="/IMPROVEMENTS.md" class="text-decoration-none" target="_blank">
                         System Improvements Log
                     </a>
                     <span class="module-status status-available">Available</span>

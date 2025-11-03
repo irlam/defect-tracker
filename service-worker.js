@@ -14,9 +14,10 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('Opened cache');
-      return cache.addAll(STATIC_ASSETS).catch(err => {
-        console.error('Failed to cache static assets:', err);
-      });
+      return cache.addAll(STATIC_ASSETS);
+    }).catch(err => {
+      console.error('Failed to cache static assets:', err);
+      throw err; // Re-throw to indicate installation failure
     })
   );
   self.skipWaiting();
