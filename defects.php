@@ -1110,6 +1110,13 @@ $priorityBadgeMap = [
             }
 
             if (filterForm) {
+                const autoSubmitFields = filterForm.querySelectorAll('select, input[type="date"]');
+                autoSubmitFields.forEach(function(field) {
+                    field.addEventListener('change', function() {
+                        filterForm.submit();
+                    });
+                });
+
                 const searchInput = filterForm.querySelector('input[name="search"]');
                 let searchTimeout;
                 if (searchInput) {
