@@ -159,10 +159,10 @@ class Navbar {
         $trimmed = ltrim($trimmed, '/');
 
         if (stripos($trimmed, 'uploads/logos/') === 0) {
-            return '/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+            return htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
         }
 
-        return '/uploads/logos/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+        return 'uploads/logos/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
     }
 
     /**

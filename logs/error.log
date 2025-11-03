@@ -2552,3 +2552,7 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in /home/runner/work/defect-tracker/defect-tracker/check_database.php on line 22
+[03-Nov-2025 15:50:53 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function session_status() in /workspaces/defect-tracker/login.php:55
+Stack trace:
+#0 {main}
+  thrown in /workspaces/defect-tracker/login.php on line 55

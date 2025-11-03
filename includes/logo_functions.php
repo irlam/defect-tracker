@@ -47,7 +47,7 @@ class LogoManager {
         }
 
         // Save path to database
-        $storedPath = ltrim($this->publicPathBase, '/') . $fileName;
+    $storedPath = ltrim($this->publicPathBase, '/') . $fileName;
         $this->saveLogoPath($storedPath, $type, $contractorId);
 
         return $this->normaliseLogoPath($storedPath);
@@ -195,10 +195,10 @@ class LogoManager {
         $uploadPrefix = trim($this->publicPathBase, '/');
 
         if (stripos($trimmedPath, $uploadPrefix) === 0) {
-            return '/' . $trimmedPath;
+            return $trimmedPath;
         }
 
-        return rtrim($this->publicPathBase, '/') . '/' . $trimmedPath;
+        return rtrim($uploadPrefix, '/') . '/' . $trimmedPath;
     }
 
     private function resolveFilesystemPath($path) {
