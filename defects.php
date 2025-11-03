@@ -436,9 +436,32 @@ $priorityBadgeMap = [
                     <li class="nav-item">
                         <a class="nav-link" href="my_tasks.php"><i class='bx bx-list-check me-1'></i>My Tasks</a>
                     </li>
-                    <?php if (!empty($_SESSION['is_admin'])): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin.php"><i class='bx bx-dial me-1'></i>Admin</a>
+                    <?php if (($_SESSION['user_type'] ?? '') === 'admin'): ?>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminOpsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class='bx bx-dial me-1'></i>Admin Ops
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="adminOpsDropdown">
+                            <h6 class="dropdown-header text-uppercase text-muted small">Defect Operations</h6>
+                            <a class="dropdown-item" href="defects.php"><i class='bx bx-bug me-1'></i>Defect Control Room</a>
+                            <a class="dropdown-item" href="create_defect.php"><i class='bx bx-plus-circle me-1'></i>Create Defect</a>
+                            <a class="dropdown-item" href="assign_to_user.php"><i class='bx bx-transfer-alt me-1'></i>Assign Defects</a>
+                            <a class="dropdown-item" href="upload_completed_images.php"><i class='bx bx-upload me-1'></i>Completion Evidence</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header text-uppercase text-muted small">Directory</h6>
+                            <a class="dropdown-item" href="user_management.php"><i class='bx bx-group me-1'></i>User Management</a>
+                            <a class="dropdown-item" href="add_user.php"><i class='bx bx-user-plus me-1'></i>Add User</a>
+                            <a class="dropdown-item" href="contractors.php"><i class='bx bx-hard-hat me-1'></i>Contractors</a>
+                            <div class="dropdown-divider"></div>
+                            <h6 class="dropdown-header text-uppercase text-muted small">System</h6>
+                            <a class="dropdown-item" href="admin.php"><i class='bx bx-command me-1'></i>Admin Console</a>
+                            <a class="dropdown-item" href="maintenance/maintenance.php"><i class='bx bx-wrench me-1'></i>Maintenance Planner</a>
+                            <a class="dropdown-item" href="backup_manager.php"><i class='bx bx-shield-quarter me-1'></i>Backup Manager</a>
+                            <a class="dropdown-item" href="system-tools/system_health.php"><i class='bx bx-pulse me-1'></i>System Health</a>
+                            <a class="dropdown-item" href="user_logs.php"><i class='bx bx-notepad me-1'></i>User Logs</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="help_index.php"><i class='bx bx-help-circle me-1'></i>Help Centre</a>
+                        </div>
                     </li>
                     <?php endif; ?>
                 </ul>
@@ -462,7 +485,7 @@ $priorityBadgeMap = [
         </div>
     </nav>
 
-    <main class="tool-page container-xl py-4">
+    <main class="tool-page container-fluid px-4 py-4">
         <header class="tool-header mb-5">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                 <div>
@@ -573,7 +596,7 @@ $priorityBadgeMap = [
             </div>
             <form method="GET" class="filter-panel__form">
                 <div class="row g-3">
-                    <div class="col-12 col-md-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
                         <label class="form-label">Project</label>
                         <select name="project" class="form-select">
                             <option value="all">All Projects</option>
@@ -584,7 +607,7 @@ $priorityBadgeMap = [
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-12 col-md-6 col-xl-3">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
                         <label class="form-label">Contractor</label>
                         <select name="contractor" class="form-select">
                             <option value="all">All Contractors</option>
@@ -595,7 +618,7 @@ $priorityBadgeMap = [
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-12 col-md-6 col-xl-2">
+                    <div class="col-6 col-sm-6 col-lg-2 col-xxl-2">
                         <label class="form-label">Status</label>
                         <select name="status" class="form-select">
                             <option value="all">All Status</option>
@@ -606,7 +629,7 @@ $priorityBadgeMap = [
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-12 col-md-6 col-xl-2">
+                    <div class="col-6 col-sm-6 col-lg-2 col-xxl-2">
                         <label class="form-label">Priority</label>
                         <select name="priority" class="form-select">
                             <option value="all">All Priorities</option>
@@ -618,11 +641,11 @@ $priorityBadgeMap = [
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-12 col-md-6 col-xl-2">
+                    <div class="col-6 col-sm-6 col-lg-2 col-xxl-2">
                         <label class="form-label">Date Added</label>
                         <input type="date" name="date_added" class="form-control" value="<?php echo htmlspecialchars($dateAddedFilter, ENT_QUOTES, 'UTF-8'); ?>">
                     </div>
-                    <div class="col-12 col-md-6 col-xl-2">
+                    <div class="col-12 col-sm-6 col-lg-4 col-xxl-3">
                         <label class="form-label">Search</label>
                         <div class="input-group">
                             <input type="text" name="search" class="form-control" value="<?php echo htmlspecialchars($searchTerm, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Search defects...">
@@ -770,6 +793,10 @@ $priorityBadgeMap = [
                 </div>
             </div>
         </section>
+
+        <div class="text-muted small text-end mt-4">
+            <i class='bx bx-time-five me-1'></i>Rendered <?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK • User <?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
+        </div>
     </main>
 
     <?php if (is_array($defects) && !empty($defects)): ?>
@@ -1061,14 +1088,6 @@ $priorityBadgeMap = [
                 showNotification("<?php echo addslashes($_SESSION['error_message']); ?>", 'danger');
                 <?php unset($_SESSION['error_message']); ?>
             <?php endif; ?>
-
-            const timestampElement = document.createElement('div');
-            timestampElement.className = 'text-muted small mt-4 text-end';
-            timestampElement.innerHTML = 'Rendered: <?php echo addslashes($currentTimestamp); ?> UK • User: <?php echo addslashes($displayName); ?>';
-            const toolPage = document.querySelector('.tool-page');
-            if (toolPage) {
-                toolPage.appendChild(timestampElement);
-            }
 
             document.querySelectorAll('.zoomable-image').forEach(function(img) {
                 img.addEventListener('click', function() {
