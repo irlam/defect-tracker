@@ -1,38 +1,42 @@
 <?php
-require_once 'config/database.php';
-require_once 'classes/Auth.php';
-require_once 'classes/Logger.php';
-require_once 'config/config.php';
+declare(strict_types=1);
 
-try {
-    $database = new Database();
-    $db = $database->getConnection();
-} catch (Exception $e) {
-    error_log('Notifications DB connection error: ' . $e->getMessage());
-    die('Unable to connect to the database.');
-}
+require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/classes/Auth.php';
+require_once __DIR__ . '/includes/navbar.php';
 
-$auth = new Auth($db);
-if (!$auth->isLoggedIn()) {
+if (!isset($_SESSION['user_id'], $_SESSION['username'])) {
     header('Location: login.php');
     exit;
 }
 
-$userId = $_SESSION['user_id'];
+$userId = (int) $_SESSION['user_id'];
 $username = $_SESSION['username'];
+$displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $username));
+$currentTimestamp = date('d/m/Y H:i');
+
+try {
+    $navbar = new Navbar($db, $userId, $username);
+} catch (Throwable $navbarException) {
+    error_log('Navbar initialisation failed on notifications.php: ' . $navbarException->getMessage());
+    $navbar = null;
+}
 
 // Handle mark as read action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'mark_read' && isset($_POST['notification_id'])) {
         $notificationId = (int)$_POST['notification_id'];
-        $stmt = $db->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE id = ? AND user_id = ?");
-        $stmt->execute([$notificationId, $userId]);
+        $stmt = $db->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE id = :id AND user_id = :user_id");
+        $stmt->bindValue(':id', $notificationId, PDO::PARAM_INT);
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
         exit;
     } elseif ($_POST['action'] === 'mark_all_read') {
-        $stmt = $db->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE user_id = ? AND is_read = 0");
-        $stmt->execute([$userId]);
+        $stmt = $db->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE user_id = :user_id AND is_read = 0");
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
         exit;
@@ -45,8 +49,9 @@ $perPage = 20;
 $offset = ($page - 1) * $perPage;
 
 // Get total count
-$totalStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ?");
-$totalStmt->execute([$userId]);
+$totalStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = :user_id");
+$totalStmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+$totalStmt->execute();
 $totalNotifications = $totalStmt->fetchColumn();
 $totalPages = ceil($totalNotifications / $perPage);
 
@@ -55,208 +60,263 @@ $stmt = $db->prepare("
     SELECT n.*, u.username as created_by_username
     FROM notifications n
     LEFT JOIN users u ON n.user_id = u.id
-    WHERE n.user_id = ?
+    WHERE n.user_id = :user_id
     ORDER BY n.created_at DESC
-    LIMIT ? OFFSET ?
+    LIMIT :limit OFFSET :offset
 ");
-$stmt->execute([$userId, $perPage, $offset]);
+$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get unread count
-$unreadStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
-$unreadStmt->execute([$userId]);
+$unreadStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = :user_id AND is_read = 0");
+$unreadStmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+$unreadStmt->execute();
 $unreadCount = $unreadStmt->fetchColumn();
-
-include 'includes/header.php';
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Centre - Defect Tracker</title>
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="/css/app.css" rel="stylesheet">
+    <style>
+        .notifications-page {
+            color: rgba(226, 232, 240, 0.92);
+        }
 
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="h3 mb-0">Notifications</h1>
-                    <p class="text-muted">Stay updated with your defect tracking activities</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <?php if ($unreadCount > 0): ?>
-                        <button id="markAllReadBtn" class="btn btn-outline-primary">
-                            <i class="fas fa-check-double"></i> Mark All Read
-                        </button>
-                    <?php endif; ?>
-                    <button class="btn btn-outline-secondary" onclick="window.history.back()">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                </div>
+        .notifications-hero {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(37, 99, 235, 0.85));
+            border-radius: 1.4rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 2rem;
+            box-shadow: 0 28px 48px -22px rgba(15, 23, 42, 0.7);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .notifications-hero__meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: rgba(191, 219, 254, 0.85);
+            font-size: 0.9rem;
+        }
+
+        .notifications-card {
+            background: rgba(15, 23, 42, 0.88);
+            border-radius: 1.2rem;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 24px 40px -24px rgba(15, 23, 42, 0.75);
+        }
+
+        .notifications-card .list-group-item {
+            background: transparent;
+            border-color: rgba(148, 163, 184, 0.12);
+            padding: 1.35rem 1.75rem;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .notifications-card .list-group-item:hover {
+            background: rgba(37, 99, 235, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .notification-item.unread {
+            border-left: 4px solid rgba(59, 130, 246, 0.85);
+            background: rgba(37, 99, 235, 0.08);
+        }
+
+        .notification-empty {
+            border-radius: 1.4rem;
+            border: 1px dashed rgba(148, 163, 184, 0.35);
+            padding: 3rem 1rem;
+            background: rgba(15, 23, 42, 0.65);
+        }
+
+        .badge-soft-primary {
+            background: rgba(59, 130, 246, 0.18);
+            color: rgba(191, 219, 254, 0.95);
+            border-radius: 999px;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .notifications-hero {
+                padding: 1.6rem;
+            }
+
+            .notifications-card .list-group-item {
+                padding: 1.15rem 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body class="tool-body has-app-navbar" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
+
+    <main class="notifications-page container-xl py-4">
+        <section class="notifications-hero mb-4">
+            <div>
+                <span class="badge-soft-primary mb-2"><i class='bx bx-bell me-1'></i>Notification Centre</span>
+                <h1 class="h3 mb-2">Real-time project intelligence</h1>
+                <p class="text-muted mb-0">Keep track of defect movements, assignments, and shipment updates across your portfolio.</p>
             </div>
+            <div class="notifications-hero__meta">
+                <span><i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                <span><i class='bx bx-time-five me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+                <span><i class='bx bx-bell-plus me-1'></i><?php echo number_format((int) $unreadCount); ?> unread</span>
+            </div>
+        </section>
 
+        <section class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-light btn-sm" href="dashboard.php"><i class='bx bx-left-arrow-alt me-1'></i>Back to dashboard</a>
+                <a class="btn btn-outline-light btn-sm" href="defects.php"><i class='bx bx-bug me-1'></i>Defect control room</a>
+            </div>
             <?php if ($unreadCount > 0): ?>
-                <div class="alert alert-info d-flex align-items-center">
-                    <i class="fas fa-bell me-2"></i>
-                    <span>You have <strong><?php echo $unreadCount; ?></strong> unread notification<?php echo $unreadCount !== 1 ? 's' : ''; ?></span>
-                </div>
+                <button id="markAllReadBtn" class="btn btn-primary btn-sm" data-loading="true">
+                    <i class="fas fa-check-double me-1"></i>Mark all read
+                </button>
             <?php endif; ?>
+        </section>
 
-            <?php if (empty($notifications)): ?>
-                <div class="text-center py-5">
-                    <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No notifications yet</h4>
-                    <p class="text-muted">You'll see notifications here when defects are assigned to you or other activities occur.</p>
-                </div>
-            <?php else: ?>
-                <div class="card">
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <?php foreach ($notifications as $notification): ?>
-                                <div class="list-group-item notification-item <?php echo !$notification['is_read'] ? 'unread' : ''; ?>"
-                                     data-notification-id="<?php echo $notification['id']; ?>">
-                                    <div class="d-flex w-100 justify-content-between align-items-start">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center mb-1">
-                                                <?php
-                                                $iconClass = 'fas fa-info-circle text-primary';
-                                                switch ($notification['type']) {
-                                                    case 'defect_assigned':
-                                                        $iconClass = 'fas fa-user-plus text-success';
-                                                        break;
-                                                    case 'defect_created':
-                                                        $iconClass = 'fas fa-plus-circle text-info';
-                                                        break;
-                                                    case 'defect_accepted':
-                                                        $iconClass = 'fas fa-check-circle text-success';
-                                                        break;
-                                                    case 'defect_rejected':
-                                                        $iconClass = 'fas fa-times-circle text-danger';
-                                                        break;
-                                                    case 'defect_reopened':
-                                                        $iconClass = 'fas fa-undo text-warning';
-                                                        break;
-                                                    case 'comment_added':
-                                                        $iconClass = 'fas fa-comment text-primary';
-                                                        break;
-                                                }
-                                                ?>
-                                                <i class="<?php echo $iconClass; ?> me-2"></i>
-                                                <h6 class="mb-0 fw-bold">
-                                                    <?php echo htmlspecialchars($notification['type']); ?>
-                                                </h6>
-                                                <?php if (!$notification['is_read']): ?>
-                                                    <span class="badge bg-primary ms-2">New</span>
-                                                <?php endif; ?>
-                                            </div>
-                                            <p class="mb-1 text-dark"><?php echo htmlspecialchars($notification['message']); ?></p>
-                                            <div class="d-flex align-items-center text-muted small">
-                                                <i class="fas fa-clock me-1"></i>
-                                                <span><?php echo date('M j, Y g:i A', strtotime($notification['created_at'])); ?></span>
-                                                <?php if ($notification['link_url']): ?>
-                                                    <a href="<?php echo htmlspecialchars($notification['link_url']); ?>"
-                                                       class="ms-auto btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-external-link-alt"></i> View
-                                                    </a>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
+        <?php if ($unreadCount > 0): ?>
+            <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-bell me-2"></i>You have <strong><?php echo number_format((int) $unreadCount); ?></strong> unread notification<?php echo $unreadCount !== 1 ? 's' : ''; ?>.
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (empty($notifications)): ?>
+            <div class="notification-empty text-center text-muted">
+                <i class="fas fa-bell-slash fa-3x mb-3"></i>
+                <h4 class="mb-2">No notifications yet</h4>
+                <p class="mb-0">You will receive updates here as defects are assigned or lifecycle events occur.</p>
+            </div>
+        <?php else: ?>
+            <section class="notifications-card mb-4">
+                <div class="list-group list-group-flush">
+                    <?php foreach ($notifications as $notification): ?>
+                        <?php
+                            $iconClass = 'fas fa-info-circle text-primary';
+                            switch ($notification['type']) {
+                                case 'defect_assigned':
+                                    $iconClass = 'fas fa-user-plus text-success';
+                                    break;
+                                case 'defect_created':
+                                    $iconClass = 'fas fa-plus-circle text-info';
+                                    break;
+                                case 'defect_accepted':
+                                    $iconClass = 'fas fa-check-circle text-success';
+                                    break;
+                                case 'defect_rejected':
+                                    $iconClass = 'fas fa-times-circle text-danger';
+                                    break;
+                                case 'defect_reopened':
+                                    $iconClass = 'fas fa-undo text-warning';
+                                    break;
+                                case 'comment_added':
+                                    $iconClass = 'fas fa-comment text-primary';
+                                    break;
+                            }
+                        ?>
+                        <div class="list-group-item notification-item d-flex flex-column flex-md-row gap-3 align-items-start align-items-md-center <?php echo !$notification['is_read'] ? 'unread' : ''; ?>" data-notification-id="<?php echo (int) $notification['id']; ?>">
+                            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                <span class="rounded-circle bg-dark-subtle text-primary d-inline-flex align-items-center justify-content-center" style="width:42px;height:42px;">
+                                    <i class="<?php echo $iconClass; ?>"></i>
+                                </span>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="mb-0 fw-semibold text-capitalize"><?php echo htmlspecialchars(str_replace('_', ' ', $notification['type'])); ?></h6>
                                         <?php if (!$notification['is_read']): ?>
-                                            <button class="btn btn-sm btn-outline-secondary ms-2 mark-read-btn"
-                                                    data-notification-id="<?php echo $notification['id']; ?>">
-                                                <i class="fas fa-check"></i>
-                                            </button>
+                                            <span class="badge bg-primary">New</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <p class="mb-1 text-muted"><?php echo htmlspecialchars($notification['message']); ?></p>
+                                    <div class="small text-muted d-flex gap-3 flex-wrap">
+                                        <span><i class="fas fa-clock me-1"></i><?php echo date('M j, Y g:i A', strtotime($notification['created_at'])); ?></span>
+                                        <?php if (!empty($notification['link_url'])): ?>
+                                            <a href="<?php echo htmlspecialchars($notification['link_url']); ?>" class="text-decoration-none">
+                                                <i class="fas fa-external-link-alt me-1"></i>Open update
+                                            </a>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
-                    <nav aria-label="Notification pagination" class="mt-4">
-                        <ul class="pagination justify-content-center">
-                            <?php if ($page > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $page - 1; ?>">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                </li>
+                            </div>
+                            <?php if (!$notification['is_read']): ?>
+                                <button class="btn btn-outline-light btn-sm mark-read-btn" data-notification-id="<?php echo (int) $notification['id']; ?>">
+                                    <i class="fas fa-check me-1"></i>Mark read
+                                </button>
                             <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
 
-                            <?php
+            <?php if ($totalPages > 1): ?>
+                <nav aria-label="Notification pagination" class="mt-4">
+                    <ul class="pagination justify-content-center pagination-dark">
+                        <?php if ($page > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php
                             $startPage = max(1, $page - 2);
                             $endPage = min($totalPages, $page + 2);
+                        ?>
 
-                            if ($startPage > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=1">1</a>
-                                </li>
-                                <?php if ($startPage > 2): ?>
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                                <?php endif; ?>
-                            <?php endif; ?>
+                        <?php if ($startPage > 1): ?>
+                            <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+                            <?php if ($startPage > 2): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
+                        <?php endif; ?>
 
-                            <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-                                <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
+                        <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
 
-                            <?php if ($endPage < $totalPages): ?>
-                                <?php if ($endPage < $totalPages - 1): ?>
-                                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                                <?php endif; ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $totalPages; ?>"><?php echo $totalPages; ?></a>
-                                </li>
-                            <?php endif; ?>
+                        <?php if ($endPage < $totalPages): ?>
+                            <?php if ($endPage < $totalPages - 1): ?><li class="page-item disabled"><span class="page-link">…</span></li><?php endif; ?>
+                            <li class="page-item"><a class="page-link" href="?page=<?php echo $totalPages; ?>"><?php echo $totalPages; ?></a></li>
+                        <?php endif; ?>
 
-                            <?php if ($page < $totalPages): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $page + 1; ?>">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            <?php endif; ?>
-                        </ul>
-                    </nav>
-                <?php endif; ?>
+                        <?php if ($page < $totalPages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
             <?php endif; ?>
-        </div>
-    </div>
-</div>
+        <?php endif; ?>
+    </main>
 
-<style>
-.notification-item {
-    transition: background-color 0.2s ease;
-    border-left: 4px solid transparent;
-}
-
-.notification-item.unread {
-    background-color: #f8f9ff;
-    border-left-color: #0d6efd;
-}
-
-.notification-item:hover {
-    background-color: #f8f9fa;
-}
-
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
-    }
-
-    .notification-item {
-        padding: 1rem 0.75rem;
-    }
-
-    .btn {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
-    }
-}
-</style>
-
-<script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Mark individual notification as read
     document.querySelectorAll('.mark-read-btn').forEach(btn => {
@@ -425,5 +485,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
-<?php include 'includes/footer.php'; ?>
+</body>
+</html>
