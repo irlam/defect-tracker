@@ -374,6 +374,10 @@ $defectMetrics = [
 ];
 
 $exportQueryString = http_build_query($_GET);
+$pdfReportUrl = BASE_URL . 'pdf_exports/export-pdf-defects-report-filtered.php';
+if (!empty($exportQueryString)) {
+    $pdfReportUrl .= '?' . $exportQueryString;
+}
 
 $statusBadgeMap = [
     'open' => 'badge rounded-pill bg-warning-subtle text-warning-emphasis',
@@ -475,30 +479,14 @@ $priorityBadgeMap = [
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="defectsUserMenu">
                             <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check"></i> My Tasks</a></li>
+                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check'></i> My Tasks</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out"></i> Logout</a></li>
+                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
         </div>
-    </nav>
-
-    <main class="tool-page container-fluid px-4 py-4">
-        <header class="tool-header mb-5">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <h1 class="h3 mb-2">Defect Operations Centre</h1>
-                    <p class="text-muted mb-0">Command view for identifying, prioritising, and closing site defects.</p>
-                </div>
-                <div class="d-flex flex-column align-items-start text-muted small gap-1">
-                    <span><i class='bx bx-user-voice me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span><i class='bx bx-time-five me-1'></i><span data-report-time><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?></span> UK</span>
-                </div>
-            </div>
-        </header>
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div class="text-muted small">
@@ -591,7 +579,7 @@ $priorityBadgeMap = [
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <a class="btn btn-sm btn-outline-light" href="defects.php"><i class='bx bx-reset'></i> Reset</a>
-                    <a class="btn btn-sm btn-outline-light" href="<?php echo BASE_URL; ?>pdf_exports/export-pdf-defects-report-filtered.php?<?php echo htmlspecialchars($exportQueryString, ENT_QUOTES, 'UTF-8'); ?>" target="_blank"><i class='bx bxs-file-pdf"></i> PDF Report</a>
+                    <a class="btn btn-sm btn-outline-light" href="<?php echo BASE_URL; ?>pdf_exports/export-pdf-defects-report-filtered.php?<?php echo htmlspecialchars($exportQueryString, ENT_QUOTES, 'UTF-8'); ?>" target="_blank"><i class='bx bxs-file-pdf'></i> PDF Report</a>
                 </div>
             </div>
             <?php if ($filtersApplied && !empty($filterSummaryParts)): ?>
@@ -1072,14 +1060,56 @@ $priorityBadgeMap = [
                 });
             });
 
-            const filterForm = document.querySelector('.filter-panel__form');
-            if (filterForm) {
-                filterForm.querySelectorAll('select, input[type="date"]').forEach(function(element) {
-                    element.addEventListener('change', function() {
-                        filterForm.submit();
-                    });
-                });
+            const filterPanel = document.getElementById('defectFilters');
+            const filterForm = filterPanel ? filterPanel.querySelector('.filter-panel__form') : document.querySelector('.filter-panel__form');
 
+            if (filterPanel) {
+                const panelBody = filterPanel.querySelector('.filter-panel__body');
+                const toggleButton = filterPanel.querySelector('[data-action="toggle-filters"]');
+                const toggleLabel = toggleButton ? toggleButton.querySelector('span') : null;
+                const toggleIcon = toggleButton ? toggleButton.querySelector('i') : null;
+                const pdfButton = filterPanel.querySelector('[data-action="open-pdf-report"]');
+
+                if (panelBody) {
+                    panelBody.hidden = false;
+                }
+
+                if (toggleButton && panelBody) {
+                    const setToggleState = function(collapsed) {
+                        filterPanel.classList.toggle('filter-panel--collapsed', collapsed);
+                        panelBody.hidden = collapsed;
+                        toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                        if (toggleLabel) {
+                            toggleLabel.textContent = collapsed ? 'Show filters' : 'Hide filters';
+                        }
+                        if (toggleIcon) {
+                            toggleIcon.classList.toggle('bx-chevron-up', !collapsed);
+                            toggleIcon.classList.toggle('bx-chevron-down', collapsed);
+                        }
+                    };
+
+                    toggleButton.addEventListener('click', function() {
+                        const collapsed = !filterPanel.classList.contains('filter-panel--collapsed');
+                        setToggleState(collapsed);
+                    });
+
+                    if (window.matchMedia('(max-width: 991px)').matches) {
+                        setToggleState(true);
+                    }
+                }
+
+                if (pdfButton) {
+                    pdfButton.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const reportUrl = pdfButton.getAttribute('data-report-url');
+                        if (reportUrl) {
+                            window.open(reportUrl, '_blank', 'noopener');
+                        }
+                    });
+                }
+            }
+
+            if (filterForm) {
                 const searchInput = filterForm.querySelector('input[name="search"]');
                 let searchTimeout;
                 if (searchInput) {

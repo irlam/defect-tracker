@@ -1897,6 +1897,38 @@ body.has-app-navbar .app-content-offset {
   padding: clamp(1.25rem, 2vw, 2rem);
 }
 
+.filter-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.filter-panel__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-panel__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-panel__toggle i {
+  font-size: 1rem;
+  transition: transform var(--transition-fast);
+}
+
+.filter-panel__body {
+  margin-top: 1.5rem;
+}
+
 .filter-panel__form .row > [class^="col"],
 .filter-panel__form .row > [class*=" col"] {
   display: flex;
@@ -1940,6 +1972,17 @@ body.has-app-navbar .app-content-offset {
 .filter-panel__actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.filter-panel__footer {
+  margin-top: 1.75rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.filter-panel--collapsed .filter-panel__body {
+  display: none;
 }
 
 .defect-table {
@@ -2125,6 +2168,21 @@ body.has-app-navbar .app-content-offset {
   .filter-panel__form .row > [class^="col"],
   .filter-panel__form .row > [class*=" col"] {
     gap: 0.35rem;
+  }
+
+  .filter-panel__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .filter-panel__header-actions {
+    justify-content: flex-start;
+  }
+
+  .filter-panel__footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
 }
 
