@@ -33,16 +33,15 @@ if (defined('ENVIRONMENT')) {
 // Set default timezone
 date_default_timezone_set('UTC');
 
-// Session configuration
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 1);
-ini_set('session.cookie_samesite', 'Strict');
-ini_set('session.gc_maxlifetime', 3600); // 1 hour
-ini_set('session.cookie_lifetime', 0); // Until browser closes
-
-// Start session if not already started
+// Session configuration (only before session starts)
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_secure', 1);
+    ini_set('session.cookie_samesite', 'Strict');
+    ini_set('session.gc_maxlifetime', 3600); // 1 hour
+    ini_set('session.cookie_lifetime', 0); // Until browser closes
+
     session_start();
 }
 
