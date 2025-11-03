@@ -364,6 +364,7 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
+    <script src="/reload.js"></script>
     <script>
         const contractorData = <?php echo $contractorOptionsJSON; ?>;
     </script>
@@ -991,8 +992,7 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
         });
 
         $('#exportContractors').on('click', function() {
-            let csvContent = 'Company,Trade,Total,Open,Pending,Accepted,Rejected,Last Update
-';
+            let csvContent = 'Company,Trade,Total,Open,Pending,Accepted,Rejected,Last Update\n';
 
             $('#contractorsTable tbody tr:visible').each(function() {
                 const $row = $(this);
@@ -1004,18 +1004,17 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
                 const clean = value => String(value).trim().replace(/\s+/g, ' ');
                 const company = clean($(cells[0]).text()).replace(/,/g, ' ');
                 const trade = clean($(cells[1]).text()).replace(/,/g, ' ');
-                const total = $row.data('total') ?? Number(clean($(cells[2]).text())) || 0;
-                const open = $row.data('open') ?? Number(clean($(cells[3]).text())) || 0;
-                const pending = $row.data('pending') ?? Number(clean($(cells[4]).text())) || 0;
-                const accepted = $row.data('accepted') ?? Number(clean($(cells[5]).text())) || 0;
-                const rejected = $row.data('rejected') ?? Number(clean($(cells[6]).text())) || 0;
+                const total = $row.data('total') ?? (Number(clean($(cells[2]).text())) || 0);
+                const open = $row.data('open') ?? (Number(clean($(cells[3]).text())) || 0);
+                const pending = $row.data('pending') ?? (Number(clean($(cells[4]).text())) || 0);
+                const accepted = $row.data('accepted') ?? (Number(clean($(cells[5]).text())) || 0);
+                const rejected = $row.data('rejected') ?? (Number(clean($(cells[6]).text())) || 0);
                 const lastUpdate = clean($(cells[7]).text()).replace(/,/g, ' ');
 
                 const line = [company, trade, total, open, pending, accepted, rejected, lastUpdate]
                     .map(value => `"${String(value).replace(/"/g, '""')}"`)
                     .join(',');
-                csvContent += `${line}
-`;
+                csvContent += `${line}\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
