@@ -1,1105 +1,1203 @@
 <?php
 /**
  * Sync Admin Dashboard
- * Last updated: 2025-02-26 11:33:02
- * Updated by: irlam
- * Now you have the complete Sync Admin Dashboard file with all features:
- * Real-time statistics showing pending, failed, and completed sync operations
- * Administrative actions like retrying failed items or resolving conflicts
- * Data visualization with charts showing sync performance over time
- * Auto-refresh functionality that updates the dashboard every minute
- * Detailed views of sync logs, failed items, and conflicts
- * Role-based access control using your existing authentication system
- * Comprehensive logging of all admin actions in your system_logs table
- * The dashboard is designed with a modern, responsive interface that works well on both desktop and mobile devices. The timestamps are * correctly formatted to UTC, and the current user (irlam) is properly displayed in the interface.
+ *
+ * Provides administrators with visibility into the synchronisation queue along with
+ * tooling to retry failed items, clear processed records, and resolve data conflicts.
+ * This themed version aligns with the main site styling and reuses the global navbar.
  */
 
-// Include initialization
 require_once __DIR__ . '/../init.php';
+require_once dirname(__DIR__, 2) . '/config/constants.php';
+require_once dirname(__DIR__, 2) . '/includes/navbar.php';
 
-// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Database connection
 try {
     $config = include __DIR__ . '/../config.php';
-    $db = new PDO("mysql:host={$config['db_host']};dbname={$config['db_name']}", $config['db_user'], $config['db_pass']);
+    $db = new PDO(
+        "mysql:host={$config['db_host']};dbname={$config['db_name']}",
+        $config['db_user'],
+        $config['db_pass']
+    );
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    die('Database connection failed: ' . $e->getMessage());
 }
 
-// Authorization check using role-based permissions system
-function checkAdminAccess($db, $userId) {
-    // Method 1: Direct role check
-    $stmt = $db->prepare("SELECT role FROM users WHERE id = ?");
+date_default_timezone_set('Europe/London');
+
+function checkAdminAccess(PDO $db, int $userId): bool
+{
+    $stmt = $db->prepare('SELECT role FROM users WHERE id = ?');
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($user && $user['role'] === 'admin') {
+
+    if ($user && ($user['role'] ?? '') === 'admin') {
         return true;
     }
-    
-    // Method 2: Check through role_id and roles table
-    $stmt = $db->prepare("
-        SELECT r.name 
+
+    $stmt = $db->prepare('
+        SELECT r.name
         FROM users u
         JOIN roles r ON u.role_id = r.id
         WHERE u.id = ?
-    ");
+    ');
     $stmt->execute([$userId]);
     $role = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($role && $role['name'] === 'admin') {
+
+    if ($role && ($role['name'] ?? '') === 'admin') {
         return true;
     }
-    
-    // Method 3: Check for specific sync management permission
-    $stmt = $db->prepare("
-        SELECT COUNT(*) as has_permission
+
+    $stmt = $db->prepare('
+        SELECT COUNT(*) AS has_permission
         FROM user_permissions up
         JOIN permissions p ON up.permission_id = p.id
-        WHERE up.user_id = ? AND p.permission_key = 'manage_sync'
-    ");
-    $stmt->execute([$userId]);
+        WHERE up.user_id = ? AND p.permission_key = ?
+    ');
+    $stmt->execute([$userId, 'manage_sync']);
     $permission = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($permission && $permission['has_permission'] > 0) {
+
+    if (($permission['has_permission'] ?? 0) > 0) {
         return true;
     }
-    
-    // Alternative check through role_permissions
-    $stmt = $db->prepare("
-        SELECT COUNT(*) as has_permission
+
+    $stmt = $db->prepare('
+        SELECT COUNT(*) AS has_permission
         FROM user_roles ur
         JOIN role_permissions rp ON ur.role_id = rp.role_id
         JOIN permissions p ON rp.permission_id = p.id
-        WHERE ur.user_id = ? AND p.permission_key = 'manage_sync'
-    ");
-    $stmt->execute([$userId]);
-    $rolePermission = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($rolePermission && $rolePermission['has_permission'] > 0) {
-        return true;
-    }
-    
-    return false;
+        WHERE ur.user_id = ? AND p.permission_key = ?
+    ');
+    $stmt->execute([$userId, 'manage_sync']);
+    $permissionViaRole = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return ($permissionViaRole['has_permission'] ?? 0) > 0;
 }
 
-// Check if user is logged in
+$currentUrl = $_SERVER['REQUEST_URI'] ?? '/sync/admin/dashboard.php';
+
 if (!isset($_SESSION['user_id'])) {
-    // Log the unauthorized access attempt
-    $stmt = $db->prepare("INSERT INTO system_logs (action, details, action_at) 
-                        VALUES ('UNAUTHORIZED_ACCESS', 'Attempted access to sync dashboard without login', ?)");
-    $stmt->execute([date('Y-m-d H:i:s')]);
-    
-    // Redirect to login
-    header('Location: /login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+    $stmt = $db->prepare('INSERT INTO system_logs (action, details, action_at) VALUES (?, ?, ?)');
+    $stmt->execute([
+        'UNAUTHORIZED_ACCESS',
+        'Attempted access to sync dashboard without login',
+        date('Y-m-d H:i:s')
+    ]);
+
+    header('Location: /login.php?redirect=' . urlencode($currentUrl));
     exit;
 }
 
-// Check if user has admin access
-if (!checkAdminAccess($db, $_SESSION['user_id'])) {
-    // Log the unauthorized access
-    $stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, details) 
-                        VALUES (?, 'ACCESS_DENIED', ?, ?, 'Insufficient permissions for sync dashboard')");
-    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id'], date('Y-m-d H:i:s')]);
-    
-    // Redirect to unauthorized page
+$userId = (int) $_SESSION['user_id'];
+
+if (!checkAdminAccess($db, $userId)) {
+    $stmt = $db->prepare('
+        INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+        VALUES (?, ?, ?, ?, ?)
+    ');
+    $stmt->execute([
+        $userId,
+        'ACCESS_DENIED',
+        $userId,
+        date('Y-m-d H:i:s'),
+        'Insufficient permissions for sync dashboard'
+    ]);
+
     header('Location: /unauthorized.php');
     exit;
 }
 
-// Add a system log entry for successful access
-$stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, ip_address, details) 
-                     VALUES (?, 'SYNC_DASHBOARD_ACCESS', ?, ?, ?, 'Successfully accessed sync dashboard')");
+$stmt = $db->prepare('
+    INSERT INTO system_logs (user_id, action, action_by, action_at, ip_address, details)
+    VALUES (?, ?, ?, ?, ?, ?)
+');
 $stmt->execute([
-    $_SESSION['user_id'],
-    $_SESSION['user_id'],
+    $userId,
+    'SYNC_DASHBOARD_ACCESS',
+    $userId,
     date('Y-m-d H:i:s'),
-    $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+    $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+    'Successfully accessed sync dashboard'
 ]);
 
-// Get current username for display
-$stmt = $db->prepare("SELECT username FROM users WHERE id = ?");
-$stmt->execute([$_SESSION['user_id']]);
+$stmt = $db->prepare('SELECT username FROM users WHERE id = ?');
+$stmt->execute([$userId]);
 $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
-$username = $currentUser ? $currentUser['username'] : 'unknown';
+$username = $currentUser['username'] ?? 'unknown';
 
-// Get sync statistics
+$pageTitle = 'Sync Operations Console';
+$navbar = null;
+
+try {
+    $navbar = new Navbar($db, $userId, $_SESSION['username'] ?? $username);
+} catch (Throwable $navbarError) {
+    error_log('Navbar initialisation error on sync admin dashboard: ' . $navbarError->getMessage());
+}
+
+if (!isset($_SESSION['sync_dashboard_csrf'])) {
+    $_SESSION['sync_dashboard_csrf'] = bin2hex(random_bytes(32));
+}
+
+$csrfToken = $_SESSION['sync_dashboard_csrf'];
+
 $stats = [
     'pending_items' => 0,
     'failed_items' => 0,
     'completed_items' => 0,
     'total_syncs' => 0,
     'last_sync' => 'Never',
-    'conflicts' => 0
+    'conflicts' => 0,
 ];
 
 try {
-    // Get counts from sync_queue
-    $stmt = $db->query("SELECT 
-                          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-                          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-                          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-                          COUNT(*) as total
-                        FROM sync_queue");
-    $queueStats = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($queueStats) {
-        $stats['pending_items'] = $queueStats['pending'] ?? 0;
-        $stats['failed_items'] = $queueStats['failed'] ?? 0;
-        $stats['completed_items'] = $queueStats['completed'] ?? 0;
-    }
-    
-    // Get sync logs stats
-    $stmt = $db->query("SELECT COUNT(*) as total, MAX(end_time) as last_sync FROM sync_logs");
-    $logStats = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($logStats && $logStats['total'] > 0) {
-        $stats['total_syncs'] = $logStats['total'];
-        $stats['last_sync'] = $logStats['last_sync'] ?: 'Never';
-    }
-    
-    // Get conflict count
-    $stmt = $db->query("SELECT COUNT(*) as count FROM sync_conflicts");
-    $conflicts = $stmt->fetch(PDO::FETCH_ASSOC);
-    $stats['conflicts'] = $conflicts['count'] ?? 0;
-    
+    $stmt = $db->query('
+        SELECT
+            SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) AS failed,
+            SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) AS completed,
+            COUNT(*) AS total
+        FROM sync_queue
+    ');
+    $queueStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    $stats['pending_items'] = (int) ($queueStats['pending'] ?? 0);
+    $stats['failed_items'] = (int) ($queueStats['failed'] ?? 0);
+    $stats['completed_items'] = (int) ($queueStats['completed'] ?? 0);
+
+    $stmt = $db->query('SELECT COUNT(*) AS total, MAX(end_time) AS last_sync FROM sync_logs');
+    $logStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+    $stats['total_syncs'] = (int) ($logStats['total'] ?? 0);
+    $stats['last_sync'] = $logStats['last_sync'] ?? 'Never';
+
+    $stmt = $db->query('SELECT COUNT(*) AS count FROM sync_conflicts WHERE resolved = 0');
+    $conflicts = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $stats['conflicts'] = (int) ($conflicts['count'] ?? 0);
 } catch (PDOException $e) {
-    $error = "Error retrieving sync statistics: " . $e->getMessage();
+    error_log('Error retrieving sync statistics: ' . $e->getMessage());
 }
 
-// Handle actions
-$message = "";
-$messageType = "";
+$message = '';
+$messageType = '';
 
-if (isset($_POST['action'])) {
-    switch ($_POST['action']) {
-        case 'clear_failed':
-            try {
-                $stmt = $db->prepare("DELETE FROM sync_queue WHERE status = 'failed'");
-                $stmt->execute();
-                $message = "Failed items cleared successfully.";
-                $messageType = "success";
-                
-                // Log the action
-                $stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, details) 
-                                     VALUES (?, 'CLEAR_FAILED_SYNC', ?, ?, 'Cleared failed sync items')");
-                $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id'], date('d-m-Y H:i:s')]);
-            } catch (PDOException $e) {
-                $message = "Error clearing failed items: " . $e->getMessage();
-                $messageType = "error";
-            }
-            break;
-            
-        case 'retry_failed':
-            try {
-                $stmt = $db->prepare("UPDATE sync_queue SET status = 'pending', attempts = attempts + 1 WHERE status = 'failed'");
-                $stmt->execute();
-                $affected = $stmt->rowCount();
-                $message = "{$affected} failed items queued for retry.";
-                $messageType = "success";
-                
-                // Log the action
-                $stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, details) 
-                                     VALUES (?, 'RETRY_FAILED_SYNC', ?, ?, ?)");
-                $stmt->execute([
-                    $_SESSION['user_id'], 
-                    $_SESSION['user_id'], 
-                    date('Y-m-d H:i:s'),
-                    "Retried {$affected} failed sync items"
-                ]);
-            } catch (PDOException $e) {
-                $message = "Error retrying failed items: " . $e->getMessage();
-                $messageType = "error";
-            }
-            break;
-            
-        case 'retry_single':
-            if (isset($_POST['item_id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $submittedToken = $_POST['csrf_token'] ?? '';
+
+    if (!is_string($submittedToken) || !hash_equals($csrfToken, $submittedToken)) {
+        $message = 'Security check failed. Please refresh and try again.';
+        $messageType = 'error';
+    } else {
+        $action = $_POST['action'] ?? '';
+
+        switch ($action) {
+            case 'clear_failed':
                 try {
-                    $stmt = $db->prepare("UPDATE sync_queue SET status = 'pending', attempts = attempts + 1 WHERE id = ?");
-                    $stmt->execute([$_POST['item_id']]);
-                    $message = "Item queued for retry.";
-                    $messageType = "success";
-                    
-                    // Log the action
-                    $stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, details) 
-                                         VALUES (?, 'RETRY_SINGLE_SYNC', ?, ?, ?)");
+                    $db->exec("DELETE FROM sync_queue WHERE status = 'failed'");
+                    $message = 'Failed items cleared successfully.';
+                    $messageType = 'success';
+
+                    $stmt = $db->prepare('
+                        INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+                        VALUES (?, ?, ?, ?, ?)
+                    ');
                     $stmt->execute([
-                        $_SESSION['user_id'], 
-                        $_SESSION['user_id'], 
+                        $userId,
+                        'CLEAR_FAILED_SYNC',
+                        $userId,
                         date('Y-m-d H:i:s'),
-                        "Retried sync item ID: " . $_POST['item_id']
+                        'Cleared failed sync items'
                     ]);
                 } catch (PDOException $e) {
-                    $message = "Error retrying item: " . $e->getMessage();
-                    $messageType = "error";
+                    $message = 'Error clearing failed items: ' . $e->getMessage();
+                    $messageType = 'error';
                 }
-            }
-            break;
-            
-        case 'resolve_conflicts':
-            $resolution = $_POST['resolution'] ?? 'server_wins';
-            try {
-                // Update conflicts table
-                $stmt = $db->prepare("UPDATE sync_conflicts 
-                                     SET resolved = 1, 
-                                         resolution_type = ?, 
-                                         resolved_by = ?, 
-                                         resolved_at = ? 
-                                     WHERE resolved = 0");
-                $stmt->execute([$resolution, $username, date('Y-m-d H:i:s')]);
-                $conflictsResolved = $stmt->rowCount();
-                
-                // Update related sync queue items
-                $stmt = $db->prepare("UPDATE sync_queue sq 
-                                     JOIN sync_conflicts sc ON sq.id = sc.sync_queue_id 
-                                     SET sq.status = 'pending', sq.force_sync = 1 
-                                     WHERE sc.resolved = 1 AND sc.resolution_type = ?");
-                $stmt->execute([$resolution]);
-                $itemsRequeued = $stmt->rowCount();
-                
-                $message = "{$conflictsResolved} conflicts resolved with strategy: {$resolution}. {$itemsRequeued} items requeued for sync.";
-                $messageType = "success";
-                
-                // Log the action
-                $stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, details) 
-                                     VALUES (?, 'RESOLVE_CONFLICTS', ?, ?, ?)");
-                $stmt->execute([
-                    $_SESSION['user_id'], 
-                    $_SESSION['user_id'], 
-                    date('Y-m-d H:i:s'),
-                    "Resolved {$conflictsResolved} conflicts using {$resolution} strategy"
-                ]);
-            } catch (PDOException $e) {
-                $message = "Error resolving conflicts: " . $e->getMessage();
-                $messageType = "error";
-            }
-            break;
-            
-        case 'clear_completed':
-            try {
-                $stmt = $db->prepare("DELETE FROM sync_queue WHERE status = 'completed' AND processed_at < DATE_SUB(NOW(), INTERVAL 7 DAY)");
-                $stmt->execute();
-                $affected = $stmt->rowCount();
-                $message = "Cleared {$affected} completed sync items older than 7 days.";
-                $messageType = "success";
-                
-                // Log the action
-                $stmt = $db->prepare("INSERT INTO system_logs (user_id, action, action_by, action_at, details) 
-                                     VALUES (?, 'CLEAR_COMPLETED_SYNC', ?, ?, ?)");
-                $stmt->execute([
-                    $_SESSION['user_id'], 
-                    $_SESSION['user_id'], 
-                    date('Y-m-d H:i:s'),
-                    "Cleared {$affected} completed sync items"
-                ]);
-            } catch (PDOException $e) {
-                $message = "Error clearing completed items: " . $e->getMessage();
-                $messageType = "error";
-            }
-            break;
-    }
-}
+                break;
 
-// Get recent sync logs
-$recentLogs = [];
-try {
-    $stmt = $db->query("SELECT * FROM sync_logs ORDER BY end_time DESC LIMIT 10");
-    $recentLogs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $error = "Error retrieving sync logs: " . $e->getMessage();
-}
+            case 'retry_failed':
+                try {
+                    $stmt = $db->prepare("UPDATE sync_queue SET status = 'pending', attempts = attempts + 1 WHERE status = 'failed'");
+                    $stmt->execute();
+                    $affected = $stmt->rowCount();
 
-// Get recent errors
-$recentErrors = [];
-try {
-    $stmt = $db->query("SELECT id, username, action, entity_type, entity_id, created_at, updated_at, attempts, 
-                              result, status FROM sync_queue 
-                      WHERE status = 'failed' 
-                      ORDER BY updated_at DESC LIMIT 10");
-    $recentErrors = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Ensure result content is valid JSON
-    foreach ($recentErrors as &$error) {
-        if (isset($error['result']) && !empty($error['result'])) {
-            // Check if it's valid JSON
-            $decoded = json_decode($error['result'], true);
-            if (!$decoded) {
-                // If not valid JSON, make it a proper JSON string
-                $error['result'] = json_encode(['message' => $error['result']]);
-            }
-        } else {
-            $error['result'] = json_encode(['message' => 'No result data available']);
+                    $message = $affected . ' failed items queued for retry.';
+                    $messageType = 'success';
+
+                    $stmt = $db->prepare('
+                        INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+                        VALUES (?, ?, ?, ?, ?)
+                    ');
+                    $stmt->execute([
+                        $userId,
+                        'RETRY_FAILED_SYNC',
+                        $userId,
+                        date('Y-m-d H:i:s'),
+                        'Retried ' . $affected . ' failed sync items'
+                    ]);
+                } catch (PDOException $e) {
+                    $message = 'Error retrying failed items: ' . $e->getMessage();
+                    $messageType = 'error';
+                }
+                break;
+
+            case 'retry_single':
+                if (isset($_POST['item_id'])) {
+                    try {
+                        $itemId = (int) $_POST['item_id'];
+                        $stmt = $db->prepare('UPDATE sync_queue SET status = "pending", attempts = attempts + 1 WHERE id = ?');
+                        $stmt->execute([$itemId]);
+
+                        $message = 'Item queued for retry.';
+                        $messageType = 'success';
+
+                        $stmt = $db->prepare('
+                            INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+                            VALUES (?, ?, ?, ?, ?)
+                        ');
+                        $stmt->execute([
+                            $userId,
+                            'RETRY_SINGLE_SYNC',
+                            $userId,
+                            date('Y-m-d H:i:s'),
+                            'Retried sync item ID: ' . $itemId
+                        ]);
+                    } catch (PDOException $e) {
+                        $message = 'Error retrying item: ' . $e->getMessage();
+                        $messageType = 'error';
+                    }
+                }
+                break;
+
+            case 'resolve_conflicts':
+                $resolution = $_POST['resolution'] ?? 'server_wins';
+
+                try {
+                    $stmt = $db->prepare('
+                        UPDATE sync_conflicts
+                        SET resolved = 1,
+                            resolution_type = ?,
+                            resolved_by = ?,
+                            resolved_at = ?
+                        WHERE resolved = 0
+                    ');
+                    $stmt->execute([$resolution, $username, date('Y-m-d H:i:s')]);
+                    $resolvedCount = $stmt->rowCount();
+
+                    $stmt = $db->prepare('
+                        UPDATE sync_queue sq
+                        JOIN sync_conflicts sc ON sq.id = sc.sync_queue_id
+                        SET sq.status = "pending", sq.force_sync = 1
+                        WHERE sc.resolved = 1 AND sc.resolution_type = ?
+                    ');
+                    $stmt->execute([$resolution]);
+                    $itemsRequeued = $stmt->rowCount();
+
+                    $message = $resolvedCount . ' conflicts resolved using ' . $resolution . '. ' . $itemsRequeued . ' items requeued for sync.';
+                    $messageType = 'success';
+
+                    $stmt = $db->prepare('
+                        INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+                        VALUES (?, ?, ?, ?, ?)
+                    ');
+                    $stmt->execute([
+                        $userId,
+                        'RESOLVE_CONFLICTS',
+                        $userId,
+                        date('Y-m-d H:i:s'),
+                        'Resolved ' . $resolvedCount . ' conflicts using ' . $resolution . ' strategy'
+                    ]);
+                } catch (PDOException $e) {
+                    $message = 'Error resolving conflicts: ' . $e->getMessage();
+                    $messageType = 'error';
+                }
+                break;
+
+            case 'clear_completed':
+                try {
+                    $stmt = $db->prepare('
+                        DELETE FROM sync_queue
+                        WHERE status = "completed" AND processed_at < DATE_SUB(NOW(), INTERVAL 7 DAY)
+                    ');
+                    $stmt->execute();
+                    $cleared = $stmt->rowCount();
+
+                    $message = 'Cleared ' . $cleared . ' completed sync items older than 7 days.';
+                    $messageType = 'success';
+
+                    $stmt = $db->prepare('
+                        INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+                        VALUES (?, ?, ?, ?, ?)
+                    ');
+                    $stmt->execute([
+                        $userId,
+                        'CLEAR_COMPLETED_SYNC',
+                        $userId,
+                        date('Y-m-d H:i:s'),
+                        'Cleared ' . $cleared . ' completed sync items'
+                    ]);
+                } catch (PDOException $e) {
+                    $message = 'Error clearing completed items: ' . $e->getMessage();
+                    $messageType = 'error';
+                }
+                break;
+
+            case 'resolve_single_conflict':
+                if (isset($_POST['conflict_id'], $_POST['resolution'])) {
+                    $conflictId = (int) $_POST['conflict_id'];
+                    $resolution = $_POST['resolution'];
+
+                    try {
+                        $stmt = $db->prepare('
+                            UPDATE sync_conflicts
+                            SET resolved = 1,
+                                resolution_type = ?,
+                                resolved_by = ?,
+                                resolved_at = ?
+                            WHERE id = ?
+                        ');
+                        $stmt->execute([$resolution, $username, date('Y-m-d H:i:s'), $conflictId]);
+
+                        if ($stmt->rowCount() > 0) {
+                            $stmt = $db->prepare('
+                                UPDATE sync_queue sq
+                                JOIN sync_conflicts sc ON sq.id = sc.sync_queue_id
+                                SET sq.status = "pending", sq.force_sync = 1
+                                WHERE sc.id = ?
+                            ');
+                            $stmt->execute([$conflictId]);
+                            $itemsRequeued = $stmt->rowCount();
+
+                            $message = 'Conflict #' . $conflictId . ' resolved using ' . $resolution . '. ' . $itemsRequeued . " item(s) requeued.";
+                            $messageType = 'success';
+
+                            $stmt = $db->prepare('
+                                INSERT INTO system_logs (user_id, action, action_by, action_at, details)
+                                VALUES (?, ?, ?, ?, ?)
+                            ');
+                            $stmt->execute([
+                                $userId,
+                                'RESOLVE_SINGLE_CONFLICT',
+                                $userId,
+                                date('Y-m-d H:i:s'),
+                                'Resolved conflict ' . $conflictId . ' using ' . $resolution . ' strategy'
+                            ]);
+                        } else {
+                            $message = 'Conflict not found or already resolved.';
+                            $messageType = 'error';
+                        }
+                    } catch (PDOException $e) {
+                        $message = 'Error resolving conflict: ' . $e->getMessage();
+                        $messageType = 'error';
+                    }
+                }
+                break;
         }
     }
-    unset($error); // Break the reference
-} catch (PDOException $e) {
-    $error = "Error retrieving errors: " . $e->getMessage();
 }
 
-// Get conflicts
+$recentLogs = [];
+try {
+    $stmt = $db->query('SELECT * FROM sync_logs ORDER BY end_time DESC LIMIT 10');
+    $recentLogs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log('Error retrieving sync logs: ' . $e->getMessage());
+}
+
+$recentErrors = [];
+try {
+    $stmt = $db->query('
+        SELECT id, username, action, entity_type, entity_id, created_at, updated_at, attempts, result, status
+        FROM sync_queue
+        WHERE status = "failed"
+        ORDER BY updated_at DESC
+        LIMIT 10
+    ');
+    $recentErrors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($recentErrors as &$error) {
+        if (!empty($error['result'])) {
+            $decoded = json_decode($error['result'], true);
+            $error['result_message'] = is_array($decoded)
+                ? ($decoded['message'] ?? json_encode($decoded))
+                : $error['result'];
+        } else {
+            $error['result_message'] = 'No result data available';
+        }
+    }
+    unset($error);
+} catch (PDOException $e) {
+    error_log('Error retrieving failed sync items: ' . $e->getMessage());
+}
+
 $conflicts = [];
 try {
-    $stmt = $db->query("SELECT * FROM sync_conflicts WHERE resolved = 0 ORDER BY created_at DESC LIMIT 10");
+    $stmt = $db->query('SELECT * FROM sync_conflicts WHERE resolved = 0 ORDER BY created_at DESC LIMIT 10');
     $conflicts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $error = "Error retrieving conflicts: " . $e->getMessage();
+    error_log('Error retrieving conflicts: ' . $e->getMessage());
 }
 
-// Get user mapping for display
-$userMap = [];
-try {
-    $stmt = $db->query("SELECT id, username, full_name FROM users");
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $userMap[$row['id']] = $row['full_name'] ? $row['full_name'] : $row['username'];
-    }
-} catch (PDOException $e) {
-    // Silently fail, we'll just show IDs instead of names
-}
+$refreshInterval = 60;
+$currentTimeDisplay = date('d/m/Y H:i');
 
-// Dashboard configuration
-$refreshInterval = 60; // Auto-refresh interval in seconds
+$lastSyncLabel = ($stats['last_sync'] && $stats['last_sync'] !== 'Never')
+    ? date('d/m/Y H:i', strtotime($stats['last_sync'])) . ' UK'
+    : 'No completed sync recorded';
+
+$heroMetrics = [
+    [
+        'title' => 'Pending Items',
+        'value' => number_format($stats['pending_items']),
+        'description' => 'Queued for processing',
+        'icon' => 'bx-time-five',
+        'tone' => $stats['pending_items'] > 0 ? 'amber' : 'neutral',
+        'element_id' => 'pending-count',
+    ],
+    [
+        'title' => 'Failed Items',
+        'value' => number_format($stats['failed_items']),
+        'description' => 'Require investigation',
+        'icon' => 'bx-error-circle',
+        'tone' => $stats['failed_items'] > 0 ? 'crimson' : 'neutral',
+        'element_id' => 'failed-count',
+    ],
+    [
+        'title' => 'Completed Items',
+        'value' => number_format($stats['completed_items']),
+        'description' => 'Successfully synced today',
+        'icon' => 'bx-check-shield',
+        'tone' => 'teal',
+        'element_id' => 'completed-count',
+    ],
+    [
+        'title' => 'Total Sync Runs',
+        'value' => number_format($stats['total_syncs']),
+        'description' => 'All recorded executions',
+        'icon' => 'bx-pulse',
+        'tone' => 'indigo',
+        'element_id' => 'total-syncs',
+    ],
+    [
+        'title' => 'Last Sync',
+        'value' => $lastSyncLabel,
+        'description' => 'Most recent server run',
+        'icon' => 'bx-calendar-check',
+        'tone' => 'neutral',
+        'element_id' => 'last-sync',
+    ],
+    [
+        'title' => 'Active Conflicts',
+        'value' => number_format($stats['conflicts']),
+        'description' => 'Awaiting resolution',
+        'icon' => 'bx-git-branch',
+        'tone' => $stats['conflicts'] > 0 ? 'amber' : 'neutral',
+        'element_id' => 'conflicts-count',
+    ],
+];
+
+$syncAdminLinks = [
+    ['href' => 'dashboard.php', 'icon' => 'bx-layout', 'label' => 'Dashboard'],
+    ['href' => 'admin_checkTriggers.php', 'icon' => 'bx-slider', 'label' => 'Check Triggers'],
+    ['href' => 'resolve_conflict.php', 'icon' => 'bx-error', 'label' => 'Conflicts'],
+    ['href' => 'sync_logs.php', 'icon' => 'bx-history', 'label' => 'Logs'],
+    ['href' => 'cleanup_settings.php', 'icon' => 'bx-broom', 'label' => 'Cleanup'],
+    ['href' => 'performance_metrics.php', 'icon' => 'bx-trending-up', 'label' => 'Performance'],
+];
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sync Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="description" content="Sync administration console providing live queue analytics and resolution tools.">
+    <meta name="author" content="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="last-modified" content="<?php echo htmlspecialchars(date('c'), ENT_QUOTES, 'UTF-8'); ?>">
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Defect Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+    <link rel="shortcut icon" href="/favicons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    <link rel="manifest" href="/favicons/site.webmanifest">
+    <link href="/css/app.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2c3e50;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --light-color: #f5f5f5;
-            --dark-color: #333;
-            --border-color: #ddd;
+        .sync-dashboard {
+            min-height: 100vh;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
+        .sync-dashboard__header {
+            background: linear-gradient(135deg, rgba(25, 34, 54, 0.95), rgba(17, 24, 39, 0.92));
+            border-radius: var(--bs-border-radius-xl);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        .sync-quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 0.75rem;
         }
 
-        .header {
-            background-color: var(--secondary-color);
-            color: #fff;
-            padding: 15px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        .sync-quick-link {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1rem;
+            border-radius: var(--bs-border-radius-lg);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            background: rgba(15, 23, 42, 0.88);
+            color: rgba(226, 232, 240, 0.92);
+            text-decoration: none;
+            transition: transform 0.2s ease, border 0.2s ease;
+            font-weight: 500;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
+        .sync-quick-link:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.6);
+            color: rgba(226, 232, 240, 0.98);
         }
 
-        .header p {
-            margin: 5px 0 0;
-            font-size: 14px;
-            opacity: 0.8;
+        .sync-hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
         }
 
-        .card {
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-            overflow: hidden;
+        .sync-hero-card {
+            position: relative;
+            border-radius: var(--bs-border-radius-lg);
+            padding: 1.4rem;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 22px 40px rgba(15, 23, 42, 0.38);
+            backdrop-filter: blur(12px);
+            transition: transform 0.2s ease, border 0.2s ease;
         }
 
-        .card-header {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
+        .sync-hero-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(96, 165, 250, 0.45);
+        }
+
+        .sync-hero-card__icon {
+            width: 2.75rem;
+            height: 2.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.85rem;
+            margin-bottom: 1rem;
+            font-size: 1.45rem;
+        }
+
+        .sync-tone-amber {
+            background: rgba(253, 224, 71, 0.25);
+            color: rgba(251, 191, 36, 0.95);
+        }
+
+        .sync-tone-crimson {
+            background: rgba(248, 113, 113, 0.25);
+            color: rgba(239, 68, 68, 0.95);
+        }
+
+        .sync-tone-teal {
+            background: rgba(45, 212, 191, 0.25);
+            color: rgba(16, 185, 129, 0.95);
+        }
+
+        .sync-tone-indigo {
+            background: rgba(129, 140, 248, 0.28);
+            color: rgba(99, 102, 241, 0.95);
+        }
+
+        .sync-tone-neutral {
+            background: rgba(100, 116, 139, 0.25);
+            color: rgba(148, 163, 184, 0.95);
+        }
+
+        .sync-hero-card__title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(148, 163, 184, 0.75);
+            margin-bottom: 0.25rem;
+        }
+
+        .sync-hero-card__stat {
+            font-size: clamp(1.75rem, 2.5vw, 2.4rem);
             font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: rgba(241, 245, 249, 0.96);
+            margin-bottom: 0.35rem;
         }
 
-        .card-body {
-            padding: 20px;
+        .sync-hero-card__description {
+            color: rgba(148, 163, 184, 0.7);
+            margin-bottom: 0;
         }
 
-        .stats {
+        .sync-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .sync-panel {
+            background: rgba(15, 23, 42, 0.92);
+            border-radius: var(--bs-border-radius-xl);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+            padding: 1.75rem;
+        }
+
+        .sync-panel__header {
             display: flex;
             flex-wrap: wrap;
-            margin: 0 -10px;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            padding-bottom: 1rem;
         }
 
-        .stat-box {
-            flex: 1;
-            min-width: 180px;
-            margin: 10px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            padding: 15px;
-            text-align: center;
-            border-left: 4px solid var(--primary-color);
+        .sync-panel__title {
+            font-size: 1.15rem;
+            margin-bottom: 0.35rem;
         }
 
-        .stat-box.warning {
-            border-left-color: var(--warning-color);
+        .sync-panel__description {
+            margin-bottom: 0;
+            color: rgba(148, 163, 184, 0.75);
         }
 
-        .stat-box.danger {
-            border-left-color: var(--danger-color);
+        .sync-status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.18);
+            color: rgba(34, 197, 94, 0.95);
         }
 
-        .stat-box.success {
-            border-left-color: var(--success-color);
+        .sync-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
         }
 
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            margin: 10px 0;
-            color: var(--secondary-color);
+        .sync-actions form {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .warning .stat-value {
-            color: var(--warning-color);
+        .sync-actions select {
+            background: rgba(30, 41, 59, 0.9);
+            color: rgba(226, 232, 240, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.25);
         }
 
-        .danger .stat-value {
-            color: var(--danger-color);
-        }
-
-        .success .stat-value {
-            color: var(--success-color);
-        }
-
-        .stat-label {
-            color: #888;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        table {
+        .sync-table table {
             width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+            color: rgba(226, 232, 240, 0.88);
         }
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+        .sync-table thead {
+            color: rgba(148, 163, 184, 0.75);
         }
 
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: var(--secondary-color);
+        .sync-table tbody tr {
+            border-color: rgba(148, 163, 184, 0.12);
         }
 
-        tbody tr:hover {
-            background-color: #f8f9fa;
+        .sync-table tbody tr:hover {
+            background: rgba(30, 41, 59, 0.85);
         }
 
-        .success-text {
-            color: var(--success-color);
+        .sync-empty {
+            text-align: center;
+            padding: 1rem;
+            color: rgba(148, 163, 184, 0.7);
+            border: 1px dashed rgba(148, 163, 184, 0.25);
+            border-radius: var(--bs-border-radius-lg);
         }
 
-        .warning-text {
-            color: var(--warning-color);
+        .badge-soft-success {
+            background: rgba(16, 185, 129, 0.18);
+            color: rgba(16, 185, 129, 0.95);
         }
 
-        .error-text {
-            color: var(--danger-color);
+        .badge-soft-warning {
+            background: rgba(253, 224, 71, 0.18);
+            color: rgba(217, 119, 6, 0.95);
         }
 
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            margin-right: 10px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background-color: #2980b9;
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-        }
-
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-
-        .btn-warning {
-            background-color: var(--warning-color);
-        }
-
-        .btn-warning:hover {
-            background-color: #e67e22;
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-        }
-
-        .btn-success:hover {
-            background-color: #27ae60;
-        }
-
-        .message {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            animation: fadeIn 0.5s;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 20px;
-            text-transform: uppercase;
-        }
-
-        .badge-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .badge-warning {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .action-form {
-            margin-bottom: 15px;
-            display: inline-block;
-        }
-
-        select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 5px;
-            font-size: 14px;
+        .badge-soft-danger {
+            background: rgba(248, 113, 113, 0.2);
+            color: rgba(220, 38, 38, 0.95);
         }
 
         .refresh-bar {
-            height: 4px;
-            background-color: var(--primary-color);
+            height: 0.3rem;
+            background: linear-gradient(90deg, #38bdf8, #6366f1, #14b8a6);
             width: 0%;
             position: fixed;
             top: 0;
             left: 0;
-            z-index: 1000;
+            z-index: 1055;
             transition: width 1s linear;
         }
 
-        .action-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
+        .modal-content.sync-modal {
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.22);
         }
 
-        .info-badge {
-            display: inline-flex;
-            align-items: center;
-            background: #e8f4fd;
-            color: #0078d4;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin-left: 8px;
+        .modal-content.sync-modal .modal-header {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
         }
 
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
-        }
-        
-        .navigation-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .navigation-links .btn {
-            text-align: center;
-        }
-        
-        .btn-sm {
-            padding: 4px 8px;
-            font-size: 12px;
+        .modal-content.sync-modal .modal-body {
+            color: rgba(226, 232, 240, 0.9);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        pre.sync-json {
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: var(--bs-border-radius-lg);
+            padding: 1rem;
+            color: rgba(226, 232, 240, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.18);
         }
 
         @media (max-width: 768px) {
-            .stats {
-                flex-direction: column;
-            }
-            .stat-box {
-                min-width: unset;
-            }
-            .action-buttons {
-                flex-direction: column;
-            }
-            .btn {
-                width: 100%;
-                margin-bottom: 10px;
+            .sync-dashboard__header {
+                padding: 1.5rem;
             }
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
+    <div class="app-content-offset"></div>
+
     <div class="refresh-bar" id="refresh-bar"></div>
-    
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1><i class="fas fa-sync-alt"></i> Sync Admin Dashboard</h1>
-                <p>Current Time: <?php echo date('d-m-Y H:i:s'); ?> | User: <?php echo htmlspecialchars($username); ?></p>
+
+    <main class="sync-dashboard container-xl py-4">
+        <header class="sync-dashboard__header mb-4 d-flex flex-column gap-4">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                <div>
+                    <h1 class="h3 mb-2"><i class='bx bx-cloud-sync me-2'></i>Sync Operations Console</h1>
+                    <p class="text-muted mb-0">Monitor queue health, retry failed items, and resolve conflicts without leaving the themed workspace.</p>
+                </div>
+                <div class="d-flex flex-column align-items-start text-muted small gap-1">
+                    <span><i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-time-five me-1'></i><?php echo htmlspecialchars($currentTimeDisplay, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+                    <span class="sync-status-chip"><i class='bx bx-pulse'></i>Live Monitoring</span>
+                </div>
             </div>
-            <div>
-                <button id="refresh-button" class="btn" title="Refresh Dashboard">
-                    <i class="fas fa-sync-alt"></i> Refresh
+
+            <?php if (!empty($message)): ?>
+                <div class="alert <?php echo $messageType === 'error' ? 'alert-danger' : 'alert-success'; ?> d-flex align-items-center gap-2 mb-0" role="alert">
+                    <i class='bx <?php echo $messageType === 'error' ? 'bx-error-circle' : 'bx-check-circle'; ?> fs-4'></i>
+                    <span><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></span>
+                </div>
+            <?php endif; ?>
+
+            <div class="sync-quick-links">
+                <?php foreach ($syncAdminLinks as $link): ?>
+                    <a class="sync-quick-link" href="<?php echo htmlspecialchars($link['href'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <span><i class='bx <?php echo htmlspecialchars($link['icon'], ENT_QUOTES, 'UTF-8'); ?> me-2'></i><?php echo htmlspecialchars($link['label'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        <i class='bx bx-chevron-right'></i>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="text-muted small">
+                    Next auto-refresh in <span id="next-refresh">--</span>
+                </div>
+                <button id="refresh-button" class="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-2" type="button">
+                    <i class='bx bx-refresh'></i>Refresh now
                 </button>
-                <span id="next-refresh" class="info-badge"></span>
             </div>
-        </div>
-        
-        <!-- Navigation Links -->
-        <div class="navigation-links">
-    <a href="dashboard.php" class="btn"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-    <a href="admin_checkTriggers.php" class="btn"><i class="fas fa-cogs"></i> Check Triggers</a>
-    <a href="resolve_conflict.php" class="btn"><i class="fas fa-exclamation-triangle"></i> Conflicts</a>
-    <a href="sync_logs.php" class="btn"><i class="fas fa-history"></i> Logs</a>
-    <a href="cleanup_settings.php" class="btn"><i class="fas fa-broom"></i> Cleanup</a>
-    <a href="performance_metrics.php" class="btn"><i class="fas fa-chart-line"></i> Performance</a>
-</div
-		        <?php if (!empty($message)): ?>
-            <div class="message <?php echo $messageType; ?>">
-                <i class="fas <?php echo $messageType === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'; ?>"></i>
-                <?php echo htmlspecialchars($message); ?>
-            </div>
-        <?php endif; ?>
-        
-        <div class="card">
-            <div class="card-header">
-                <div>Sync Overview</div>
-                <div>Last Updated: <span id="last-updated"><?php echo date('H:i:s'); ?></span></div>
-            </div>
-            <div class="card-body">
-                <div class="stats">
-                    <div class="stat-box <?php echo $stats['pending_items'] > 0 ? 'warning' : ''; ?>">
-                        <div class="stat-label">Pending Items</div>
-                        <div class="stat-value" id="pending-count">
-                            <?php echo htmlspecialchars($stats['pending_items']); ?>
-                        </div>
+        </header>
+
+        <section class="sync-hero-grid mb-4" id="syncHeroMetrics">
+            <?php foreach ($heroMetrics as $metric): ?>
+                <article class="sync-hero-card">
+                    <div class="sync-hero-card__icon sync-tone-<?php echo htmlspecialchars($metric['tone'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <i class='bx <?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i>
                     </div>
-                    <div class="stat-box <?php echo $stats['failed_items'] > 0 ? 'danger' : ''; ?>">
-                        <div class="stat-label">Failed Items</div>
-                        <div class="stat-value" id="failed-count">
-                            <?php echo htmlspecialchars($stats['failed_items']); ?>
-                        </div>
+                    <div class="sync-hero-card__title"><?php echo htmlspecialchars($metric['title'], ENT_QUOTES, 'UTF-8'); ?></div>
+                    <div class="sync-hero-card__stat" id="<?php echo htmlspecialchars($metric['element_id'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars($metric['value'], ENT_QUOTES, 'UTF-8'); ?>
                     </div>
-                    <div class="stat-box success">
-                        <div class="stat-label">Completed Items</div>
-                        <div class="stat-value" id="completed-count">
-                            <?php echo htmlspecialchars($stats['completed_items']); ?>
-                        </div>
+                    <p class="sync-hero-card__description mb-0"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                </article>
+            <?php endforeach; ?>
+        </section>
+
+        <section class="sync-grid">
+            <article class="sync-panel">
+                <div class="sync-panel__header">
+                    <div>
+                        <h2 class="sync-panel__title"><i class='bx bx-pulse me-2'></i>Sync Overview</h2>
+                        <p class="sync-panel__description">Queue throughput and the latest synchronisation activity.</p>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Total Syncs</div>
-                        <div class="stat-value"><?php echo htmlspecialchars($stats['total_syncs']); ?></div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Last Sync</div>
-                        <div class="stat-value" style="font-size: 18px;"><?php echo htmlspecialchars($stats['last_sync']); ?></div>
-                    </div>
-                    <div class="stat-box <?php echo $stats['conflicts'] > 0 ? 'warning' : ''; ?>">
-                        <div class="stat-label">Conflicts</div>
-                        <div class="stat-value" id="conflicts-count">
-                            <?php echo htmlspecialchars($stats['conflicts']); ?>
-                        </div>
+                    <div class="text-muted small">
+                        Last updated <span id="last-updated"><?php echo htmlspecialchars(date('H:i:s'), ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                 </div>
-                
-                <div id="sync-chart" class="chart-container"></div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">Actions</div>
-            <div class="card-body">
-                <div class="action-buttons">
-                    <form method="post" class="action-form">
+                <div class="sync-chart" id="sync-chart">
+                    <p class="sync-empty mb-0">Trend chart integration coming soon.</p>
+                </div>
+            </article>
+
+            <article class="sync-panel">
+                <div class="sync-panel__header">
+                    <div>
+                        <h2 class="sync-panel__title"><i class='bx bx-cog me-2'></i>Operations</h2>
+                        <p class="sync-panel__description">Manage the queue: retry, clear, or resolve conflicts.</p>
+                    </div>
+                </div>
+                <div class="sync-actions">
+                    <form method="post" class="d-inline-flex">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="retry_failed">
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-redo"></i> Retry Failed Items
+                        <button type="submit" class="btn btn-warning d-inline-flex align-items-center gap-2">
+                            <i class='bx bx-redo'></i>Retry Failed Items
                         </button>
                     </form>
-                    
-                    <form method="post" class="action-form">
+                    <form method="post" class="d-inline-flex" onsubmit="return confirm('Clear all failed sync items? This cannot be undone.');">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="clear_failed">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear all failed items?');">
-                            <i class="fas fa-trash-alt"></i> Clear Failed Items
+                        <button type="submit" class="btn btn-danger d-inline-flex align-items-center gap-2">
+                            <i class='bx bx-trash'></i>Clear Failed Items
                         </button>
                     </form>
-                    
-                    <form method="post" class="action-form">
+                    <form method="post" class="d-inline-flex" onsubmit="return confirm('Clear completed items older than 7 days?');">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="clear_completed">
-                        <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to clear completed items older than 7 days?');">
-                            <i class="fas fa-broom"></i> Clear Old Completed
+                        <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-2">
+                            <i class='bx bx-broom'></i>Clear Old Completed
                         </button>
                     </form>
-                    
-                    <form method="post" class="action-form">
+                    <form method="post" class="d-inline-flex align-items-center gap-2">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="resolve_conflicts">
-                        <select name="resolution" required>
+                        <select class="form-select form-select-sm" name="resolution" required>
                             <option value="server_wins">Server Wins</option>
                             <option value="client_wins">Client Wins</option>
                             <option value="merge">Auto-merge</option>
                         </select>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-handshake"></i> Resolve All Conflicts
+                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2">
+                            <i class='bx bx-merge'></i>Resolve All Conflicts
                         </button>
                     </form>
                 </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">Recent Sync Logs</div>
-            <div class="card-body">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Items Processed</th>
-                            <th>Success/Failed</th>
-                            <th>Status</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentLogs as $log): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($log['username']); ?></td>
-                            <td><?php echo htmlspecialchars($log['start_time']); ?></td>
-                            <td><?php echo htmlspecialchars($log['end_time']); ?></td>
-                            <td><?php echo htmlspecialchars($log['items_processed']); ?></td>
-                            <td><?php echo htmlspecialchars($log['items_succeeded'] . '/' . $log['items_failed']); ?></td>
-                            <td>
-                                <?php if ($log['status'] === 'success'): ?>
-                                    <span class="badge badge-success">Success</span>
-                                <?php elseif ($log['status'] === 'failed'): ?>
-                                    <span class="badge badge-danger">Failed</span>
-                                <?php else: ?>
-                                    <span class="badge badge-warning">Partial</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <button class="btn" onclick="showDetails(<?php echo htmlspecialchars(json_encode($log)); ?>)">
-                                    <i class="fas fa-info-circle"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($recentLogs)): ?>
-                        <tr>
-                            <td colspan="7" style="text-align: center;">No sync logs found</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">Failed Sync Items</div>
-            <div class="card-body">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>User</th>
-                            <th>Action</th>
-                            <th>Entity Type</th>
-                            <th>Created At</th>
-                            <th>Attempts</th>
-                            <th>Result</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($recentErrors as $error): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($error['id']); ?></td>
-                            <td><?php echo htmlspecialchars($error['username']); ?></td>
-                            <td><?php echo htmlspecialchars($error['action']); ?></td>
-                            <td><?php echo htmlspecialchars($error['entity_type']); ?></td>
-                            <td><?php echo htmlspecialchars($error['created_at']); ?></td>
-                            <td><?php echo htmlspecialchars($error['attempts']); ?></td>
-                            <td>
-                                <?php 
-                                    $resultData = json_decode($error['result'], true);
-                                    echo $resultData && isset($resultData['message']) ? 
-                                        htmlspecialchars($resultData['message']) : 
-                                        "No error details available";
-                                ?>
-                            </td>
-                            <td>
-                                <form method="post" style="display: inline;">
-                                    <input type="hidden" name="action" value="retry_single">
-                                    <input type="hidden" name="item_id" value="<?php echo $error['id']; ?>">
-                                    <button type="submit" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-redo"></i> Retry
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($recentErrors)): ?>
-                        <tr>
-                            <td colspan="8" style="text-align: center;">No failed items found</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">Conflicts</div>
-            <div class="card-body">
-                <?php if (empty($conflicts)): ?>
-                    <p>No conflicts found</p>
+            </article>
+
+            <article class="sync-panel">
+                <div class="sync-panel__header">
+                    <div>
+                        <h2 class="sync-panel__title"><i class='bx bx-history me-2'></i>Recent Sync Logs</h2>
+                        <p class="sync-panel__description">Last ten synchronisation runs with outcome and duration.</p>
+                    </div>
+                </div>
+                <?php if (empty($recentLogs)): ?>
+                    <p class="sync-empty mb-0">No sync logs found.</p>
                 <?php else: ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Entity</th>
-                            <th>Server Data</th>
-                            <th>Client Data</th>
-                            <th>Client Time</th>
-                            <th>Server Time</th>
-                            <th>Device</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($conflicts as $conflict): ?>
-                        <?php 
-                            $serverData = json_decode($conflict['server_data'], true);
-                            $clientData = json_decode($conflict['client_data'], true);
-                        ?>
-                        <tr>
-                            <td>
-                                <?php echo htmlspecialchars($conflict['entity_type'] . ' #' . $conflict['entity_id']); ?>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm" onclick="showJSON('server', <?php echo htmlspecialchars(json_encode($serverData)); ?>)">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm" onclick="showJSON('client', <?php echo htmlspecialchars(json_encode($clientData)); ?>)">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                            </td>
-                            <td><?php echo htmlspecialchars($conflict['client_timestamp']); ?></td>
-                            <td><?php echo htmlspecialchars($conflict['server_timestamp']); ?></td>
-                            <td><?php echo htmlspecialchars($conflict['device_id']); ?></td>
-                            <td>
-                                <form method="post" style="display: inline;">
-                                    <input type="hidden" name="action" value="resolve_single_conflict">
-                                    <input type="hidden" name="conflict_id" value="<?php echo $conflict['id']; ?>">
-                                    <select name="resolution" required>
-                                        <option value="server_wins">Server Wins</option>
-                                        <option value="client_wins">Client Wins</option>
-                                        <option value="merge">Merge</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    <div class="table-responsive sync-table">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">User</th>
+                                    <th scope="col">Start</th>
+                                    <th scope="col">End</th>
+                                    <th scope="col">Processed</th>
+                                    <th scope="col">Success/Failed</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-end">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recentLogs as $log): ?>
+                                    <?php
+                                        $statusBadge = 'badge-soft-warning';
+                                        if (($log['status'] ?? '') === 'success') {
+                                            $statusBadge = 'badge-soft-success';
+                                        } elseif (($log['status'] ?? '') === 'failed') {
+                                            $statusBadge = 'badge-soft-danger';
+                                        }
+                                        $logPayload = htmlspecialchars(json_encode($log, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($log['username'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($log['start_time'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($log['end_time'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars((string) ($log['items_processed'] ?? 0), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars(($log['items_succeeded'] ?? 0) . '/' . ($log['items_failed'] ?? 0), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><span class="badge <?php echo $statusBadge; ?> text-uppercase small"><?php echo htmlspecialchars($log['status'] ?? 'unknown', ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                        <td class="text-end">
+                                            <button type="button" class="btn btn-sm btn-outline-light" data-log="<?php echo $logPayload; ?>" onclick="showDetails(this.dataset.log)">
+                                                <i class='bx bx-info-circle'></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 <?php endif; ?>
+            </article>
+
+            <article class="sync-panel">
+                <div class="sync-panel__header">
+                    <div>
+                        <h2 class="sync-panel__title"><i class='bx bx-error me-2'></i>Failed Sync Items</h2>
+                        <p class="sync-panel__description">Items needing manual attention before they can be retried.</p>
+                    </div>
+                </div>
+                <?php if (empty($recentErrors)): ?>
+                    <p class="sync-empty mb-0">No failed items in the queue.</p>
+                <?php else: ?>
+                    <div class="table-responsive sync-table">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">User</th>
+                                    <th scope="col">Action</th>
+                                    <th scope="col">Entity</th>
+                                    <th scope="col">Created</th>
+                                    <th scope="col">Attempts</th>
+                                    <th scope="col">Result</th>
+                                    <th scope="col" class="text-end">Retry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recentErrors as $error): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars((string) $error['id'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($error['username'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($error['action'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($error['entity_type'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($error['created_at'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars((string) ($error['attempts'] ?? 0), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($error['result_message'] ?? 'No details', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-end">
+                                            <form method="post" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="action" value="retry_single">
+                                                <input type="hidden" name="item_id" value="<?php echo htmlspecialchars((string) $error['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                <button type="submit" class="btn btn-sm btn-warning d-inline-flex align-items-center gap-1">
+                                                    <i class='bx bx-redo'></i>Retry
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </article>
+
+            <article class="sync-panel">
+                <div class="sync-panel__header">
+                    <div>
+                        <h2 class="sync-panel__title"><i class='bx bx-git-branch me-2'></i>Active Conflicts</h2>
+                        <p class="sync-panel__description">Review client vs server payloads and resolve individually when needed.</p>
+                    </div>
+                </div>
+                <?php if (empty($conflicts)): ?>
+                    <p class="sync-empty mb-0">No unresolved conflicts detected.</p>
+                <?php else: ?>
+                    <div class="table-responsive sync-table">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Entity</th>
+                                    <th scope="col">Server Data</th>
+                                    <th scope="col">Client Data</th>
+                                    <th scope="col">Client Time</th>
+                                    <th scope="col">Server Time</th>
+                                    <th scope="col">Device</th>
+                                    <th scope="col" class="text-end">Resolve</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($conflicts as $conflict): ?>
+                                    <?php
+                                        $serverPayload = htmlspecialchars(json_encode(json_decode($conflict['server_data'], true), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                                        $clientPayload = htmlspecialchars(json_encode(json_decode($conflict['client_data'], true), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars(($conflict['entity_type'] ?? 'entity') . ' #' . ($conflict['entity_id'] ?? 'N/A'), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-light" data-json="<?php echo $serverPayload; ?>" onclick="showJSON('Server', this.dataset.json)">
+                                                <i class='bx bx-code-curly'></i> View
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-outline-light" data-json="<?php echo $clientPayload; ?>" onclick="showJSON('Client', this.dataset.json)">
+                                                <i class='bx bx-code-curly'></i> View
+                                            </button>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($conflict['client_timestamp'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($conflict['server_timestamp'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($conflict['device_id'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-end">
+                                            <form method="post" class="d-inline-flex align-items-center gap-2">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="action" value="resolve_single_conflict">
+                                                <input type="hidden" name="conflict_id" value="<?php echo htmlspecialchars((string) $conflict['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                <select class="form-select form-select-sm" name="resolution" required>
+                                                    <option value="server_wins">Server Wins</option>
+                                                    <option value="client_wins">Client Wins</option>
+                                                    <option value="merge">Merge</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1">
+                                                    <i class='bx bx-check'></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </article>
+        </section>
+    </main>
+
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content sync-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalContent"></div>
             </div>
         </div>
     </div>
 
-    <!-- Modal for showing details -->
-    <div id="detailsModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-        <div style="background-color: white; margin: 10% auto; padding: 20px; width: 80%; max-width: 700px; border-radius: 5px; position: relative;">
-            <span onclick="closeModal()" style="position: absolute; top: 10px; right: 20px; font-size: 28px; cursor: pointer;">&times;</span>
-            <h3 id="modalTitle">Details</h3>
-            <div id="modalContent" style="max-height: 500px; overflow-y: auto;"></div>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto-refresh functionality
-        let refreshInterval = <?php echo $refreshInterval; ?> * 1000; // Convert to milliseconds
-        let refreshTimeout;
-        let refreshBar = document.getElementById('refresh-bar');
-        let nextRefreshSpan = document.getElementById('next-refresh');
-        let refreshButton = document.getElementById('refresh-button');
-        
+        const refreshIntervalSeconds = <?php echo (int) $refreshInterval; ?>;
+        const refreshBar = document.getElementById('refresh-bar');
+        const nextRefreshSpan = document.getElementById('next-refresh');
+        const refreshButton = document.getElementById('refresh-button');
+        const lastUpdatedLabel = document.getElementById('last-updated');
+        let refreshTimeout = null;
+        let countdownInterval = null;
+
         function startRefreshTimer() {
-            // Reset the bar
-            refreshBar.style.width = '0%';
-            
-            // Start animation
-            setTimeout(() => {
-                refreshBar.style.width = '100%';
-            }, 50);
-            
-            // Update countdown
-            let countdown = <?php echo $refreshInterval; ?>;
-            nextRefreshSpan.textContent = 'Auto refresh in ' + countdown + 's';
-            
-            let countdownInterval = setInterval(() => {
-                countdown--;
-                nextRefreshSpan.textContent = 'Auto refresh in ' + countdown + 's';
-                if (countdown <= 0) {
+            clearTimeout(refreshTimeout);
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            if (refreshBar) {
+                refreshBar.style.width = '0%';
+                setTimeout(() => {
+                    refreshBar.style.width = '100%';
+                }, 50);
+            }
+
+            let remaining = refreshIntervalSeconds;
+            if (nextRefreshSpan) {
+                nextRefreshSpan.textContent = remaining + 's';
+            }
+
+            countdownInterval = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
                     clearInterval(countdownInterval);
                 }
+                if (nextRefreshSpan) {
+                    nextRefreshSpan.textContent = Math.max(remaining, 0) + 's';
+                }
             }, 1000);
-            
-            // Set timeout for refresh
+
             refreshTimeout = setTimeout(() => {
                 window.location.reload();
-            }, refreshInterval);
-        }
-        
-        // Initialize refresh timer
-        startRefreshTimer();
-        
-        // Manual refresh
-        refreshButton.addEventListener('click', () => {
-            clearTimeout(refreshTimeout);
-            window.location.reload();
-        });
-        
-        // Modal functionality
-        function showDetails(data) {
-            let modal = document.getElementById('detailsModal');
-            let title = document.getElementById('modalTitle');
-            let content = document.getElementById('modalContent');
-            
-            title.innerHTML = 'Sync Details';
-            
-            let html = '<table>';
-            for (let key in data) {
-                html += '<tr><td><strong>' + key + ':</strong></td><td>' + data[key] + '</td></tr>';
-            }
-            html += '</table>';
-            
-            content.innerHTML = html;
-            modal.style.display = 'block';
-        }
-        
-        function showJSON(type, data) {
-            let modal = document.getElementById('detailsModal');
-            let title = document.getElementById('modalTitle');
-            let content = document.getElementById('modalContent');
-            
-            title.innerHTML = type.charAt(0).toUpperCase() + type.slice(1) + ' Data';
-            
-            // Create a formatted display of the JSON
-            let html = '<table>';
-            for (let key in data) {
-                let value = data[key];
-                if (typeof value === 'object' && value !== null) {
-                    value = JSON.stringify(value, null, 2);
-                }
-                html += '<tr><td><strong>' + key + ':</strong></td><td>' + value + '</td></tr>';
-            }
-            html += '</table>';
-            
-            content.innerHTML = html;
-            modal.style.display = 'block';
-        }
-        
-        function closeModal() {
-            document.getElementById('detailsModal').style.display = 'none';
-        }
-        
-        // Close modal when clicking outside of it
-        window.onclick = function(event) {
-            let modal = document.getElementById('detailsModal');
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
+            }, refreshIntervalSeconds * 1000);
         }
 
-        // Add timestamp to last updated field
-        document.getElementById('last-updated').textContent = '<?php echo date('H:i:s'); ?> (<?php echo htmlspecialchars($username); ?>)';
+        if (refreshButton) {
+            refreshButton.addEventListener('click', () => {
+                clearTimeout(refreshTimeout);
+                window.location.reload();
+            });
+        }
+
+        if (lastUpdatedLabel) {
+            lastUpdatedLabel.textContent = '<?php echo htmlspecialchars(date('H:i:s'), ENT_QUOTES, 'UTF-8'); ?> (<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>)';
+        }
+
+        startRefreshTimer();
+
+        const detailsModalElement = document.getElementById('detailsModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const detailsModal = detailsModalElement ? new bootstrap.Modal(detailsModalElement) : null;
+
+        function escapeHtml(value) {
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        window.showDetails = function (dataJson) {
+            if (!detailsModal || !modalTitle || !modalContent) {
+                return;
+            }
+
+            try {
+                const data = JSON.parse(dataJson);
+                const rows = Object.keys(data).map(key => {
+                    const value = typeof data[key] === 'object' && data[key] !== null
+                        ? JSON.stringify(data[key], null, 2)
+                        : data[key];
+                    return `<tr><th class="pe-3 text-nowrap">${escapeHtml(key)}</th><td>${escapeHtml(String(value ?? ''))}</td></tr>`;
+                }).join('');
+
+                modalTitle.textContent = 'Sync Details';
+                modalContent.innerHTML = `<div class="table-responsive"><table class="table table-sm table-borderless align-middle mb-0 text-white"><tbody>${rows}</tbody></table></div>`;
+                detailsModal.show();
+            } catch (error) {
+                console.error('Failed to parse log payload', error);
+            }
+        };
+
+        window.showJSON = function (label, dataJson) {
+            if (!detailsModal || !modalTitle || !modalContent) {
+                return;
+            }
+
+            try {
+                const data = JSON.parse(dataJson);
+                modalTitle.textContent = `${label} Payload`;
+                modalContent.innerHTML = `<pre class="sync-json">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+                detailsModal.show();
+            } catch (error) {
+                console.error('Failed to parse JSON payload', error);
+            }
+        };
     </script>
 </body>
 </html>
