@@ -122,13 +122,15 @@ $newFilename = uniqid() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension;
 
 **Use secure session settings:**
 ```php
-// Sessions are managed by Auth class
+// Sessions are managed by the Auth class
 // Session includes IP and user-agent validation
-// See classes/Auth.php for implementation
+// See classes/Auth.php for implementation details
 
-// Never expose session IDs in URLs
-// Always regenerate session ID on login
-session_regenerate_id(true);
+// Best practices:
+// - Never expose session IDs in URLs
+// - Session IDs are regenerated on login (handled by Auth class)
+// - If implementing custom session handling, use:
+//   session_regenerate_id(true);
 ```
 
 ### 8. Path Traversal Prevention

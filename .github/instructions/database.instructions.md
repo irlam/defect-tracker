@@ -283,4 +283,4 @@ Before committing database-related code:
 - **Connection errors**: Check `.env` configuration and database server
 - **Slow queries**: Use `system-tools/database_optimizer.php`
 - **Lock timeouts**: Ensure transactions are kept short
-- **Character encoding issues**: Database uses utf8mb4 collation
+- **Character encoding issues**: Database should use utf8mb4 character set with utf8mb4_unicode_ci collation for proper Unicode support. Verify with: `SHOW CREATE DATABASE database_name;`
