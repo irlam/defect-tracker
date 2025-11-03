@@ -22,6 +22,11 @@ if (session_status() === PHP_SESSION_NONE) {
 // Include the database configuration file
 require_once dirname(__DIR__) . '/config/database.php';
 require_once dirname(__DIR__) . '/config/constants.php';
+require_once dirname(__DIR__) . '/includes/navbar.php';
+
+if (!defined('DEBUG_MODE')) {
+    define('DEBUG_MODE', false);
+}
 
 // Create database connection using the Database class from database.php
 $database = new Database();
@@ -113,6 +118,22 @@ if (!isset($_SESSION['user_id']) || !isAdmin($db, $_SESSION['user_id'])) {
 // Generate new CSRF token if needed
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+date_default_timezone_set('Europe/London');
+
+$pageTitle = 'Maintenance Console';
+$displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $_SESSION['username'] ?? 'User'));
+$currentUserRoleSummary = ucwords(str_replace(['_', '-'], [' ', ' '], $_SESSION['user_type'] ?? 'User'));
+$currentTimestamp = date('d/m/Y H:i');
+$navbar = null;
+$error_message = '';
+
+try {
+    $navbar = new Navbar($db, (int) ($_SESSION['user_id'] ?? 0), $_SESSION['username'] ?? '');
+} catch (Throwable $navbarError) {
+    error_log('Navbar initialisation error on maintenance.php: ' . $navbarError->getMessage());
+    $navbar = null;
 }
 
 /**
@@ -614,6 +635,12 @@ function getSystemStats($db) {
     }
 }
 
+function formatMaintenanceActionLabel(string $action): string
+{
+    $clean = str_replace(['_', '-'], ' ', strtolower($action));
+    return ucwords($clean);
+}
+
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
@@ -672,512 +699,830 @@ switch ($_POST['action']) {
     exit;
 }
 
+$initialStatsData = null;
+$recentBackups = [];
+$tableCountRaw = 0;
+$userCountRaw = 0;
+$databaseFootprintTotal = 0.0;
+$databaseFootprintSummary = '—';
+$lastMaintenanceLabel = 'No maintenance events recorded';
+$lastMaintenanceValue = '—';
+$lastMaintenanceActionLabel = 'No maintenance operations logged yet.';
+$phpVersion = phpversion();
+$serverSoftware = isset($_SERVER['SERVER_SOFTWARE'])
+    ? preg_replace('/[^a-zA-Z0-9\._\/ -]/', '', $_SERVER['SERVER_SOFTWARE'])
+    : 'Unknown';
+
+$initialStatsResponse = getSystemStats($db);
+if (($initialStatsResponse['status'] ?? '') === 'success' && !empty($initialStatsResponse['data'])) {
+    $initialStatsData = $initialStatsResponse['data'];
+    $tableCountRaw = (int) ($initialStatsData['table_count'] ?? 0);
+    $userCountRaw = (int) ($initialStatsData['user_count'] ?? 0);
+    $phpVersion = $initialStatsData['php_version'] ?? $phpVersion;
+    $serverSoftware = $initialStatsData['server_software'] ?? $serverSoftware;
+
+    if (!empty($initialStatsData['database_size']) && is_array($initialStatsData['database_size'])) {
+        foreach ($initialStatsData['database_size'] as $databaseRow) {
+            $databaseFootprintTotal += (float) ($databaseRow['Size (MB)'] ?? 0);
+        }
+    }
+
+    if (!empty($initialStatsData['recent_maintenance'][0])) {
+        $lastAction = $initialStatsData['recent_maintenance'][0];
+        $actionLabel = formatMaintenanceActionLabel((string) ($lastAction['action'] ?? ''));
+        $actionTimeRaw = $lastAction['execution_time'] ?? '';
+        $actionTimeDisplay = !empty($actionTimeRaw) ? date('d M Y, H:i', strtotime($actionTimeRaw)) : '—';
+
+        $lastMaintenanceLabel = trim($actionLabel . ' • ' . ($actionTimeRaw ?: '')) ?: 'No maintenance events recorded';
+        $lastMaintenanceValue = $actionTimeDisplay;
+        $lastMaintenanceActionLabel = $actionLabel ?: 'Maintenance activity logged';
+    }
+}
+
+if ($databaseFootprintTotal > 0) {
+    $databaseFootprintSummary = number_format($databaseFootprintTotal, 2) . ' MB';
+}
+
+$recentBackups = getRecentBackups(dirname(__DIR__) . '/backups');
+
+$heroMetrics = [
+    [
+        'icon' => 'bx-server',
+        'tag' => 'Status',
+        'title' => 'Platform Health',
+         'value' => 'Online',
+        'description' => 'Application and database connections healthy.'
+    ],
+    [
+        'icon' => 'bx-table',
+        'tag' => 'Maintenance Metric',
+        'title' => 'Tables in Scope',
+        'value' => $tableCountRaw > 0 ? number_format($tableCountRaw) : '—',
+        'description' => 'Structures in active schema.',
+        'stat_key' => 'tables'
+    ],
+    [
+        'icon' => 'bx-group',
+        'tag' => 'Maintenance Metric',
+        'title' => 'Registered Users',
+        'value' => $userCountRaw > 0 ? number_format($userCountRaw) : '—',
+        'description' => 'Accounts with system access.',
+        'stat_key' => 'users'
+    ],
+    [
+        'icon' => 'bx-history',
+        'tag' => 'Maintenance Log',
+        'title' => 'Last Maintenance',
+        'value' => $lastMaintenanceValue,
+        'description' => $lastMaintenanceActionLabel,
+        'stat_key' => 'last'
+    ],
+];
+
+$maintenanceBackupsMarkup = (function () use ($recentBackups) {
+    ob_start();
+    if (!empty($recentBackups)) {
+        echo '<div class="table-responsive"><table class="table table-dark table-hover table-sm align-middle mb-0">';
+        echo '<thead><tr><th scope="col">Filename</th><th scope="col" class="text-end">Size</th><th scope="col" class="text-end">Created</th></tr></thead><tbody>';
+        foreach ($recentBackups as $backup) {
+            $sizeMb = ($backup['size'] ?? 0) / (1024 * 1024);
+            echo '<tr>';
+            echo '<td class="text-break">' . htmlspecialchars($backup['filename'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+            echo '<td class="text-end">' . number_format($sizeMb, 2) . ' MB</td>';
+            echo '<td class="text-end">' . htmlspecialchars($backup['date'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+            echo '</tr>';
+        }
+        echo '</tbody></table></div>';
+    } else {
+        echo '<p class="maintenance-empty mb-0">No backups found.</p>';
+    }
+    return ob_get_clean();
+})();
+
+$maintenanceSummaryMarkup = (function () use ($initialStatsData, $userCountRaw, $tableCountRaw, $databaseFootprintSummary, $phpVersion, $serverSoftware) {
+    ob_start();
+    if ($initialStatsData) {
+        echo '<div class="maintenance-stat-summaries">';
+        echo '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Total Users</span><span class="maintenance-stat-summaries__value">' . ($userCountRaw > 0 ? number_format($userCountRaw) : '—') . '</span></div>';
+        echo '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Total Tables</span><span class="maintenance-stat-summaries__value">' . ($tableCountRaw > 0 ? number_format($tableCountRaw) : '—') . '</span></div>';
+        echo '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Footprint</span><span class="maintenance-stat-summaries__value" data-maintenance-footprint>' . htmlspecialchars($databaseFootprintSummary, ENT_QUOTES, 'UTF-8') . '</span></div>';
+        echo '</div>';
+
+        if (!empty($initialStatsData['recent_maintenance'])) {
+            echo '<ul class="list-unstyled mt-3 mb-0 text-muted small maintenance-summary-timeline">';
+            foreach (array_slice($initialStatsData['recent_maintenance'], 0, 3) as $row) {
+                $actionLabel = formatMaintenanceActionLabel((string) ($row['action'] ?? ''));
+                $timeDisplay = !empty($row['execution_time']) ? date('d M Y, H:i', strtotime($row['execution_time'])) : '—';
+                echo '<li class="d-flex justify-content-between gap-3"><span>' . htmlspecialchars($actionLabel, ENT_QUOTES, 'UTF-8') . '</span><span class="text-nowrap">' . htmlspecialchars($timeDisplay, ENT_QUOTES, 'UTF-8') . '</span></li>';
+            }
+            echo '</ul>';
+        }
+
+        echo '<div class="maintenance-stat-meta mt-3">';
+        echo '<div><span class="maintenance-stat-meta__label">PHP Version</span><span class="maintenance-stat-meta__value">' . htmlspecialchars($phpVersion, ENT_QUOTES, 'UTF-8') . '</span></div>';
+        echo '<div><span class="maintenance-stat-meta__label">Server Software</span><span class="maintenance-stat-meta__value">' . htmlspecialchars($serverSoftware, ENT_QUOTES, 'UTF-8') . '</span></div>';
+        echo '</div>';
+    } else {
+        echo '<p class="maintenance-empty mb-0">Statistics currently unavailable.</p>';
+    }
+    return ob_get_clean();
+})();
+
+$maintenanceDetailMarkup = (function () use ($initialStatsData, $userCountRaw, $tableCountRaw, $databaseFootprintSummary, $phpVersion, $serverSoftware) {
+    ob_start();
+    if ($initialStatsData) {
+        echo '<div class="maintenance-stat-summaries">';
+        echo '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Total Users</span><span class="maintenance-stat-summaries__value">' . ($userCountRaw > 0 ? number_format($userCountRaw) : '—') . '</span></div>';
+        echo '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Total Tables</span><span class="maintenance-stat-summaries__value">' . ($tableCountRaw > 0 ? number_format($tableCountRaw) : '—') . '</span></div>';
+        echo '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Footprint</span><span class="maintenance-stat-summaries__value" data-maintenance-footprint>' . htmlspecialchars($databaseFootprintSummary, ENT_QUOTES, 'UTF-8') . '</span></div>';
+        echo '</div>';
+
+        if (!empty($initialStatsData['database_size'])) {
+            echo '<div class="table-responsive mt-3"><table class="table table-dark table-hover table-sm align-middle mb-0">';
+            echo '<thead><tr><th scope="col">Database</th><th scope="col" class="text-end">Size (MB)</th></tr></thead><tbody>';
+            foreach ($initialStatsData['database_size'] as $dbRow) {
+                echo '<tr><td class="text-break">' . htmlspecialchars($dbRow['Database'] ?? 'N/A', ENT_QUOTES, 'UTF-8') . '</td><td class="text-end">' . htmlspecialchars($dbRow['Size (MB)'] ?? '0', ENT_QUOTES, 'UTF-8') . '</td></tr>';
+            }
+            echo '</tbody></table></div>';
+        }
+
+        if (!empty($initialStatsData['recent_maintenance'])) {
+            echo '<h3 class="maintenance-stat-heading mt-4">Recent Maintenance Operations</h3>';
+            echo '<div class="table-responsive"><table class="table table-dark table-hover table-sm align-middle mb-0">';
+            echo '<thead><tr><th scope="col">Action</th><th scope="col" class="text-end">Time</th><th scope="col" class="text-end">Tables</th></tr></thead><tbody>';
+            foreach ($initialStatsData['recent_maintenance'] as $row) {
+                $actionLabel = formatMaintenanceActionLabel((string) ($row['action'] ?? ''));
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($actionLabel, ENT_QUOTES, 'UTF-8') . '</td>';
+                echo '<td class="text-end">' . htmlspecialchars($row['execution_time'] ?? '—', ENT_QUOTES, 'UTF-8') . '</td>';
+                echo '<td class="text-end">' . htmlspecialchars($row['tables_affected'] ?? 'N/A', ENT_QUOTES, 'UTF-8') . '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table></div>';
+        } else {
+            echo '<p class="maintenance-empty mb-0 mt-3">No maintenance operations logged yet.</p>';
+        }
+
+        echo '<div class="maintenance-stat-meta mt-4">';
+        echo '<div><span class="maintenance-stat-meta__label">PHP Version</span><span class="maintenance-stat-meta__value">' . htmlspecialchars($phpVersion, ENT_QUOTES, 'UTF-8') . '</span></div>';
+        echo '<div><span class="maintenance-stat-meta__label">Server Software</span><span class="maintenance-stat-meta__value">' . htmlspecialchars($serverSoftware, ENT_QUOTES, 'UTF-8') . '</span></div>';
+        echo '</div>';
+    } else {
+        echo '<p class="maintenance-empty mb-0">Statistics currently unavailable.</p>';
+    }
+    return ob_get_clean();
+})();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Maintenance</title>
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Defect Tracker</title>
+    <meta name="description" content="Maintenance console for database optimisation, backups, and system insights.">
+    <meta name="last-modified" content="<?php echo htmlspecialchars(date('c'), ENT_QUOTES, 'UTF-8'); ?>">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="<?php echo BASE_URL; ?>css/app.css?v=20251103" rel="stylesheet">
     <style>
-    :root {
-        --primary: #2563eb;
-        --primary-dark: #1d4ed8;
-        --primary-light: #dbeafe;
-        --secondary: #8b5cf6;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --gray-50: #f9fafb;
-        --gray-100: #f3f4f6;
-        --gray-200: #e5e7eb;
-        --gray-300: #d1d5db;
-        --gray-400: #9ca3af;
-        --gray-500: #6b7280;
-        --gray-600: #4b5563;
-        --gray-700: #374151;
-        --gray-800: #1f2937;
-        --gray-900: #111827;
-        --white: #ffffff;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --radius: 0.375rem;
-    }
+        .maintenance-page {
+            display: grid;
+            gap: clamp(1.5rem, 2vw, 2.25rem);
+        }
 
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-    
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        background-color: var(--gray-50);
-        color: var(--gray-800);
-        line-height: 1.6;
-    }
-    
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 1.5rem;
-    }
-    
-    h1 {
-        color: var(--gray-900);
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        position: relative;
-        padding-bottom: 0.75rem;
-    }
-    
-    h1:after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 80px;
-        height: 4px;
-        background: var(--primary);
-        border-radius: 2px;
-    }
-    
-    h2 {
-        color: var(--gray-800);
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
-    
-    h3 {
-        color: var(--gray-700);
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 1.5rem 0 1rem;
-    }
-    
-    .card {
-        background-color: var(--white);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 1.5rem;
-        padding: 1.5rem;
-        transition: box-shadow 0.2s ease-in-out;
-        border: 1px solid var(--gray-200);
-    }
-    
-    .card:hover {
-        box-shadow: var(--shadow-md);
-    }
-    
-    .card h2 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        position: relative;
-    }
-    
-    .card h2::before {
-        content: '';
-        display: block;
-        width: 0.5rem;
-        height: 1.5rem;
-        background-color: var(--primary);
-        border-radius: 0.25rem;
-    }
-    
-    p {
-        margin-bottom: 0.75rem;
-        color: var(--gray-700);
-    }
-    
-    p strong {
-        color: var(--gray-800);
-        font-weight: 600;
-    }
-    
-    .success {
-        color: var(--success);
-        font-weight: 600;
-    }
-    
-    button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        line-height: 1.5;
-        border-radius: var(--radius);
-        border: none;
-        transition: all 0.15s ease-in-out;
-        cursor: pointer;
-        color: var(--white);
-        background-color: var(--primary);
-        box-shadow: var(--shadow-sm);
-        gap: 0.5rem;
-        margin-right: 0.5rem;
-        margin-top: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-    
-    button:hover {
-        background-color: var(--primary-dark);
-        box-shadow: var(--shadow);
-        transform: translateY(-1px);
-    }
-    
-    button:focus {
-        outline: 2px solid var(--primary-light);
-        outline-offset: 2px;
-    }
-    
-    button:active {
-        transform: translateY(0);
-        box-shadow: var(--shadow-sm);
-    }
-    
-    button#repairBtn {
-        background-color: var(--warning);
-    }
-    
-    button#repairBtn:hover {
-        background-color: #e67e22;
-    }
-    
-    button#backupBtn {
-        background-color: var(--secondary);
-    }
-    
-    button#backupBtn:hover {
-        background-color: #7950f2;
-    }
-    
-    button:disabled {
-        background-color: var(--gray-400);
-        cursor: not-allowed;
-        transform: none;
-    }
+        .maintenance-page .system-tool-card__title {
+            font-size: clamp(1rem, 2vw, 1.1rem);
+        }
 
-    .select-all {
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        background: var(--gray-100);
-        border-radius: var(--radius);
-        display: flex;
-        align-items: center;
-    }
-    
-    .select-all label {
-        display: flex;
-        align-items: center;
-        font-weight: 500;
-        color: var(--gray-700);
-        cursor: pointer;
-    }
-    
-    .select-all input[type="checkbox"] {
-        margin-right: 0.5rem;
-        width: 1rem;
-        height: 1rem;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin-bottom: 1.25rem;
-        border-radius: var(--radius);
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-    }
-    
-    table thead {
-        background-color: var(--gray-100);
-    }
-    
-    table th {
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        text-align: left;
-        color: var(--gray-700);
-        border-bottom: 2px solid var(--gray-200);
-        white-space: nowrap;
-    }
-    
-    table td {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--gray-200);
-        color: var(--gray-600);
-    }
-    
-    table tr:last-child td {
-        border-bottom: none;
-    }
-    
-    table tr:nth-child(even) {
-        background-color: var(--gray-50);
-    }
-    
-    table tr:hover {
-        background-color: var(--gray-100);
-    }
-    
-    .progress-bar {
-        height: 0.5rem;
-        background-color: var(--gray-200);
-        border-radius: 9999px;
-        margin: 1rem 0;
-        overflow: hidden;
-    }
-    
-    .progress {
-        height: 100%;
-        background: linear-gradient(90deg, var(--success), #34d399);
-        border-radius: 9999px;
-        transition: width 0.3s ease;
-        width: 0%;
-    }
-    
-    .action-result {
-        margin: 1rem 0;
-        padding: 1rem;
-        border-radius: var(--radius);
-        font-size: 0.875rem;
-        display: none;
-        animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .result-success {
-        background-color: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-    }
-    
-    .result-error {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-    
-    input[type="checkbox"] {
-        appearance: none;
-        -webkit-appearance: none;
-        width: 1.125rem;
-        height: 1.125rem;
-        border: 1.5px solid var(--gray-300);
-        border-radius: 0.25rem;
-        margin-right: 0.5rem;
-        position: relative;
-        cursor: pointer;
-        transition: all 0.15s ease-in-out;
-        vertical-align: middle;
-    }
-    
-    input[type="checkbox"]:checked {
-        background-color: var(--primary);
-        border-color: var(--primary);
-    }
-    
-    input[type="checkbox"]:checked::after {
-        content: '✓';
-        position: absolute;
-        color: white;
-        font-size: 0.75rem;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        font-weight: bold;
-    }
-    
-    input[type="checkbox"]:focus {
-        outline: 2px solid var(--primary-light);
-        outline-offset: 2px;
-    }
-    
-    #statistics {
-        padding-top: 0.5rem;
-    }
-    
-    #tableList {
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        margin-bottom: 1rem;
-        background-color: var(--white);
-    }
-    
-    .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    /* Status indicators */
-    .status-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 0.75rem;
-    }
-    
-    .status-indicator {
-        width: 0.75rem;
-        height: 0.75rem;
-        border-radius: 50%;
-        margin-right: 0.5rem;
-    }
-    
-    .status-active {
-        background-color: var(--success);
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-    }
-    
-    /* Responsive styles */
-    @media (max-width: 768px) {
-        .container {
-            padding: 1rem;
+        .maintenance-grid {
+            display: grid;
+            gap: clamp(1.5rem, 2vw, 2rem);
         }
-        
-        h1 {
-            font-size: 1.75rem;
+
+        @media (min-width: 1200px) {
+            .maintenance-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
-        
-        h2 {
-            font-size: 1.375rem;
-        }
-        
-        .card {
-            padding: 1.25rem;
-        }
-        
-        .actions {
+
+        .maintenance-panel {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(37, 99, 235, 0.16);
+            border-radius: var(--border-radius-xl);
+            box-shadow: 0 32px 60px rgba(2, 6, 23, 0.55);
+            padding: clamp(1.5rem, 3vw, 2.25rem);
+            display: flex;
             flex-direction: column;
-            align-items: stretch;
+            gap: clamp(1rem, 2vw, 1.5rem);
         }
-        
-        button {
+
+        .maintenance-panel__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--spacing-md);
+        }
+
+        .maintenance-panel__title {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .maintenance-panel__title h2 {
+            margin: 0;
+            font-size: clamp(1.1rem, 2vw, 1.25rem);
+            font-weight: 600;
+        }
+
+        .maintenance-panel__description {
+            color: rgba(148, 163, 184, 0.85);
+            font-size: 0.9rem;
+        }
+
+        .maintenance-panel__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .maintenance-panel__actions .btn {
+            min-width: 160px;
+        }
+
+        .maintenance-panel__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(0.75rem, 1.5vw, 1.25rem);
+        }
+
+        .maintenance-panel__meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--border-radius-md);
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(37, 99, 235, 0.15);
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        .maintenance-panel__meta-item i {
+            font-size: 1rem;
+            color: rgba(96, 165, 250, 0.9);
+        }
+
+        .maintenance-table {
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+        }
+
+        .maintenance-table table {
+            margin-bottom: 0;
+        }
+
+        .maintenance-empty {
+            color: rgba(148, 163, 184, 0.8);
+        }
+
+        .maintenance-progress {
+            height: 0.5rem;
+            background: rgba(37, 99, 235, 0.18);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .maintenance-progress__bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.85), rgba(59, 130, 246, 0.95));
+            transition: width 0.3s ease;
+        }
+
+        .maintenance-result {
+            display: none;
+            border-radius: var(--border-radius-lg);
+            padding: 0.85rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .maintenance-result--success {
+            background: rgba(22, 163, 74, 0.18);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: rgba(187, 247, 208, 0.95);
+        }
+
+        .maintenance-result--error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            color: rgba(254, 226, 226, 0.95);
+        }
+
+        .maintenance-stat-summaries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .maintenance-stat-summaries__item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-md);
+            background: rgba(37, 99, 235, 0.12);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        .maintenance-stat-summaries__label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(148, 163, 184, 0.85);
+        }
+
+        .maintenance-stat-summaries__value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: rgba(226, 232, 240, 0.96);
+        }
+
+        .maintenance-stat-heading {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(148, 163, 184, 0.8);
+        }
+
+        .maintenance-stat-meta {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .maintenance-stat-meta__label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(148, 163, 184, 0.75);
+            margin-bottom: 0.25rem;
+        }
+
+        .maintenance-stat-meta__value {
+            font-weight: 500;
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        .maintenance-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 0.85rem;
+            border-radius: var(--border-radius-md);
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(37, 99, 235, 0.16);
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        .maintenance-checkbox input[type="checkbox"] {
+            width: 1.05rem;
+            height: 1.05rem;
+            border-radius: 6px;
+            background: transparent;
+            border: 1.5px solid rgba(96, 165, 250, 0.45);
+        }
+
+        .maintenance-checkbox input[type="checkbox"]:checked {
+            background: rgba(37, 99, 235, 0.85);
+            border-color: rgba(37, 99, 235, 0.85);
+        }
+
+        .maintenance-checkbox input[type="checkbox"]:checked::after {
+            content: '\2713';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.65rem;
+        }
+
+        .maintenance-table-selector {
+            display: grid;
+            gap: 0.75rem;
+            max-height: 320px;
+            overflow: auto;
+            padding-right: 0.5rem;
+        }
+
+        .maintenance-table-selector::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .maintenance-table-selector::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.3);
+            border-radius: 999px;
+        }
+
+        .maintenance-warning {
+            background: rgba(244, 114, 182, 0.08);
+            border: 1px dashed rgba(248, 113, 113, 0.35);
+            border-radius: var(--border-radius-lg);
+            padding: clamp(1rem, 1.5vw, 1.25rem);
+            color: rgba(254, 226, 226, 0.92);
+        }
+
+        .maintenance-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.82);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            z-index: 1050;
+        }
+
+        .maintenance-modal__dialog {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: var(--border-radius-xl);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            box-shadow: 0 28px 60px rgba(2, 6, 23, 0.65);
+            max-width: 520px;
             width: 100%;
-            margin-right: 0;
+            padding: clamp(1.5rem, 2vw, 2rem);
+            display: grid;
+            gap: 1.25rem;
         }
-    }
-</style>
+
+        .maintenance-modal__title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: rgba(252, 165, 165, 0.92);
+        }
+
+        .maintenance-modal__actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        .maintenance-status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            background: rgba(22, 163, 74, 0.18);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: rgba(187, 247, 208, 0.95);
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .maintenance-meta-grid {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .maintenance-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .maintenance-meta-item i {
+            font-size: 1.2rem;
+            color: rgba(96, 165, 250, 0.85);
+        }
+
+        .maintenance-meta-item span {
+            color: rgba(148, 163, 184, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .maintenance-panel__actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .maintenance-panel__actions .btn {
+                width: 100%;
+            }
+
+            .maintenance-meta-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Database Maintenance Tool</h1>
-        
-        <div class="card">
-    <h2>System Status</h2>
-    <div class="status-item">
-        <span class="status-indicator status-active"></span>
-        <p><strong>Server Status:</strong> Online</p>
-    </div>
-    <p><strong>PHP Version:</strong> <?php echo phpversion(); ?></p>
-    <p><strong>Database Connection:</strong> <span class="success">Active</span></p>
-    <p><strong>Server Time (UK):</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
-    <p><strong>Last Maintenance:</strong> <span id="lastMaintenance">Loading...</span></p>
-    <p><strong>Current User:</strong> <?php echo htmlspecialchars($_SESSION['username'] ?? 'Unknown'); ?></p>
-</div>
-        <div class="card">
-    <h2>Database Reset</h2>
-    <div class="alert-danger" style="padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius);">
-        <strong>⚠️ Warning:</strong> This is a destructive operation that will empty all tables in the database except admin users.
-        This action cannot be undone. All data will be permanently deleted.
-    </div>
-    <p>Use this tool only when you need to completely reset your database to a clean state while preserving admin accounts.</p>
-    <button type="button" id="resetDbBtn" class="btn-danger" style="background-color: var(--danger);">
-        Reset Database
-    </button>
-    <div class="progress-bar">
-        <div class="progress" id="resetProgress"></div>
-    </div>
-    <div class="action-result" id="resetResult"></div>
-</div>
+<body class="tool-body" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
+    <div class="app-content-offset"></div>
 
-<!-- Confirmation Modal -->
-<div id="confirmModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7);">
-    <div style="background-color: white; margin: 15% auto; padding: 20px; border-radius: var(--radius); max-width: 500px; box-shadow: var(--shadow-lg);">
-        <h3 style="color: var(--danger);">⚠️ Confirm Database Reset</h3>
-        <p>This will permanently delete all data in your database except admin users. This action CANNOT be undone.</p>
-        <p style="font-weight: bold; margin: 1rem 0;">Type "RESET" to confirm:</p>
-        <input type="text" id="confirmText" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius);">
-        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-            <button id="cancelReset" style="background-color: var(--gray-500);">Cancel</button>
-            <button id="confirmReset" style="background-color: var(--danger);">Reset Database</button>
-        </div>
-    </div>
-</div>
-        <div class="card">
-            <h2>Table Management</h2>
-            <div class="select-all">
-                <label><input type="checkbox" id="selectAllTables"> Select/Deselect All Tables</label>
-            </div>
-            <form id="tablesForm">
-                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                <div id="tableList">
-                    <p>Loading tables...</p>
+    <main class="tool-page container-xl py-4 maintenance-page">
+        <header class="tool-header mb-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <h1 class="h3 mb-2">Maintenance Console</h1>
+                    <p class="text-muted mb-0">Optimise, repair, and safeguard the data platform powering the defect tracker.</p>
                 </div>
-                <div class="actions">
-    <button type="button" id="optimizeBtn">
-        Optimize Selected Tables
-    </button>
-    <button type="button" id="repairBtn">
-        Repair Selected Tables
-    </button>
-</div>
+                <div class="d-flex flex-column align-items-start text-muted small gap-1">
+                    <span><i class='bx bx-user-voice me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><i class='bx bx-time-five me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+                </div>
+            </div>
+        </header>
 
-                <div class="progress-bar">
-                    <div class="progress" id="tableProgress"></div>
+        <section class="system-tools-grid">
+            <?php foreach ($heroMetrics as $metric): ?>
+                <article class="system-tool-card">
+                    <div class="system-tool-card__icon"><i class='bx <?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i></div>
+                    <div class="system-tool-card__body">
+                        <span class="system-tool-card__tag system-tool-card__tag--database"><?php echo htmlspecialchars($metric['tag'] ?? 'Metric', ENT_QUOTES, 'UTF-8'); ?></span>
+                        <h2 class="system-tool-card__title mb-1"><?php echo htmlspecialchars($metric['title'], ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <p class="system-tool-card__stat mb-0"<?php echo !empty($metric['stat_key']) ? ' data-maintenance-stat="' . htmlspecialchars($metric['stat_key'], ENT_QUOTES, 'UTF-8') . '"' : ''; ?>><?php echo htmlspecialchars($metric['value'], ENT_QUOTES, 'UTF-8'); ?></p>
+                        <p class="system-tool-card__description mb-0"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </section>
+
+        <section class="maintenance-grid">
+            <article class="maintenance-panel">
+                <div class="maintenance-panel__header">
+                    <div class="maintenance-panel__title">
+                        <h2><i class='bx bx-health me-2'></i>System Status</h2>
+                        <p class="maintenance-panel__description">Live environment telemetry and the latest maintenance timeline.</p>
+                    </div>
+                    <span class="maintenance-status-chip"><i class='bx bx-pulse'></i>Online</span>
                 </div>
-                <div class="action-result" id="tableActionResult"></div>
-            </form>
-        </div>
-        
-        <div class="card">
-            <h2>Database Backup</h2>
-            <p>Create a full backup of the database. This process may take a few minutes for large databases.</p>
-            <button type="button" id="backupBtn">
-    Create Database Backup
-</button>
-            <div class="progress-bar">
-                <div class="progress" id="backupProgress"></div>
+                <div class="maintenance-panel__meta">
+                    <div class="maintenance-panel__meta-item"><i class='bx bx-chip'></i><span>PHP <?php echo htmlspecialchars($phpVersion, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                    <div class="maintenance-panel__meta-item"><i class='bx bx-server'></i><span><?php echo htmlspecialchars($serverSoftware, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                    <div class="maintenance-panel__meta-item"><i class='bx bx-calendar-star'></i><span data-maintenance-last><?php echo htmlspecialchars($lastMaintenanceLabel, ENT_QUOTES, 'UTF-8'); ?></span></div>
+                </div>
+                <div class="maintenance-table" id="systemStatusSummary">
+                    <?php echo $maintenanceSummaryMarkup; ?>
+                </div>
+            </article>
+
+            <article class="maintenance-panel">
+                <div class="maintenance-panel__header">
+                    <div class="maintenance-panel__title">
+                        <h2><i class='bx bx-reset me-2'></i>Database Reset</h2>
+                        <p class="maintenance-panel__description">Reset all tables back to a clean state while preserving administrative accounts.</p>
+                    </div>
+                </div>
+                <div class="maintenance-warning">
+                    <strong class="d-block mb-2"><i class='bx bx-error-circle me-2'></i>Destructive operation</strong>
+                    <p class="mb-0">This permanently deletes all data except administrator accounts. Confirm with the ops lead before continuing.</p>
+                </div>
+                <div class="maintenance-panel__actions">
+                    <button type="button" id="resetDbBtn" class="btn btn-danger"><i class='bx bx-bomb'></i> Reset Database</button>
+                </div>
+                <div class="maintenance-progress"><div class="maintenance-progress__bar" id="resetProgress"></div></div>
+                <div class="maintenance-result" id="resetResult"></div>
+            </article>
+
+            <article class="maintenance-panel">
+                <div class="maintenance-panel__header">
+                    <div class="maintenance-panel__title">
+                        <h2><i class='bx bx-table me-2'></i>Table Management</h2>
+                        <p class="maintenance-panel__description">Optimise or repair individual tables to reclaim space and resolve storage anomalies.</p>
+                    </div>
+                </div>
+                <div class="maintenance-panel__meta">
+                    <div class="maintenance-panel__meta-item"><i class='bx bx-list-check'></i><span>Select the tables to target below.</span></div>
+                </div>
+                <form id="tablesForm">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <div class="maintenance-checkbox">
+                        <input type="checkbox" id="selectAllTables">
+                        <label class="mb-0" for="selectAllTables">Select all tables</label>
+                    </div>
+                    <div id="tableList" class="maintenance-table-selector">
+                        <p class="maintenance-empty mb-0">Loading tables...</p>
+                    </div>
+                    <div class="maintenance-panel__actions">
+                        <button type="button" id="optimizeBtn" class="btn btn-primary"><i class='bx bx-line-chart'></i> Optimise</button>
+                        <button type="button" id="repairBtn" class="btn btn-warning"><i class='bx bx-wrench'></i> Repair</button>
+                    </div>
+                    <div class="maintenance-progress"><div class="maintenance-progress__bar" id="tableProgress"></div></div>
+                    <div class="maintenance-result" id="tableActionResult"></div>
+                </form>
+            </article>
+
+            <article class="maintenance-panel">
+                <div class="maintenance-panel__header">
+                    <div class="maintenance-panel__title">
+                        <h2><i class='bx bx-cloud-upload me-2'></i>Database Backup</h2>
+                        <p class="maintenance-panel__description">Capture a full SQL dump for off-site storage and disaster recovery drills.</p>
+                    </div>
+                </div>
+                <div class="maintenance-panel__actions">
+                    <button type="button" id="backupBtn" class="btn btn-info text-dark"><i class='bx bx-save'></i> Create Backup</button>
+                </div>
+                <div class="maintenance-progress"><div class="maintenance-progress__bar" id="backupProgress"></div></div>
+                <div class="maintenance-result" id="backupResult"></div>
+                <div id="backupsList" class="maintenance-table">
+                    <?php echo $maintenanceBackupsMarkup; ?>
+                </div>
+            </article>
+
+            <article class="maintenance-panel">
+                <div class="maintenance-panel__header">
+                    <div class="maintenance-panel__title">
+                        <h2><i class='bx bx-bar-chart-alt-2 me-2'></i>System Statistics</h2>
+                        <p class="maintenance-panel__description">Review infrastructure metrics and historical maintenance operations.</p>
+                    </div>
+                    <div class="maintenance-panel__actions">
+                        <button type="button" id="statsBtn" class="btn btn-outline-light btn-sm"><i class='bx bx-refresh'></i> Refresh</button>
+                    </div>
+                </div>
+                <div id="statistics" class="maintenance-table">
+                    <?php echo $maintenanceDetailMarkup; ?>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <section class="maintenance-modal" id="confirmModal" aria-hidden="true" role="dialog">
+        <div class="maintenance-modal__dialog">
+            <div>
+                <h3 class="maintenance-modal__title"><i class='bx bx-error me-1'></i>Confirm Database Reset</h3>
+                <p class="text-muted">This will permanently delete application data while preserving administrator accounts. Ensure a backup exists before continuing.</p>
             </div>
-            <div class="action-result" id="backupResult"></div>
-            <div id="backupsList">
-                <h3>Recent Backups</h3>
-                <p>Loading backups...</p>
+            <div>
+                <label for="confirmText" class="maintenance-stat-meta__label">Type "RESET" to continue</label>
+                <input type="text" id="confirmText" class="form-control" placeholder="RESET">
+            </div>
+            <div class="maintenance-modal__actions">
+                <button type="button" id="cancelReset" class="btn btn-outline-light"><i class='bx bx-x-circle'></i> Cancel</button>
+                <button type="button" id="confirmReset" class="btn btn-danger" disabled><i class='bx bx-bomb'></i> Reset Database</button>
             </div>
         </div>
-        
-        <div class="card">
-            <h2>System Statistics</h2>
-            <button type="button" id="statsBtn">
-    Refresh Statistics
-</button>
-            <div id="statistics">
-                <p>Loading statistics...</p>
-            </div>
-        </div>
-    </div>
-    
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // JavaScript for database maintenance operations
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize
             fetchTables();
             fetchStats();
-			fetchBackups();
+		fetchBackups();
             setupEventListeners();
+
+            const numberFormatter = new Intl.NumberFormat('en-GB');
+            const sizeFormatter = new Intl.NumberFormat('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            function escapeHtml(value) {
+                if (value === null || value === undefined) {
+                    return '';
+                }
+                return String(value).replace(/[&<>"']/g, function(char) {
+                    const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                    return entities[char] || char;
+                });
+            }
+
+            function formatNumber(value) {
+                const numeric = Number(value);
+                if (!Number.isFinite(numeric)) {
+                    return '—';
+                }
+                return numberFormatter.format(numeric);
+            }
+
+            function formatSize(value) {
+                const numeric = Number(value);
+                if (!Number.isFinite(numeric)) {
+                    return '—';
+                }
+                return sizeFormatter.format(numeric);
+            }
+
+            function formatDateTime(value) {
+                if (!value) {
+                    return '—';
+                }
+                const date = value instanceof Date ? value : new Date(value);
+                if (Number.isNaN(date.getTime())) {
+                    return '—';
+                }
+                return dateTimeFormatter.format(date);
+            }
+
+            function formatActionLabel(action) {
+                if (!action) {
+                    return 'Unknown';
+                }
+                return String(action)
+                    .replace(/[_-]+/g, ' ')
+                    .replace(/\b\w/g, function(letter) {
+                        return letter.toUpperCase();
+                    });
+            }
+
+            function calculateFootprint(databaseSize) {
+                if (!Array.isArray(databaseSize)) {
+                    return 0;
+                }
+                return databaseSize.reduce(function(total, row) {
+                    const value = row && (row['Size (MB)'] ?? row.size ?? 0);
+                    const numeric = Number(value);
+                    return total + (Number.isFinite(numeric) ? numeric : 0);
+                }, 0);
+            }
+
+            function buildSummaryMarkup(stats, footprintLabel) {
+                const totalUsers = formatNumber(stats.user_count);
+                const totalTables = formatNumber(stats.table_count);
+                let html = '<div class="maintenance-stat-summaries">';
+                html += '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Total Users</span><span class="maintenance-stat-summaries__value">' + totalUsers + '</span></div>';
+                html += '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Total Tables</span><span class="maintenance-stat-summaries__value">' + totalTables + '</span></div>';
+                html += '<div class="maintenance-stat-summaries__item"><span class="maintenance-stat-summaries__label">Footprint</span><span class="maintenance-stat-summaries__value" data-maintenance-footprint>' + escapeHtml(footprintLabel) + '</span></div>';
+                html += '</div>';
+
+                if (Array.isArray(stats.recent_maintenance) && stats.recent_maintenance.length > 0) {
+                    html += '<ul class="list-unstyled mt-3 mb-0 text-muted small maintenance-summary-timeline">';
+                    stats.recent_maintenance.slice(0, 3).forEach(function(entry) {
+                        const label = formatActionLabel(entry.action);
+                        const time = formatDateTime(entry.execution_time);
+                        html += '<li class="d-flex justify-content-between gap-3"><span>' + escapeHtml(label) + '</span><span class="text-nowrap">' + escapeHtml(time) + '</span></li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p class="maintenance-empty mb-0 mt-3">No maintenance operations logged yet.</p>';
+                }
+
+                html += '<div class="maintenance-stat-meta mt-3">';
+                html += '<div><span class="maintenance-stat-meta__label">PHP Version</span><span class="maintenance-stat-meta__value">' + escapeHtml(stats.php_version ?? 'Unknown') + '</span></div>';
+                html += '<div><span class="maintenance-stat-meta__label">Server Software</span><span class="maintenance-stat-meta__value">' + escapeHtml(stats.server_software ?? 'Unknown') + '</span></div>';
+                html += '</div>';
+
+                return html;
+            }
+
+            function buildDetailMarkup(stats, footprintLabel) {
+                let html = buildSummaryMarkup(stats, footprintLabel);
+
+                if (Array.isArray(stats.database_size) && stats.database_size.length > 0) {
+                    html += '<div class="table-responsive mt-3"><table class="table table-dark table-hover table-sm align-middle mb-0">';
+                    html += '<thead><tr><th scope="col">Database</th><th scope="col" class="text-end">Size (MB)</th></tr></thead><tbody>';
+                    stats.database_size.forEach(function(row) {
+                        html += '<tr><td class="text-break">' + escapeHtml(row.Database ?? 'N/A') + '</td><td class="text-end">' + escapeHtml(row['Size (MB)'] ?? '0') + '</td></tr>';
+                    });
+                    html += '</tbody></table></div>';
+                } else {
+                    html += '<p class="maintenance-empty mb-0 mt-3">Database size data unavailable.</p>';
+                }
+
+                if (Array.isArray(stats.recent_maintenance) && stats.recent_maintenance.length > 0) {
+                    html += '<h3 class="maintenance-stat-heading mt-4">Recent Maintenance Operations</h3>';
+                    html += '<div class="table-responsive"><table class="table table-dark table-hover table-sm align-middle mb-0">';
+                    html += '<thead><tr><th scope="col">Action</th><th scope="col" class="text-end">Time</th><th scope="col" class="text-end">Tables</th></tr></thead><tbody>';
+                    stats.recent_maintenance.forEach(function(entry) {
+                        const label = formatActionLabel(entry.action);
+                        const time = formatDateTime(entry.execution_time);
+                        const tables = entry.tables_affected ? escapeHtml(entry.tables_affected) : 'N/A';
+                        html += '<tr><td>' + escapeHtml(label) + '</td><td class="text-end">' + escapeHtml(time) + '</td><td class="text-end">' + tables + '</td></tr>';
+                    });
+                    html += '</tbody></table></div>';
+                } else {
+                    html += '<p class="maintenance-empty mb-0 mt-3">No maintenance operations logged yet.</p>';
+                }
+
+                return html;
+            }
+
+            function updateHeroMetric(statKey, value) {
+                if (!statKey) {
+                    return;
+                }
+                const element = document.querySelector('[data-maintenance-stat="' + statKey + '"]');
+                if (element) {
+                    element.textContent = value;
+                }
+            }
             
             function setupEventListeners() {
                 // Select/deselect all tables
@@ -1245,15 +1590,15 @@ switch ($_POST['action']) {
                                     renderTableList(response.tables);
                                 } else {
                                     document.getElementById('tableList').innerHTML = 
-                                        '<p class="error">Error loading tables: ' + response.message + '</p>';
+                                        '<p class="maintenance-empty mb-0">Error loading tables: ' + escapeHtml(response.message ?? 'Unknown error') + '</p>';
                                 }
                             } catch (e) {
                                 document.getElementById('tableList').innerHTML = 
-                                    '<p class="error">Error parsing response from server.</p>';
+                                    '<p class="maintenance-empty mb-0">Error parsing response from server.</p>';
                             }
                         } else {
                             document.getElementById('tableList').innerHTML = 
-                                '<p class="error">Error: Server returned status ' + this.status + '</p>';
+                                '<p class="maintenance-empty mb-0">Error: Server returned status ' + escapeHtml(this.status) + '</p>';
                         }
                     }
                 };
@@ -1261,23 +1606,26 @@ switch ($_POST['action']) {
             }
             
             function renderTableList(tables) {
-                if (!tables || tables.length === 0) {
-                    document.getElementById('tableList').innerHTML = '<p>No tables found.</p>';
+                const container = document.getElementById('tableList');
+                if (!container) {
                     return;
                 }
-                
-                let html = '<table>';
-                html += '<thead><tr><th>Select</th><th>Table Name</th></tr></thead><tbody>';
-                
-                for (let i = 0; i < tables.length; i++) {
-                    html += '<tr>';
-                    html += '<td><input type="checkbox" name="tables[]" value="' + tables[i] + '"></td>';
-                    html += '<td>' + tables[i] + '</td>';
-                    html += '</tr>';
+
+                if (!tables || tables.length === 0) {
+                    container.innerHTML = '<p class="maintenance-empty mb-0">No tables found.</p>';
+                    return;
                 }
-                
-                html += '</tbody></table>';
-                document.getElementById('tableList').innerHTML = html;
+
+                let html = '';
+                for (let i = 0; i < tables.length; i++) {
+                    const tableName = escapeHtml(String(tables[i]));
+                    html += '<label class="maintenance-checkbox">';
+                    html += '<input type="checkbox" name="tables[]" value="' + tableName + '">';
+                    html += '<span>' + tableName + '</span>';
+                    html += '</label>';
+                }
+
+                container.innerHTML = html;
             }
             
             function optimizeTables(tables) {
@@ -1402,52 +1750,63 @@ switch ($_POST['action']) {
             }
             
             function fetchStats() {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'maintenance.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-            try {
-                const response = JSON.parse(this.responseText);
-                if (response.status === 'success') {
-                    renderStatistics(response.data);
-                    
-                    // Update last maintenance info if available
-                    if (response.data.recent_maintenance && response.data.recent_maintenance.length > 0) {
-                        const lastAction = response.data.recent_maintenance[0];
-                        document.getElementById('lastMaintenance').textContent = 
-                            lastAction.action + ' at ' + lastAction.execution_time;
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'maintenance.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (this.readyState === 4) {
+                        const statisticsContainer = document.getElementById('statistics');
+                        const summaryContainer = document.getElementById('systemStatusSummary');
+
+                        if (this.status === 200) {
+                            try {
+                                const response = JSON.parse(this.responseText);
+                                if (response.status === 'success') {
+                                    renderStatistics(response.data);
+                                } else {
+                                    const message = '<p class="maintenance-empty mb-0">Error loading statistics: ' + escapeHtml(response.message ?? 'Unknown error') + '</p>';
+                                    if (statisticsContainer) statisticsContainer.innerHTML = message;
+                                    if (summaryContainer) summaryContainer.innerHTML = message;
+                                }
+                            } catch (e) {
+                                const message = '<p class="maintenance-empty mb-0">Error parsing statistics data.</p>';
+                                if (statisticsContainer) statisticsContainer.innerHTML = message;
+                                if (summaryContainer) summaryContainer.innerHTML = message;
+                            }
+                        } else {
+                            const message = '<p class="maintenance-empty mb-0">Error loading statistics (status ' + escapeHtml(this.status) + ').</p>';
+                            if (statisticsContainer) statisticsContainer.innerHTML = message;
+                            if (summaryContainer) summaryContainer.innerHTML = message;
+                        }
                     }
-                } else {
-                    document.getElementById('statistics').innerHTML = 
-                        '<p class="error">Error loading statistics: ' + response.message + '</p>';
-                }
-            } catch (e) {
-                document.getElementById('statistics').innerHTML = 
-                    '<p class="error">Error parsing statistics data.</p>';
+                };
+                xhr.send('action=get_stats&csrf_token=' + document.querySelector('input[name="csrf_token"]').value);
             }
-        }
-    };
-    xhr.send('action=get_stats&csrf_token=' + document.querySelector('input[name="csrf_token"]').value);
-}
 
 function fetchBackups() {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'maintenance.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-            try {
-                const response = JSON.parse(this.responseText);
-                if (response.status === 'success') {
-                    renderBackupsList(response.backups);
-                } else {
-                    document.getElementById('backupsList').innerHTML = 
-                        '<h3>Recent Backups</h3><p class="error">Error loading backups</p>';
+        if (this.readyState === 4) {
+            const container = document.getElementById('backupsList');
+            if (!container) {
+                return;
+            }
+
+            if (this.status === 200) {
+                try {
+                    const response = JSON.parse(this.responseText);
+                    if (response.status === 'success') {
+                        renderBackupsList(response.backups);
+                    } else {
+                        container.innerHTML = '<p class="maintenance-empty mb-0">Error loading backups.</p>';
+                    }
+                } catch (e) {
+                    container.innerHTML = '<p class="maintenance-empty mb-0">Error parsing backup data.</p>';
                 }
-            } catch (e) {
-                document.getElementById('backupsList').innerHTML = 
-                    '<h3>Recent Backups</h3><p class="error">Error parsing backup data</p>';
+            } else {
+                container.innerHTML = '<p class="maintenance-empty mb-0">Error loading backups (status ' + escapeHtml(this.status) + ').</p>';
             }
         }
     };
@@ -1455,25 +1814,30 @@ function fetchBackups() {
 }
 
 function renderBackupsList(backups) {
-    let html = '<h3>Recent Backups</h3>';
-    
-    if (!backups || backups.length === 0) {
-        html += '<p>No backups found</p>';
-    } else {
-        html += '<table><thead><tr><th>Filename</th><th>Size</th><th>Date</th></tr></thead><tbody>';
-        for (let i = 0; i < backups.length; i++) {
-            const backup = backups[i];
-            const sizeInMB = (backup.size / (1024 * 1024)).toFixed(2);
-            html += '<tr>';
-            html += '<td>' + backup.filename + '</td>';
-            html += '<td>' + sizeInMB + ' MB</td>';
-            html += '<td>' + backup.date + '</td>';
-            html += '</tr>';
-        }
-        html += '</tbody></table>';
+    const container = document.getElementById('backupsList');
+    if (!container) {
+        return;
     }
-    
-    document.getElementById('backupsList').innerHTML = html;
+
+    if (!Array.isArray(backups) || backups.length === 0) {
+        container.innerHTML = '<p class="maintenance-empty mb-0">No backups found.</p>';
+        return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-dark table-hover table-sm align-middle mb-0">';
+    html += '<thead><tr><th scope="col">Filename</th><th scope="col" class="text-end">Size</th><th scope="col" class="text-end">Created</th></tr></thead><tbody>';
+    backups.forEach(function(backup) {
+        const sizeInMb = backup && backup.size ? backup.size / (1024 * 1024) : 0;
+        const sizeLabel = formatSize(sizeInMb);
+        html += '<tr>';
+        html += '<td class="text-break">' + escapeHtml(backup.filename ?? 'Unknown') + '</td>';
+        html += '<td class="text-end">' + (sizeLabel === '—' ? '—' : sizeLabel + ' MB') + '</td>';
+        html += '<td class="text-end">' + escapeHtml(backup.date ?? '') + '</td>';
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    container.innerHTML = html;
 }
 
             function renderStatistics(stats) {
