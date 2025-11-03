@@ -529,8 +529,11 @@ class Navbar {
                     ['label' => 'System', 'id' => 'systemDropdownAdmin', 'dropdown' => [
                         ['label' => 'Admin Console', 'url' => '/admin.php'],
                         ['label' => 'System Settings', 'url' => '/admin/system_settings.php'],
+                        ['label' => 'Site Presentation', 'url' => '/Site-presentation/index.php'],
                         ['label' => 'Maintenance Planner', 'url' => '/maintenance/maintenance.php'],
                         ['label' => 'Backup Manager', 'url' => '/backup_manager.php'],
+                        ['label' => '---divider---'],
+                        ['type' => 'header', 'label' => 'Diagnostics'],
                         ['label' => 'System Health', 'url' => '/system-tools/system_health.php'],
                         ['label' => 'Database Check', 'url' => '/system-tools/check_database.php'],
                         ['label' => 'Database Optimizer', 'url' => '/system-tools/database_optimizer.php'],
@@ -540,6 +543,8 @@ class Navbar {
                         ['label' => 'System Analysis Report', 'url' => '/system_analysis_report.php'],
                         ['label' => 'User Logs', 'url' => '/user_logs.php'],
                     ]],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
                 ];
                 break;
 
