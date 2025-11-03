@@ -593,7 +593,7 @@ body.tool-body {
 }
 
 .app-content-offset {
-  height: clamp(48px, 10vw, 72px);
+  height: clamp(72px, 11vw, 108px);
 }
 
 .contractor-page {

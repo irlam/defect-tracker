@@ -1,7 +1,8 @@
 <?php
 
 class LogoManager {
-    private $uploadDir = 'uploads/logos/'; // Directory to store logos
+    private $uploadDir; // Absolute filesystem directory to store logos
+    private $publicPathBase = '/uploads/logos/'; // Public path prefix for logos
     private $maxFileSize = 5 * 1024 * 1024; // 5MB
     private $allowedTypes = ['image/jpeg', 'image/png', 'image/gif']; // Allowed file types
     private $permissions = ['admin', 'editor']; // Roles allowed to upload/delete logos
@@ -11,8 +12,15 @@ class LogoManager {
         global $db; // Access the global database connection
         $this->db = $db;
 
+        $rootPath = realpath(__DIR__ . '/..');
+        if ($rootPath === false) {
+            $rootPath = dirname(__DIR__);
+        }
+
+        $this->uploadDir = rtrim($rootPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'logos' . DIRECTORY_SEPARATOR;
+
         // Ensure the upload directory exists
-        if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0777, true)) {
+        if (!is_dir($this->uploadDir) && !mkdir($this->uploadDir, 0775, true)) {
             throw new Exception('Failed to create upload directory.');
         }
     }
@@ -30,7 +38,7 @@ class LogoManager {
         $this->validateFile($file);
 
         // Generate a unique file name
-        $fileName = uniqid() . '_' . basename($file['name']);
+        $fileName = $this->generateFileName($file['name']);
         $targetPath = $this->uploadDir . $fileName;
 
         // Move the uploaded file to the target directory
@@ -39,9 +47,10 @@ class LogoManager {
         }
 
         // Save path to database
-        $this->saveLogoPath($targetPath, $type, $contractorId);
+        $storedPath = ltrim($this->publicPathBase, '/') . $fileName;
+        $this->saveLogoPath($storedPath, $type, $contractorId);
 
-        return $targetPath;
+        return $this->normaliseLogoPath($storedPath);
     }
 
     private function validateFile($file) {
@@ -56,6 +65,19 @@ class LogoManager {
         if (!in_array($file['type'], $this->allowedTypes)) {
             throw new Exception('Invalid file type. Allowed types are JPG, PNG, and GIF.');
         }
+    }
+
+    private function generateFileName($originalName) {
+        $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        $sanitisedBase = preg_replace('/[^a-z0-9_\-]+/i', '_', $baseName);
+        if ($sanitisedBase === '' || $sanitisedBase === null) {
+            $sanitisedBase = 'logo';
+        }
+
+        $uniquePrefix = str_replace('.', '', uniqid($sanitisedBase . '_', true));
+        return $extension ? $uniquePrefix . '.' . $extension : $uniquePrefix;
     }
 
     private function saveLogoPath($filePath, $type, $contractorId = null) {
@@ -94,7 +116,7 @@ class LogoManager {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($result && $result['logo']) {
-            return $result['logo'];
+            return $this->normaliseLogoPath($result['logo']);
         }
 
         return null;
@@ -108,7 +130,7 @@ class LogoManager {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($result && $result['logo']) {
-            return $result['logo'];
+            return $this->normaliseLogoPath($result['logo']);
         }
 
         return null;
@@ -142,8 +164,9 @@ class LogoManager {
             }
 
             // Delete the actual file if it exists
-            if (isset($currentLogo) && file_exists($currentLogo)) {
-                unlink($currentLogo);
+            $filesystemPath = $this->resolveFilesystemPath($currentLogo ?? null);
+            if ($filesystemPath && file_exists($filesystemPath)) {
+                unlink($filesystemPath);
             }
 
             return true;
@@ -151,5 +174,56 @@ class LogoManager {
             error_log('Error deleting logo: ' . $e->getMessage());
             return false;
         }
+    }
+
+    private function normaliseLogoPath($path) {
+        if (empty($path)) {
+            return null;
+        }
+
+        $trimmedPath = trim($path);
+
+        if ($trimmedPath === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $trimmedPath)) {
+            return $trimmedPath;
+        }
+
+        $trimmedPath = ltrim($trimmedPath, '/');
+        $uploadPrefix = trim($this->publicPathBase, '/');
+
+        if (stripos($trimmedPath, $uploadPrefix) === 0) {
+            return '/' . $trimmedPath;
+        }
+
+        return rtrim($this->publicPathBase, '/') . '/' . $trimmedPath;
+    }
+
+    private function resolveFilesystemPath($path) {
+        if (empty($path)) {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            return null;
+        }
+
+        $trimmedPath = ltrim($path, '/');
+        $uploadPrefix = trim($this->publicPathBase, '/');
+
+        if (stripos($trimmedPath, $uploadPrefix) === 0) {
+            $trimmedPath = substr($trimmedPath, strlen($uploadPrefix));
+        }
+
+        $trimmedPath = ltrim($trimmedPath, '/');
+
+        if ($trimmedPath === '') {
+            return null;
+        }
+
+        $safeFilename = basename($trimmedPath);
+        return $this->uploadDir . $safeFilename;
     }
 }

@@ -119,8 +119,7 @@ class Navbar {
 
                     // If the contractor exists and has a logo filename specified...
                     if ($contractor && !empty($contractor['logo'])) {
-                        // ...construct the full path to the logo, escaping the filename for HTML safety.
-                        $this->userLogo = '/uploads/logos/' . htmlspecialchars($contractor['logo'], ENT_QUOTES, 'UTF-8');
+                        $this->userLogo = $this->buildLogoPath($contractor['logo']);
                     }
                 }
                 // Special handling for 'admin' user type to assign a default icon.
@@ -140,6 +139,30 @@ class Navbar {
              error_log("Navbar General Exception in setUserTypeAndLogo for user ID {$this->userId}: " . $e->getMessage());
              // Properties retain their initialized default values.
         }
+    }
+
+    private function buildLogoPath($path)
+    {
+        if (empty($path)) {
+            return '';
+        }
+
+        $trimmed = trim($path);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        if (preg_match('#^https?://#i', $trimmed)) {
+            return htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+        }
+
+        $trimmed = ltrim($trimmed, '/');
+
+        if (stripos($trimmed, 'uploads/logos/') === 0) {
+            return '/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+        }
+
+        return '/uploads/logos/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
     }
 
     /**
