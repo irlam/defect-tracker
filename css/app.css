@@ -608,6 +608,7 @@ body.tool-body {
   text-align: center;
   gap: var(--spacing-md);
   padding-right: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
   border-right: 1px solid rgba(148, 163, 184, 0.12);
   align-self: start;
 }
@@ -629,9 +630,11 @@ body.tool-body {
   flex-direction: column;
   gap: var(--spacing-md);
   padding-right: var(--spacing-lg);
+  padding-top: var(--spacing-md);
   max-width: 420px;
   width: 100%;
   justify-self: start;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .login-badge {
