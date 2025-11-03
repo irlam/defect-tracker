@@ -369,77 +369,8 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
         const contractorData = <?php echo $contractorOptionsJSON; ?>;
     </script>
 </head>
-<body class="tool-body" data-bs-theme="dark">
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-        <div class="container-xl">
-            <a class="navbar-brand fw-semibold" href="dashboard.php">
-                <i class='bx bx-line-chart me-2'></i>Site Operations Dashboard
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNavbar" aria-controls="dashboardNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="dashboardNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="dashboard.php"><i class='bx bx-doughnut-chart me-1'></i>Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="defects.php"><i class='bx bx-error me-1'></i>Defects</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reports.php"><i class='bx bx-bar-chart-alt-2 me-1'></i>Reports</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="my_tasks.php"><i class='bx bx-list-check me-1'></i>My Tasks</a>
-                    </li>
-                    <?php if (!empty($_SESSION['is_admin'])): ?>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminOpsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class='bx bx-dial me-1'></i>Admin Ops
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="adminOpsDropdown">
-                            <h6 class="dropdown-header text-uppercase text-muted small">Defect Operations</h6>
-                            <a class="dropdown-item" href="defects.php"><i class='bx bx-bug me-1'></i>Defect Control Room</a>
-                            <a class="dropdown-item" href="create_defect.php"><i class='bx bx-plus-circle me-1'></i>Create Defect</a>
-                            <a class="dropdown-item" href="assign_to_user.php"><i class='bx bx-transfer-alt me-1'></i>Assign Defects</a>
-                            <a class="dropdown-item" href="upload_completed_images.php"><i class='bx bx-upload me-1'></i>Completion Evidence</a>
-                            <div class="dropdown-divider"></div>
-                            <h6 class="dropdown-header text-uppercase text-muted small">Directory</h6>
-                            <a class="dropdown-item" href="user_management.php"><i class='bx bx-group me-1'></i>User Management</a>
-                            <a class="dropdown-item" href="add_user.php"><i class='bx bx-user-plus me-1'></i>Add User</a>
-                            <a class="dropdown-item" href="contractors.php"><i class='bx bx-hard-hat me-1'></i>Contractors</a>
-                            <div class="dropdown-divider"></div>
-                            <h6 class="dropdown-header text-uppercase text-muted small">System</h6>
-                            <a class="dropdown-item" href="admin.php"><i class='bx bx-command me-1'></i>Admin Console</a>
-                            <a class="dropdown-item" href="maintenance/maintenance.php"><i class='bx bx-wrench me-1'></i>Maintenance Planner</a>
-                            <a class="dropdown-item" href="backup_manager.php"><i class='bx bx-shield-quarter me-1'></i>Backup Manager</a>
-                            <a class="dropdown-item" href="system-tools/system_health.php"><i class='bx bx-pulse me-1'></i>System Health</a>
-                            <a class="dropdown-item" href="user_logs.php"><i class='bx bx-notepad me-1'></i>User Logs</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="help_index.php"><i class='bx bx-help-circle me-1'></i>Help Centre</a>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
-                    <li class="nav-item text-muted small d-none d-lg-flex align-items-center">
-                        <i class='bx bx-time-five me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="dashboardUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dashboardUserMenu">
-                            <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check'></i> My Tasks</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body class="tool-body has-app-navbar" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
 
     <main class="tool-page container-xl py-4">
         <?php if ($error_message): ?>

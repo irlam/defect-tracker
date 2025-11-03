@@ -146,12 +146,16 @@ $companyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLog
             border-radius: var(--border-radius-lg);
             min-height: 140px;
             border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 1rem;
+            overflow: hidden;
         }
 
         .logo-preview-frame img {
             max-height: 110px;
+            max-width: 100%;
             width: auto;
             object-fit: contain;
+            display: block;
         }
 
         .logo-card-title {
