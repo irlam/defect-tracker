@@ -468,18 +468,18 @@ class Navbar {
             case 'admin':
                 $items = [
                     ['label' => 'Dashboard', 'url' => '/dashboard.php'],
-                    ['label' => 'Defects', 'id' => 'defectsDropdownAdmin', 'dropdown' => [
+                    ['label' => 'Defect Ops', 'id' => 'defectsDropdownAdmin', 'dropdown' => [
                         ['label' => 'Defect Control Room', 'url' => '/defects.php'],
                         ['label' => 'Create Defect', 'url' => '/create_defect.php'],
                         ['label' => 'Assign Defects', 'url' => '/assign_to_user.php'],
                         ['label' => 'Upload Completion Evidence', 'url' => '/upload_completed_images.php'],
-                        ['label' => 'Visualise Defects', 'url' => '/visualize_defects.php'],
+                        ['label' => 'View Defect', 'url' => '/view_defect.php'],
                         ['label' => 'Legacy Register', 'url' => '/all_defects.php'],
+                        ['label' => 'Visualise Defects', 'url' => '/visualize_defects.php'],
                     ]],
                     ['label' => 'Projects', 'id' => 'projectsDropdownAdmin', 'dropdown' => [
                         ['label' => 'Projects Directory', 'url' => '/projects.php'],
-                        ['label' => 'Project Explorer', 'url' => '/project_details.php'],
-                        ['label' => 'Floor Plans', 'url' => '/floor_plans.php'],
+                        ['label' => 'Floor Plan Library', 'url' => '/floor_plans.php'],
                         ['label' => 'Floorplan Selector', 'url' => '/floorplan_selector.php'],
                         ['label' => 'Upload Floor Plan', 'url' => '/upload_floor_plan.php'],
                     ]],
@@ -487,11 +487,21 @@ class Navbar {
                         ['label' => 'User Management', 'url' => '/user_management.php'],
                         ['label' => 'Add User', 'url' => '/add_user.php'],
                         ['label' => 'Role Management', 'url' => '/role_management.php'],
-                        ['label' => 'Contractors', 'url' => '/contractors.php'],
+                        ['label' => 'Contractor Directory', 'url' => '/contractors.php'],
                         ['label' => 'Add Contractor', 'url' => '/add_contractor.php'],
                         ['label' => 'Contractor Analytics', 'url' => '/contractor_stats.php'],
+                        ['label' => 'View Contractor', 'url' => '/view_contractor.php'],
                     ]],
-                    ['label' => 'Reports', 'url' => '/reports.php'],
+                    ['label' => 'Assets', 'id' => 'assetsDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Brand Assets', 'url' => '/add_logo.php'],
+                        ['label' => 'Upload Floor Plan', 'url' => '/upload_floor_plan.php'],
+                        ['label' => 'Delete Floor Plan', 'url' => '/delete_floor_plan.php'],
+                    ]],
+                    ['label' => 'Reports', 'id' => 'reportsDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Reporting Hub', 'url' => '/reports.php'],
+                        ['label' => 'Data Exporter', 'url' => '/export.php'],
+                        ['label' => 'PDF Exports', 'url' => '/pdf_exports/export-pdf-defects-report-filtered.php'],
+                    ]],
                     ['label' => 'Communications', 'id' => 'commsDropdownAdmin', 'dropdown' => [
                         ['label' => 'Notification Centre', 'url' => '/notifications.php'],
                         ['label' => 'Broadcast Message', 'url' => '/push_notifications/index.php'],
@@ -499,13 +509,25 @@ class Navbar {
                     ['label' => 'System', 'id' => 'systemDropdownAdmin', 'dropdown' => [
                         ['label' => 'Admin Console', 'url' => '/admin.php'],
                         ['label' => 'System Settings', 'url' => '/admin/system_settings.php'],
-                        ['label' => 'Maintenance', 'url' => '/maintenance/maintenance.php'],
+                        ['label' => 'Maintenance Planner', 'url' => '/maintenance/maintenance.php'],
                         ['label' => 'Backup Manager', 'url' => '/backup_manager.php'],
                         ['label' => 'System Health', 'url' => '/system-tools/system_health.php'],
                         ['label' => 'Database Check', 'url' => '/system-tools/check_database.php'],
+                        ['label' => 'Database Optimizer', 'url' => '/system-tools/database_optimizer.php'],
+                        ['label' => 'GD Library Check', 'url' => '/system-tools/check_gd.php'],
+                        ['label' => 'ImageMagick Check', 'url' => '/system-tools/check_imagemagick.php'],
+                        ['label' => 'File Structure Map', 'url' => '/system-tools/show_file_structure.php'],
+                        ['label' => 'Functional Tests', 'url' => '/system-tools/functional_tests.php'],
+                        ['label' => 'System Analysis', 'url' => '/system-tools/system_analysis_report.php'],
+                        ['label' => 'Password Utility', 'url' => '/system-tools/hashed-password.php'],
+                        ['label' => 'Fix Pin Paths', 'url' => '/system-tools/fix_pin_paths.php'],
                         ['label' => 'User Logs', 'url' => '/user_logs.php'],
                     ]],
-                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Help', 'id' => 'helpDropdownAdmin', 'dropdown' => [
+                        ['label' => 'Help Centre', 'url' => '/help_index.php'],
+                        ['label' => 'User Roles', 'url' => '/system-tools/user_roles_explained.html'],
+                        ['label' => 'System Overview', 'url' => '/system-tools/system_health.php'],
+                    ]],
                     ['label' => 'Logout', 'url' => '/logout.php'],
                 ];
                 break;
