@@ -11,8 +11,15 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Authentication check
-if (!isset($_SESSION['username'])) {
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
     header("Location: login.php");
+    exit();
+}
+
+// Authorization check - only admin users can view user logs
+if ($_SESSION['user_type'] !== 'admin') {
+    error_log("Unauthorized access attempt to user_logs.php by user: " . $_SESSION['username'] . " (User Type: " . $_SESSION['user_type'] . ")");
+    header("Location: dashboard.php?error=unauthorized");
     exit();
 }
 
