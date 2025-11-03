@@ -3,8 +3,8 @@
   "short_name": "Defects",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#000000",
+  "background_color": "#0b1220",
+  "theme_color": "#2563eb",
   "description": "Track and manage defects efficiently.",
   "icons": [
     {
