@@ -21,25 +21,74 @@ require_once 'config/database.php';
 require_once 'includes/auth.php';
 require_once 'includes/navbar.php';
 
-// Check if role_id is set in session
-if (!isset($_SESSION['role_id'])) {
-    die('Error: role_id is not set in the session.');
+if (!isset($_SESSION['user_id'], $_SESSION['username'])) {
+    header('Location: login.php');
+    exit;
 }
 
-$currentUserRoleId = $_SESSION['role_id'];
-
-// Check if user has permission to upload (admin or manager)
-if ($currentUserRoleId != 1 && $currentUserRoleId != 2) {
-    die('Error: You do not have permission to access this page.');
-}
-
+$currentUserRoleId = $_SESSION['role_id'] ?? null;
+$currentUserType = $_SESSION['user_type'] ?? null;
 $success_message = '';
 $error_message = '';
 $projects = [];
+$floorPlans = [];
+$navbar = null;
+$isAuthorised = true;
+$roleMap = [
+    'admin' => 1,
+    'manager' => 2,
+    'contractor' => 3,
+    'inspector' => 4,
+    'viewer' => 5,
+];
 
 try {
     $database = new Database();
     $db = $database->getConnection();
+
+    if ($currentUserRoleId === null) {
+        $fetchedRoleId = null;
+
+        if (isset($_SESSION['user_id'])) {
+            $roleStmt = $db->prepare(
+                "
+                SELECT role_id
+                FROM user_roles
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                LIMIT 1
+                "
+            );
+            $roleStmt->execute([$_SESSION['user_id']]);
+            $fetchedRoleId = $roleStmt->fetchColumn();
+        }
+
+        if ($fetchedRoleId) {
+            $currentUserRoleId = (int) $fetchedRoleId;
+            $_SESSION['role_id'] = $currentUserRoleId;
+        } elseif ($currentUserType) {
+            $normalizedType = strtolower((string) $currentUserType);
+            if (isset($roleMap[$normalizedType])) {
+                $currentUserRoleId = (int) $roleMap[$normalizedType];
+                $_SESSION['role_id'] = $currentUserRoleId;
+            }
+        }
+    }
+
+    $hasPermission = false;
+    if ($currentUserRoleId !== null) {
+        $hasPermission = in_array((int) $currentUserRoleId, [1, 2], true);
+    }
+
+    if (!$hasPermission && $currentUserType) {
+        $normalizedType = strtolower((string) $currentUserType);
+        $hasPermission = in_array($normalizedType, ['admin', 'manager'], true);
+    }
+
+    if (!$hasPermission) {
+        $isAuthorised = false;
+        throw new RuntimeException('You do not have permission to access this page.');
+    }
 
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -75,9 +124,15 @@ try {
     $floorPlansStmt->execute();
     $floorPlans = $floorPlansStmt->fetchAll(PDO::FETCH_ASSOC);
 
+} catch (RuntimeException $permissionError) {
+    http_response_code(403);
+    $error_message = $permissionError->getMessage();
+    error_log("Upload Floor Plan Permission Error: " . $permissionError->getMessage());
+    $isAuthorised = false;
 } catch (Exception $e) {
     $error_message = $e->getMessage();
     error_log("Upload Floor Plan Error: " . $e->getMessage());
+    $isAuthorised = false;
 }
 ?>
 <!DOCTYPE html>
@@ -91,10 +146,18 @@ try {
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 </head>
 <body data-bs-theme="dark">
-    <?php echo $navbar->render(); ?>
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
 
     <div class="content-wrapper">
-        <div class="container-fluid">
+        <div class="container-fluid py-4">
+            <?php if ($error_message !== ''): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class='bx bx-error-circle me-1'></i><?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($isAuthorised): ?>
             <div class="row">
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -265,6 +328,18 @@ try {
                     </div>
                 </div>
             </div>
+            <?php else: ?>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card border-danger-subtle">
+                        <div class="card-body text-center py-5">
+                            <h2 class="h4 mb-3"><i class='bx bx-block me-2'></i>Access Restricted</h2>
+                            <p class="text-muted mb-0">Your account does not have permission to manage floor plans. Please contact a system administrator if you believe this is an error.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 
