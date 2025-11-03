@@ -84,7 +84,7 @@ if ($result) {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <?php include 'includes/navbar.php'; ?>
 
     <div class="container-fluid">

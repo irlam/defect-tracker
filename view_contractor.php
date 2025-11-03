@@ -124,7 +124,7 @@ try {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <?php require_once 'includes/sidebar.php'; ?>
 
     <main class="main-content">

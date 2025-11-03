@@ -212,7 +212,7 @@ function formatLogDetails($details, $action_by_username) {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <?php $navbar->render(); ?> <!-- Ensure this is rendering the navbar -->
 
     <div class="main-content">

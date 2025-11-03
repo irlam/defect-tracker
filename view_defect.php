@@ -174,7 +174,7 @@ try {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <?php include 'includes/navbar.php'; ?>
 <br><br><br><br>
     <div class="container mt-4">

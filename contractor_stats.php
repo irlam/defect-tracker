@@ -151,7 +151,7 @@ try {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <!-- Include Navbar -->
     <?php include 'includes/navbar.php'; ?>
 

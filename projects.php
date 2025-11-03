@@ -341,7 +341,7 @@ function calculateProgress($start_date, $end_date) {
 
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <div class="main-content">
         <div class="page-header d-flex justify-content-between align-items-center mb-4">
             <div>

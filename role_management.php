@@ -108,7 +108,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <!-- [Previous CSS styles remain the same] -->
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <?php require_once 'includes/sidebar.php'; ?>
 
     <main class="main-content">

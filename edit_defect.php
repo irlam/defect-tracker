@@ -88,7 +88,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <div class="container py-4">
         <div class="row justify-content-center">
             <div class="col-md-10">

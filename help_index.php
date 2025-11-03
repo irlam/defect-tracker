@@ -151,7 +151,7 @@ $helpPages = [
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <?php
     $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
     $navbar->render();

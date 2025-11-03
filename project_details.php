@@ -71,7 +71,7 @@ try {
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <div class="container-fluid">
         <div class="row">
             <!-- Include your sidebar here -->

@@ -322,7 +322,7 @@ exit;
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/custom.css">
 </head>
-<body class="bg-light">
+<body class="tool-body" data-bs-theme="dark">
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">

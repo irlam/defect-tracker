@@ -608,6 +608,7 @@ body.tool-body {
   text-align: center;
   gap: var(--spacing-md);
   padding-right: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
   border-right: 1px solid rgba(148, 163, 184, 0.12);
   align-self: start;
 }
@@ -629,9 +630,11 @@ body.tool-body {
   flex-direction: column;
   gap: var(--spacing-md);
   padding-right: var(--spacing-lg);
+  padding-top: var(--spacing-md);
   max-width: 420px;
   width: 100%;
   justify-self: start;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .login-badge {
@@ -2158,6 +2161,23 @@ hr {
   background-color: rgba(96, 165, 250, 0.18);
   border: 1px solid rgba(96, 165, 250, 0.3);
   color: rgba(224, 231, 255, 0.92);
+}
+
+/* Defect Table Contractor Display */
+.defect-table__contractor {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.defect-table__contractor-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius-sm);
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 @media (max-width: 768px) {

@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin_x']) && isset($_P
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
     <div class="floorplan-container">
         <div class="instruction">Touch/click and hold for 1 second to place pin</div>
         <canvas id="pdfCanvas"></canvas>
