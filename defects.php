@@ -660,6 +660,11 @@ $priorityBadgeMap = [
                         </div>
                     </div>
                 </div>
+                <div class="filter-panel__actions mt-3">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class='bx bx-filter-alt'></i> Apply Filters
+                    </button>
+                </div>
             </form>
         </section>
 
