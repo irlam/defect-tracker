@@ -1,10 +1,22 @@
 <?php
+require_once 'config/database.php';
 require_once 'classes/Auth.php';
 require_once 'classes/Logger.php';
 require_once 'config/config.php';
 
-$auth = new Auth();
-$auth->requireLogin();
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+} catch (Exception $e) {
+    error_log('Notifications DB connection error: ' . $e->getMessage());
+    die('Unable to connect to the database.');
+}
+
+$auth = new Auth($db);
+if (!$auth->isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 
 $userId = $_SESSION['user_id'];
 $username = $_SESSION['username'];
@@ -13,13 +25,13 @@ $username = $_SESSION['username'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'mark_read' && isset($_POST['notification_id'])) {
         $notificationId = (int)$_POST['notification_id'];
-        $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE id = ? AND user_id = ?");
+        $stmt = $db->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE id = ? AND user_id = ?");
         $stmt->execute([$notificationId, $userId]);
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
         exit;
     } elseif ($_POST['action'] === 'mark_all_read') {
-        $stmt = $pdo->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE user_id = ? AND is_read = 0");
+        $stmt = $db->prepare("UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE user_id = ? AND is_read = 0");
         $stmt->execute([$userId]);
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
@@ -33,13 +45,13 @@ $perPage = 20;
 $offset = ($page - 1) * $perPage;
 
 // Get total count
-$totalStmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ?");
+$totalStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ?");
 $totalStmt->execute([$userId]);
 $totalNotifications = $totalStmt->fetchColumn();
 $totalPages = ceil($totalNotifications / $perPage);
 
 // Get notifications
-$stmt = $pdo->prepare("
+$stmt = $db->prepare("
     SELECT n.*, u.username as created_by_username
     FROM notifications n
     LEFT JOIN users u ON n.user_id = u.id
@@ -51,7 +63,7 @@ $stmt->execute([$userId, $perPage, $offset]);
 $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get unread count
-$unreadStmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+$unreadStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
 $unreadStmt->execute([$userId]);
 $unreadCount = $unreadStmt->fetchColumn();
 
