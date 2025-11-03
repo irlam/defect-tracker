@@ -19,17 +19,28 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
 
 require_once 'config/database.php';
 require_once 'includes/functions.php';
+require_once 'includes/navbar.php';
 
-$pageTitle = 'Contractors Management';
+$pageTitle = 'Contractor HQ';
 $success_message = '';
 $error_message = '';
-$currentDateTime = date('Y-m-d H:i:s'); // Get current date and time
+$currentDateTime = date('Y-m-d H:i:s');
 $currentUser = $_SESSION['user_id'];
+
+$db = null;
+$navbar = null;
+$contractors = [];
 
 try {
     $database = new Database();
     $db = $database->getConnection();
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    try {
+        $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
+    } catch (Exception $navbarException) {
+        error_log("Navbar error in contractors.php: " . $navbarException->getMessage());
+    }
 
     // Handle form submissions
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -212,17 +223,67 @@ try {
     $error_message = "Database error: " . $e->getMessage();
 }
 
+$totalContractors = count($contractors);
+$statusCounts = [
+    'active' => 0,
+    'inactive' => 0,
+    'suspended' => 0,
+    'other' => 0,
+];
+$uniqueTrades = [];
+$insuredCount = 0;
+$licensedCount = 0;
+$latestUpdate = null;
+$recentAdditionName = '';
+$recentAdditionRelative = 'N/A';
+
+if (!empty($contractors)) {
+    foreach ($contractors as $contractor) {
+        $statusKey = strtolower($contractor['status'] ?? 'other');
+        if (array_key_exists($statusKey, $statusCounts)) {
+            $statusCounts[$statusKey]++;
+        } else {
+            $statusCounts['other']++;
+        }
+
+        if (!empty($contractor['trade'])) {
+            $uniqueTrades[strtolower(trim($contractor['trade']))] = true;
+        }
+
+        if (!empty(trim((string) ($contractor['insurance_info'] ?? '')))) {
+            $insuredCount++;
+        }
+
+        if (!empty(trim((string) ($contractor['license_number'] ?? '')))) {
+            $licensedCount++;
+        }
+
+        $timelineCandidate = $contractor['updated_at'] ?: $contractor['created_at'];
+        if ($timelineCandidate && ($latestUpdate === null || strtotime($timelineCandidate) > strtotime($latestUpdate))) {
+            $latestUpdate = $timelineCandidate;
+        }
+    }
+
+    $recentAdditionName = $contractors[0]['company_name'] ?? '';
+    $recentAdditionRelative = !empty($contractors[0]['created_at'])
+        ? formatRelativeTime($contractors[0]['created_at'])
+        : 'N/A';
+}
+
+$tradesRepresented = count($uniqueTrades);
+$latestUpdateRelative = $latestUpdate ? formatRelativeTime($latestUpdate) : 'N/A';
+
 // Helper function for status badge classes
 function getStatusBadgeClass($status) {
     switch (strtolower($status)) {
         case 'active':
-            return 'bg-success';
+            return 'status-badge status-badge--active';
         case 'inactive':
-            return 'bg-warning text-dark';
+            return 'status-badge status-badge--inactive';
         case 'suspended':
-            return 'bg-danger';
+            return 'status-badge status-badge--suspended';
         default:
-            return 'bg-primary';
+            return 'status-badge status-badge--default';
     }
 }
 
@@ -231,329 +292,386 @@ function formatDate($date) {
     return date('M d, Y', strtotime($date));
 }
 
+function formatRelativeTime($date)
+{
+    if (empty($date)) {
+        return 'N/A';
+    }
+
+    try {
+        $target = new DateTime($date, new DateTimeZone('UTC'));
+        $now = new DateTime('now', new DateTimeZone('UTC'));
+        $diff = $now->diff($target);
+
+        if ($diff->y > 0) {
+            return $diff->y . 'y ago';
+        }
+
+        if ($diff->m > 0) {
+            return $diff->m . 'mo ago';
+        }
+
+        if ($diff->d > 0) {
+            return $diff->d . 'd ago';
+        }
+
+        if ($diff->h > 0) {
+            return $diff->h . 'h ago';
+        }
+
+        if ($diff->i > 0) {
+            return $diff->i . 'm ago';
+        }
+
+        return 'Just now';
+    } catch (Exception $e) {
+        error_log('Relative time formatting error: ' . $e->getMessage());
+        return 'N/A';
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Contractors Management - Defect Tracker System">
+    <meta name="description" content="Contractor HQ - Defect Tracker System">
     <meta name="author" content="<?php echo htmlspecialchars($_SESSION['username']); ?>">
     <meta name="last-modified" content="<?php echo htmlspecialchars($currentDateTime); ?>">
-    <title>Contractors Management - Defect Tracker</title>
-	<link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
-<link rel="shortcut icon" href="/favicons/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-<link rel="manifest" href="/favicons/site.webmanifest" />
-    <!-- Bootstrap CSS -->
+    <title>Contractor HQ - Defect Tracker</title>
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Boxicons CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">	
-    <style><link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
-<link rel="shortcut icon" href="/favicons/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-<link rel="manifest" href="/favicons/site.webmanifest" />
-		
-		
-	<style>	
-		/* Styles for the main content area */
-.main-content {
-    padding: 20px;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;  /* Centers the content horizontally */
-}
-
-        /* Styles for contractor cards */
-        .contractor-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        /* Hover effect for contractor cards */
-        .contractor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-
-        /* Style for cards */
-        .card {
-            border: none;
-            background: linear-gradient(to right, #ffffff, #f8f9fa);
-        }
-
-        /* Style for card headers */
-        .card-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-            padding: 1rem;
-        }
-
-        /* Style for modal content */
-        .modal-content {
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        /* Style for modal headers */
-        .modal-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            border-bottom: none;
-        }
-
-        /* Style for close button in modal headers */
-        .modal-header .btn-close {
-            color: white;
-            opacity: 0.8;
-        }
-
-        /* Style for modal footers */
-        .modal-footer {
-            background: linear-gradient(to right, #f8f9fa, #ffffff);
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
-
-        /* Style for primary buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Hover effect for primary buttons */
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2980b9 0%, #2c3e50 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-        }
-
-        /* Style for danger buttons */
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            border: none;
-        }
-
-        /* Hover effect for danger buttons */
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-        }
-
-        /* Style for status badges */
-        .status-badge {
-            font-weight: 500;
-            padding: 0.5em 1em;
-            border-radius: 20px;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="/css/app.css?v=20251103" rel="stylesheet">
 </head>
-<body class="tool-body" data-bs-theme="dark">
+<body class="tool-body contractor-page-body" data-bs-theme="dark">
+<?php
+try {
+    if ($navbar instanceof Navbar) {
+        $navbar->render();
+    }
+} catch (Exception $renderException) {
+    error_log('Navbar render error on contractors.php: ' . $renderException->getMessage());
+    echo '<div class="alert alert-danger m-3" role="alert">Navigation failed to load. Refresh the page or contact support.</div>';
+}
+?>
 
-    <div class="main-content">
-        <div class="page-header d-flex justify-content-between align-items-center mb-4">
+<div class="app-content-offset"></div>
+
+<main class="contractor-page container-fluid px-4 pb-5">
+    <section class="contractor-hero shadow-lg mb-4">
+        <div class="contractor-hero__headline">
             <div>
-                <h1 class="h3 mb-0">Contractors Management</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="dashboard.php">Home</a></li>
-                        <li class="breadcrumb-item active">Contractors</li>
-                    </ol>
-                </nav>
+                <span class="contractor-hero__pill"><i class='bx bx-hard-hat me-1'></i>Trade Network</span>
+                <h1 class="contractor-hero__title">Contractor HQ</h1>
+                <p class="contractor-hero__subtitle">
+                    Managing <?php echo number_format($totalContractors); ?> partners across <?php echo number_format($tradesRepresented); ?> trades.
+                    <?php if (!empty($recentAdditionName)): ?>
+                        <span class="contractor-hero__highlight">Latest addition: <?php echo htmlspecialchars($recentAdditionName); ?> (<?php echo htmlspecialchars($recentAdditionRelative); ?>)</span>
+                    <?php endif; ?>
+                </p>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createContractorModal">
-                <i class='bx bx-plus-circle'></i> Create Contractor
-            </button>
+            <div class="contractor-hero__actions text-end">
+                <button type="button" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#createContractorModal">
+                    <i class='bx bx-plus-circle me-2'></i>New Contractor
+                </button>
+                <p class="contractor-hero__timestamp mt-3">
+                    <i class='bx bx-time-five me-1'></i>Updated <?php echo htmlspecialchars($latestUpdateRelative); ?>
+                </p>
+            </div>
         </div>
+        <div class="contractor-hero__metrics">
+            <article class="contractor-metric">
+                <div class="contractor-metric__icon contractor-metric__icon--blue"><i class='bx bx-group'></i></div>
+                <div class="contractor-metric__details">
+                    <span class="contractor-metric__label">Active Workforce</span>
+                    <span class="contractor-metric__value"><?php echo number_format($statusCounts['active'] ?? 0); ?></span>
+                    <span class="contractor-metric__note">of <?php echo number_format($totalContractors); ?> total</span>
+                </div>
+            </article>
+            <article class="contractor-metric">
+                <div class="contractor-metric__icon contractor-metric__icon--teal"><i class='bx bx-dots-grid'></i></div>
+                <div class="contractor-metric__details">
+                    <span class="contractor-metric__label">Trades Represented</span>
+                    <span class="contractor-metric__value"><?php echo number_format($tradesRepresented); ?></span>
+                    <span class="contractor-metric__note">Diverse capabilities in play</span>
+                </div>
+            </article>
+            <article class="contractor-metric">
+                <div class="contractor-metric__icon contractor-metric__icon--violet"><i class='bx bx-id-card'></i></div>
+                <div class="contractor-metric__details">
+                    <span class="contractor-metric__label">Licensed Vendors</span>
+                    <span class="contractor-metric__value"><?php echo number_format($licensedCount); ?></span>
+                    <span class="contractor-metric__note">Compliance-ready partners</span>
+                </div>
+            </article>
+            <article class="contractor-metric">
+                <div class="contractor-metric__icon contractor-metric__icon--amber"><i class='bx bx-shield-quarter'></i></div>
+                <div class="contractor-metric__details">
+                    <span class="contractor-metric__label">Insured Partners</span>
+                    <span class="contractor-metric__value"><?php echo number_format($insuredCount); ?></span>
+                    <span class="contractor-metric__note">Insurance evidence on file</span>
+                </div>
+            </article>
+        </div>
+    </section>
 
-        <?php if ($success_message): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($success_message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <?php if ($success_message): ?>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm contractor-alert" role="alert">
+            <i class='bx bx-check-circle me-2'></i><?php echo htmlspecialchars($success_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error_message): ?>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm contractor-alert" role="alert">
+            <i class='bx bx-error-circle me-2'></i><?php echo htmlspecialchars($error_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <section class="row g-3 contractor-controls align-items-center mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="input-group input-group-lg contractor-controls__search">
+                <span class="input-group-text"><i class='bx bx-search'></i></span>
+                <input type="search" class="form-control" id="contractorSearch" placeholder="Search by company, trade, contact, or location" aria-label="Search contractors">
             </div>
-        <?php endif; ?>
-
-        <?php if ($error_message): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($error_message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="contractor-controls__filters d-flex flex-wrap gap-2">
+                <button type="button" class="contractor-filter__button is-active" data-filter="all">
+                    <i class='bx bx-show me-1'></i>All
+                    <span class="contractor-filter__count"><?php echo number_format($totalContractors); ?></span>
+                </button>
+                <button type="button" class="contractor-filter__button" data-filter="active">
+                    <i class='bx bx-bolt-circle me-1'></i>Active
+                    <span class="contractor-filter__count"><?php echo number_format($statusCounts['active'] ?? 0); ?></span>
+                </button>
+                <button type="button" class="contractor-filter__button" data-filter="inactive">
+                    <i class='bx bx-moon me-1'></i>Inactive
+                    <span class="contractor-filter__count"><?php echo number_format($statusCounts['inactive'] ?? 0); ?></span>
+                </button>
+                <button type="button" class="contractor-filter__button" data-filter="suspended">
+                    <i class='bx bx-error me-1'></i>Suspended
+                    <span class="contractor-filter__count"><?php echo number_format($statusCounts['suspended'] ?? 0); ?></span>
+                </button>
             </div>
-        <?php endif; ?>
+        </div>
+    </section>
 
-        <div class="row">
+    <section class="contractor-directory">
+        <div class="row g-4 contractor-grid" id="contractorGrid">
             <?php if (empty($contractors)): ?>
                 <div class="col-12">
-                    <div class="alert alert-info">
-                        No contractors found. Create your first contractor using the 'Create Contractor' button.
+                    <div class="contractor-empty-state text-center py-5">
+                        <div class="contractor-empty-state__icon mb-3"><i class='bx bx-buildings'></i></div>
+                        <h2 class="fw-semibold mb-2">No contractors on file yet</h2>
+                        <p class="text-muted mb-4">Start building your supply chain by adding your first contractor.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createContractorModal">
+                            <i class='bx bx-plus-circle me-2'></i>Create Contractor
+                        </button>
                     </div>
                 </div>
             <?php else: ?>
                 <?php foreach ($contractors as $contractor): ?>
-                    <div class="col-md-6 col-xl-4">
-                        <div class="contractor-card">
-                            <div class="card h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">
-                                        <?php echo htmlspecialchars($contractor['company_name']); ?>
-                                    </h5>
-                                    <span class="badge <?php echo getStatusBadgeClass($contractor['status']); ?> status-badge">
-                                        <?php echo ucfirst(htmlspecialchars($contractor['status'])); ?>
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">
-                                        Contact: <?php echo htmlspecialchars($contractor['contact_name']); ?><br>
-                                        Email: <?php echo htmlspecialchars($contractor['email']); ?><br>
-                                        Phone: <?php echo htmlspecialchars($contractor['phone']); ?><br>
-                                        Trade: <?php echo htmlspecialchars($contractor['trade']); ?><br>
-                                        Address: <?php echo htmlspecialchars($contractor['address_line1']); ?>, <?php echo htmlspecialchars($contractor['address_line2']); ?><br>
-                                        City: <?php echo htmlspecialchars($contractor['city']); ?><br>
-                                        County: <?php echo htmlspecialchars($contractor['county']); ?><br>
-                                        Postcode: <?php echo htmlspecialchars($contractor['postcode']); ?><br>
-                                    </p>
-                                    <?php if ($contractor['logo']): ?>
-                                        <img src="uploads/logos/<?php echo htmlspecialchars($contractor['logo']); ?>" alt="Contractor Logo" style="max-width: 100px; max-height: 100px;">
-                                    <?php endif; ?>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-sm btn-primary" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#editContractorModal<?php echo $contractor['id']; ?>">
-                                            <i class='bx bx-edit'></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDeleteContractor(<?php echo $contractor['id']; ?>)">
-                                            <i class='bx bx-trash'></i> Delete
-                                        </button>
+                    <?php
+                        $statusKey = strtolower($contractor['status'] ?? 'other');
+                        $addressParts = array_filter([
+                            $contractor['address_line1'] ?? '',
+                            $contractor['address_line2'] ?? '',
+                            $contractor['city'] ?? '',
+                            $contractor['county'] ?? '',
+                            $contractor['postcode'] ?? '',
+                        ], function ($value) {
+                            return !empty(trim((string) $value));
+                        });
+                        $addressSummary = !empty($addressParts) ? implode(', ', $addressParts) : 'Address not provided';
+                        $searchableValues = [
+                            $contractor['company_name'] ?? '',
+                            $contractor['contact_name'] ?? '',
+                            $contractor['trade'] ?? '',
+                            $contractor['email'] ?? '',
+                            $contractor['phone'] ?? '',
+                            $addressSummary,
+                            $contractor['license_number'] ?? '',
+                            $contractor['vat_number'] ?? '',
+                        ];
+                        $searchableText = strtolower(implode(' ', array_filter($searchableValues, function ($value) {
+                            return !empty(trim((string) $value));
+                        })));
+                        $logoPath = !empty($contractor['logo']) ? '/uploads/logos/' . $contractor['logo'] : '';
+                        $initialsSource = $contractor['company_name'] ?? 'NA';
+                        $initials = strtoupper(substr($initialsSource, 0, 2));
+                        $updatedRelative = formatRelativeTime($contractor['updated_at'] ?: $contractor['created_at']);
+                        $creationDate = formatDate($contractor['created_at']);
+                        $notes = trim((string) ($contractor['notes'] ?? ''));
+                    ?>
+                    <div class="col-12 col-lg-6 col-xxl-4 contractor-grid__item" data-status="<?php echo htmlspecialchars($statusKey); ?>" data-search="<?php echo htmlspecialchars($searchableText); ?>">
+                        <article class="contractor-card shadow-sm h-100">
+                            <header class="contractor-card__header">
+                                <div class="contractor-card__brand">
+                                    <div class="contractor-card__avatar <?php echo $logoPath ? '' : 'contractor-card__avatar--initial'; ?>">
+                                        <?php if ($logoPath): ?>
+                                            <img src="<?php echo htmlspecialchars($logoPath); ?>" alt="<?php echo htmlspecialchars($contractor['company_name']); ?> logo">
+                                        <?php else: ?>
+                                            <span><?php echo htmlspecialchars($initials); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <h2 class="contractor-card__title mb-0"><?php echo htmlspecialchars($contractor['company_name']); ?></h2>
+                                        <p class="contractor-card__subtitle mb-0"><i class='bx bx-briefcase-alt-2 me-1'></i><?php echo htmlspecialchars($contractor['trade'] ?: 'Trade pending'); ?></p>
                                     </div>
                                 </div>
+                                <span class="<?php echo getStatusBadgeClass($contractor['status']); ?>"><?php echo ucfirst(htmlspecialchars($contractor['status'])); ?></span>
+                            </header>
+                            <div class="contractor-card__body">
+                                <ul class="contractor-card__meta-list">
+                                    <li><i class='bx bx-user-voice'></i><?php echo htmlspecialchars($contractor['contact_name'] ?: 'No contact assigned'); ?></li>
+                                    <li><i class='bx bx-envelope'></i><a href="mailto:<?php echo htmlspecialchars($contractor['email']); ?>"><?php echo htmlspecialchars($contractor['email']); ?></a></li>
+                                    <li><i class='bx bx-phone-call'></i><a href="tel:<?php echo htmlspecialchars($contractor['phone']); ?>"><?php echo htmlspecialchars($contractor['phone']); ?></a></li>
+                                    <li><i class='bx bx-map'></i><?php echo htmlspecialchars($addressSummary); ?></li>
+                                </ul>
+                                <div class="contractor-card__tags">
+                                    <?php if (!empty($contractor['license_number'])): ?>
+                                        <span class="contractor-tag"><i class='bx bx-id-card'></i><?php echo htmlspecialchars($contractor['license_number']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($contractor['vat_number'])): ?>
+                                        <span class="contractor-tag"><i class='bx bx-receipt'></i>VAT <?php echo htmlspecialchars($contractor['vat_number']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($contractor['insurance_info'])): ?>
+                                        <span class="contractor-tag contractor-tag--success"><i class='bx bx-shield-quarter'></i>Insurance verified</span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if ($notes !== ''): ?>
+                                    <p class="contractor-card__notes"><i class='bx bx-note me-1'></i><?php echo nl2br(htmlspecialchars($notes)); ?></p>
+                                <?php endif; ?>
                             </div>
-                        </div>
+                            <footer class="contractor-card__footer">
+                                <div class="contractor-card__timestamps">
+                                    <span><i class='bx bx-calendar-star me-1'></i>Added <?php echo htmlspecialchars($creationDate); ?></span>
+                                    <span><i class='bx bx-refresh me-1'></i>Updated <?php echo htmlspecialchars($updatedRelative); ?></span>
+                                </div>
+                                <div class="contractor-card__actions">
+                                    <a href="view_contractor.php?id=<?php echo $contractor['id']; ?>" class="btn btn-sm btn-outline-light">
+                                        <i class='bx bx-show-alt me-1'></i>View
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editContractorModal<?php echo $contractor['id']; ?>">
+                                        <i class='bx bx-edit-alt me-1'></i>Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteContractor(<?php echo $contractor['id']; ?>)">
+                                        <i class='bx bx-trash-alt me-1'></i>Delete
+                                    </button>
+                                </div>
+                            </footer>
+                        </article>
 
-                        <!-- Edit Contractor Modal -->
-                        <div class="modal fade" id="editContractorModal<?php echo $contractor['id']; ?>" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
+                        <div class="modal fade contractor-modal__wrapper" id="editContractorModal<?php echo $contractor['id']; ?>" tabindex="-1" aria-labelledby="editContractorLabel<?php echo $contractor['id']; ?>" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content contractor-modal">
                                     <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                                         <input type="hidden" name="action" value="update_contractor">
                                         <input type="hidden" name="contractor_id" value="<?php echo $contractor['id']; ?>">
                                         <input type="hidden" name="old_logo" value="<?php echo htmlspecialchars($contractor['logo']); ?>">
-
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Edit Contractor</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            <h5 class="modal-title" id="editContractorLabel<?php echo $contractor['id']; ?>">Edit Contractor</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label required">Company Name</label>
-                                                <input type="text" name="company_name" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['company_name']); ?>" required>
-                                                <div class="invalid-feedback">Company name is required</div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label required">Contact Name</label>
-                                                <input type="text" name="contact_name" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['contact_name']); ?>" required>
-                                                <div class="invalid-feedback">Contact name is required</div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label required">Email</label>
-                                                <input type="email" name="email" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['email']); ?>" required>
-                                                <div class="invalid-feedback">Email is required</div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label required">Phone</label>
-                                                <input type="text" name="phone" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['phone']); ?>" required>
-                                                <div class="invalid-feedback">Phone is required</div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Trade</label>
-                                                <input type="text" name="trade" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['trade']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Address Line 1</label>
-                                                <input type="text" name="address_line1" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['address_line1']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Address Line 2</label>
-                                                <input type="text" name="address_line2" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['address_line2']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">City</label>
-                                                <input type="text" name="city" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($contractor['city']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">County</label>
-                                                <input type="text" name="county" class="form-control"
-                                                       value="<?php echo htmlspecialchars($contractor['county']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Postcode</label>
-                                                <input type="text" name="postcode" class="form-control"
-                                                       value="<?php echo htmlspecialchars($contractor['postcode']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">VAT Number</label>
-                                                <input type="text" name="vat_number" class="form-control"
-                                                       value="<?php echo htmlspecialchars($contractor['vat_number']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Company Number</label>
-                                                <input type="text" name="company_number" class="form-control"
-                                                       value="<?php echo htmlspecialchars($contractor['company_number']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Insurance Info</label>
-                                                <textarea name="insurance_info" class="form-control" rows="3"><?php echo htmlspecialchars($contractor['insurance_info']); ?></textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">UTR Number</label>
-                                                <input type="text" name="utr_number" class="form-control"
-                                                       value="<?php echo htmlspecialchars($contractor['utr_number']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Notes</label>
-                                                <textarea name="notes" class="form-control" rows="3"><?php echo htmlspecialchars($contractor['notes']); ?></textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Status</label>
-                                                <select name="status" class="form-select" required>
-                                                    <option value="active" <?php echo $contractor['status'] == 'active' ? 'selected' : ''; ?>>Active</option>
-                                                    <option value="inactive" <?php echo $contractor['status'] == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
-                                                    <option value="suspended" <?php echo $contractor['status'] == 'suspended' ? 'selected' : ''; ?>>Suspended</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">License Number</label>
-                                                <input type="text" name="license_number" class="form-control"
-                                                       value="<?php echo htmlspecialchars($contractor['license_number']); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Logo</label>
-                                                <input type="file" name="logo" class="form-control">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label required">Company Name</label>
+                                                    <input type="text" name="company_name" class="form-control" value="<?php echo htmlspecialchars($contractor['company_name']); ?>" required>
+                                                    <div class="invalid-feedback">Company name is required</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label required">Contact Name</label>
+                                                    <input type="text" name="contact_name" class="form-control" value="<?php echo htmlspecialchars($contractor['contact_name']); ?>" required>
+                                                    <div class="invalid-feedback">Contact name is required</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label required">Email</label>
+                                                    <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($contractor['email']); ?>" required>
+                                                    <div class="invalid-feedback">Email is required</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label required">Phone</label>
+                                                    <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($contractor['phone']); ?>" required>
+                                                    <div class="invalid-feedback">Phone is required</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Trade</label>
+                                                    <input type="text" name="trade" class="form-control" value="<?php echo htmlspecialchars($contractor['trade']); ?>">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Status</label>
+                                                    <select name="status" class="form-select" required>
+                                                        <option value="active" <?php echo $contractor['status'] == 'active' ? 'selected' : ''; ?>>Active</option>
+                                                        <option value="inactive" <?php echo $contractor['status'] == 'inactive' ? 'selected' : ''; ?>>Inactive</option>
+                                                        <option value="suspended" <?php echo $contractor['status'] == 'suspended' ? 'selected' : ''; ?>>Suspended</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Address Line 1</label>
+                                                    <input type="text" name="address_line1" class="form-control" value="<?php echo htmlspecialchars($contractor['address_line1']); ?>">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Address Line 2</label>
+                                                    <input type="text" name="address_line2" class="form-control" value="<?php echo htmlspecialchars($contractor['address_line2']); ?>">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">City</label>
+                                                    <input type="text" name="city" class="form-control" value="<?php echo htmlspecialchars($contractor['city']); ?>">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">County</label>
+                                                    <input type="text" name="county" class="form-control" value="<?php echo htmlspecialchars($contractor['county']); ?>">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Postcode</label>
+                                                    <input type="text" name="postcode" class="form-control" value="<?php echo htmlspecialchars($contractor['postcode']); ?>">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">VAT Number</label>
+                                                    <input type="text" name="vat_number" class="form-control" value="<?php echo htmlspecialchars($contractor['vat_number']); ?>">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Company Number</label>
+                                                    <input type="text" name="company_number" class="form-control" value="<?php echo htmlspecialchars($contractor['company_number']); ?>">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">UTR Number</label>
+                                                    <input type="text" name="utr_number" class="form-control" value="<?php echo htmlspecialchars($contractor['utr_number']); ?>">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">License Number</label>
+                                                    <input type="text" name="license_number" class="form-control" value="<?php echo htmlspecialchars($contractor['license_number']); ?>">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Insurance Info</label>
+                                                    <textarea name="insurance_info" class="form-control" rows="3"><?php echo htmlspecialchars($contractor['insurance_info']); ?></textarea>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Notes</label>
+                                                    <textarea name="notes" class="form-control" rows="3"><?php echo htmlspecialchars($contractor['notes']); ?></textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Logo</label>
+                                                    <input type="file" name="logo" class="form-control">
+                                                </div>
                                                 <?php if ($contractor['logo']): ?>
-                                                    <img src="uploads/logos/<?php echo htmlspecialchars($contractor['logo']); ?>" alt="Contractor Logo" style="max-width: 100px; max-height: 100px;">
+                                                    <div class="col-md-6 d-flex align-items-end">
+                                                        <img src="<?php echo htmlspecialchars('/uploads/logos/' . $contractor['logo']); ?>" alt="<?php echo htmlspecialchars($contractor['company_name']); ?> logo" class="img-fluid rounded shadow-sm contractor-modal__preview">
+                                                    </div>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
                                             <button type="submit" class="btn btn-primary">Save Changes</button>
                                         </div>
                                     </form>
@@ -565,142 +683,205 @@ function formatDate($date) {
             <?php endif; ?>
         </div>
 
-        <!-- Create Contractor Modal -->
-        <div class="modal fade" id="createContractorModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="create_contractor">
+        <div id="contractorEmptyState" class="contractor-empty-state text-center py-5" hidden>
+            <div class="contractor-empty-state__icon mb-3"><i class='bx bx-search-alt-2'></i></div>
+            <h2 class="fw-semibold mb-2">No contractors match the current filters</h2>
+            <p class="text-muted mb-4">Adjust your search or clear the filters to see more partners.</p>
+            <button type="button" class="btn btn-outline-light" data-reset-filters>
+                <i class='bx bx-reset me-2'></i>Reset filters
+            </button>
+        </div>
+    </section>
+</main>
 
-                        <div class="modal-header">
-                            <h5 class="modal-title">Create New Contractor</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Company Name</label>
-                                <input type="text" name="company_name" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Contact Name</label>
-                                <input type="text" name="contact_name" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Phone</label>
-                                <input type="text" name="phone" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Trade</label>
-                                <input type="text" name="trade" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Address Line 1</label>
-                                <input type="text" name="address_line1" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Address Line 2</label>
-                                <input type="text" name="address_line2" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">City</label>
-                                <input type="text" name="city" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">County</label>
-                                <input type="text" name="county" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Postcode</label>
-                                <input type="text" name="postcode" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">VAT Number</label>
-                                <input type="text" name="vat_number" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Company Number</label>
-                                <input type="text" name="company_number" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Insurance Info</label>
-                                <textarea name="insurance_info" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">UTR Number</label>
-                                <input type="text" name="utr_number" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Notes</label>
-                                <textarea name="notes" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Status</label>
-                                <select name="status" class="form-select" required>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="suspended">Suspended</option>
-                                </select>
-                            </div>
-                             <div class="mb-3">
-                                <label class="form-label">License Number</label>
-                                <input type="text" name="license_number" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Logo</label>
-                                <input type="file" name="logo" class="form-control">
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Create Contractor</button>
-                        </div>
-                    </form>
+<div class="modal fade contractor-modal__wrapper" id="createContractorModal" tabindex="-1" aria-labelledby="createContractorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content contractor-modal">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="create_contractor">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createContractorLabel">Create New Contractor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" name="company_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Name</label>
+                            <input type="text" name="contact_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trade</label>
+                            <input type="text" name="trade" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Address Line 1</label>
+                            <input type="text" name="address_line1" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Address Line 2</label>
+                            <input type="text" name="address_line2" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input type="text" name="city" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">County</label>
+                            <input type="text" name="county" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Postcode</label>
+                            <input type="text" name="postcode" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">VAT Number</label>
+                            <input type="text" name="vat_number" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Company Number</label>
+                            <input type="text" name="company_number" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">UTR Number</label>
+                            <input type="text" name="utr_number" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">License Number</label>
+                            <input type="text" name="license_number" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Insurance Info</label>
+                            <textarea name="insurance_info" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Logo</label>
+                            <input type="file" name="logo" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Contractor</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Delete Contractor Form -->
-    <form id="deleteContractorForm" method="POST" style="display: none;">
-        <input type="hidden" name="action" value="delete_contractor">
-        <input type="hidden" name="contractor_id" id="deleteContractorId">
-    </form>
+<form id="deleteContractorForm" method="POST" class="d-none">
+    <input type="hidden" name="action" value="delete_contractor">
+    <input type="hidden" name="contractor_id" id="deleteContractorId">
+</form>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Form validation
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                });
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+
+        const searchInput = document.getElementById('contractorSearch');
+        const filterButtons = document.querySelectorAll('.contractor-filter__button');
+        const gridItems = document.querySelectorAll('.contractor-grid__item');
+        const emptyState = document.getElementById('contractorEmptyState');
+        const resetButtons = document.querySelectorAll('[data-reset-filters]');
+
+        function applyFilters() {
+            const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const activeFilterButton = document.querySelector('.contractor-filter__button.is-active');
+            const activeFilter = activeFilterButton ? activeFilterButton.getAttribute('data-filter') : 'all';
+            let visibleCount = 0;
+
+            gridItems.forEach(item => {
+                const matchesFilter = activeFilter === 'all' || item.dataset.status === activeFilter;
+                const searchable = (item.dataset.search || '').toLowerCase();
+                const matchesSearch = !query || searchable.includes(query);
+                const shouldShow = matchesFilter && matchesSearch;
+                item.classList.toggle('is-hidden', !shouldShow);
+                if (shouldShow) {
+                    visibleCount++;
+                }
             });
 
-            // Delete contractor confirmation
-            window.confirmDeleteContractor = function(contractorId) {
-                if (confirm('Are you sure you want to delete this contractor? This action cannot be undone.')) {
-                    const form = document.getElementById('deleteContractorForm');
+            if (emptyState) {
+                emptyState.hidden = visibleCount > 0;
+            }
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('is-active'));
+                button.classList.add('is-active');
+                applyFilters();
+            });
+        });
+
+        resetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+                const allButton = document.querySelector('.contractor-filter__button[data-filter="all"]');
+                if (allButton) {
+                    filterButtons.forEach(btn => btn.classList.remove('is-active'));
+                    allButton.classList.add('is-active');
+                }
+                applyFilters();
+            });
+        });
+
+        applyFilters();
+
+        window.confirmDeleteContractor = function(contractorId) {
+            if (confirm('Are you sure you want to delete this contractor? This action cannot be undone.')) {
+                const form = document.getElementById('deleteContractorForm');
+                if (form) {
                     document.getElementById('deleteContractorId').value = contractorId;
                     form.submit();
                 }
-            };
+            }
+        };
 
-            // Initialize tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    </script>
+    });
+</script>
 </body>
 </html>

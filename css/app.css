@@ -46,7 +46,9 @@
   --navbar-height: 60px;
   --border-radius: 8px;
   --border-radius-sm: 4px;
+  --border-radius-md: 10px;
   --border-radius-lg: 12px;
+  --border-radius-xl: 18px;
   
   /* Typography */
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -530,7 +532,8 @@ body.tool-body {
     radial-gradient(140% 120% at 0% -10%, rgba(37, 99, 235, 0.25), transparent 60%),
     radial-gradient(120% 130% at 100% 120%, rgba(34, 211, 238, 0.18), transparent 55%),
     var(--background-color);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .login-page__glow {
@@ -577,6 +580,504 @@ body.tool-body {
   z-index: 2;
   max-width: 980px;
   width: 100%;
+}
+
+/* Contractors Page ---------------------------------------------------- */
+
+.contractor-page-body {
+  background:
+    radial-gradient(160% 120% at 10% -20%, rgba(37, 99, 235, 0.24), transparent 60%),
+    radial-gradient(140% 140% at 90% 120%, rgba(14, 165, 233, 0.18), transparent 55%),
+    var(--background-color);
+  color: var(--text-color);
+}
+
+.app-content-offset {
+  height: clamp(48px, 10vw, 72px);
+}
+
+.contractor-page {
+  flex: 1 0 auto;
+  max-width: 1440px;
+  margin: 0 auto;
+  color: var(--text-color);
+}
+
+.contractor-hero {
+  position: relative;
+  border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 64, 175, 0.88) 100%);
+  padding: clamp(var(--spacing-lg), 3vw, var(--spacing-xxl));
+  overflow: hidden;
+}
+
+.contractor-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(80% 80% at 80% 20%, rgba(59, 130, 246, 0.35), transparent),
+    radial-gradient(60% 60% at 20% 80%, rgba(14, 165, 233, 0.25), transparent 60%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.contractor-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.contractor-hero__headline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (min-width: 992px) {
+  .contractor-hero__headline {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.contractor-hero__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.25);
+  color: #bfdbfe;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--font-size-sm);
+}
+
+.contractor-hero__title {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+  color: #f8fafc;
+}
+
+.contractor-hero__subtitle {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.88);
+  font-size: var(--font-size-lg);
+  line-height: 1.5;
+}
+
+.contractor-hero__highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.2rem 0.65rem;
+  margin-left: var(--spacing-sm);
+  border-radius: 999px;
+  background: rgba(234, 179, 8, 0.25);
+  color: #fde68a;
+  font-size: var(--font-size-sm);
+}
+
+.contractor-hero__actions {
+  min-width: 220px;
+}
+
+.contractor-hero__timestamp {
+  color: rgba(226, 232, 240, 0.75);
+  font-size: var(--font-size-sm);
+}
+
+.contractor-hero__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.contractor-metric {
+  position: relative;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid rgba(226, 232, 240, 0.15);
+  background: rgba(15, 23, 42, 0.75);
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+}
+
+.contractor-metric__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.contractor-metric__icon--blue { background: linear-gradient(135deg, #93c5fd, #60a5fa); }
+.contractor-metric__icon--teal { background: linear-gradient(135deg, #7dd3fc, #38bdf8); }
+.contractor-metric__icon--violet { background: linear-gradient(135deg, #c4b5fd, #a78bfa); }
+.contractor-metric__icon--amber { background: linear-gradient(135deg, #fcd34d, #f59e0b); }
+
+.contractor-metric__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.contractor-metric__label {
+  font-size: var(--font-size-sm);
+  color: rgba(226, 232, 240, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.contractor-metric__value {
+  font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.contractor-metric__note {
+  font-size: var(--font-size-sm);
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.contractor-controls__search .input-group-text {
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: var(--secondary-light);
+}
+
+.contractor-controls__search .form-control {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.7);
+  color: var(--text-color);
+}
+
+.contractor-controls__filters {
+  justify-content: flex-start;
+}
+
+.contractor-filter__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.6);
+  color: rgba(226, 232, 240, 0.85);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-base);
+}
+
+.contractor-filter__button:hover,
+.contractor-filter__button:focus {
+  border-color: rgba(59, 130, 246, 0.45);
+  color: #dbeafe;
+}
+
+.contractor-filter__button.is-active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(14, 165, 233, 0.75));
+  border-color: transparent;
+  color: #0f172a;
+  box-shadow: var(--shadow-md);
+}
+
+.contractor-filter__count {
+  background: rgba(15, 23, 42, 0.65);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.contractor-grid__item.is-hidden {
+  display: none !important;
+}
+
+.contractor-card {
+  border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: var(--surface-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.contractor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.contractor-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.contractor-card__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.contractor-card__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.18), rgba(14, 165, 233, 0.18));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: var(--secondary-light);
+  overflow: hidden;
+}
+
+.contractor-card__avatar--initial {
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+}
+
+.contractor-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.contractor-card__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.contractor-card__subtitle {
+  color: var(--text-muted-color);
+  font-size: var(--font-size-sm);
+}
+
+.contractor-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.contractor-card__meta-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.contractor-card__meta-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-muted-color);
+  font-size: var(--font-size-sm);
+}
+
+.contractor-card__meta-list a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.contractor-card__meta-list a:hover,
+.contractor-card__meta-list a:focus {
+  color: var(--secondary-light);
+  text-decoration: underline;
+}
+
+.contractor-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.contractor-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-muted-color);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.contractor-tag--success {
+  background: rgba(34, 197, 94, 0.18);
+  color: #34d399;
+}
+
+.contractor-card__notes {
+  margin: 0;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  background: rgba(30, 64, 175, 0.08);
+  color: var(--text-color);
+  font-size: var(--font-size-sm);
+}
+
+.contractor-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .contractor-card__footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.contractor-card__timestamps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--text-muted-color);
+  font-size: 0.78rem;
+}
+
+@media (min-width: 576px) {
+  .contractor-card__timestamps {
+    flex-direction: row;
+    gap: var(--spacing-lg);
+  }
+}
+
+.contractor-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.contractor-card__actions .btn {
+  min-width: 92px;
+  font-weight: 600;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-badge--active {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+.status-badge--inactive {
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.status-badge--suspended {
+  background: rgba(248, 113, 113, 0.18);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #f87171;
+}
+
+.status-badge--default {
+  background: rgba(96, 165, 250, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  color: #93c5fd;
+}
+
+.contractor-empty-state {
+  border-radius: var(--border-radius-xl);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+  color: var(--text-color);
+}
+
+.contractor-empty-state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: rgba(59, 130, 246, 0.18);
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  color: #93c5fd;
+  font-size: 2rem;
+}
+
+.contractor-modal {
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: var(--border-radius-xl);
+  background: var(--surface-color);
+  box-shadow: var(--shadow-xl);
+}
+
+.contractor-modal .modal-header {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.8), rgba(14, 165, 233, 0.7));
+  color: #f8fafc;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.contractor-modal .modal-footer {
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.contractor-modal__preview {
+  max-width: 140px;
+  max-height: 80px;
+  object-fit: contain;
+  background: rgba(15, 23, 42, 0.45);
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-md);
+}
+
+.contractor-alert {
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.contractor-grid {
+  position: relative;
+}
+
+.contractor-card__tags .bx {
+  font-size: 0.85rem;
+}
+
+.contractor-card__meta-list .bx {
+  font-size: 1rem;
+  color: var(--secondary-light);
+}
+
+.contractor-card__timestamps .bx {
+  color: var(--secondary-light);
+}
+
+.contractor-card__notes .bx {
+  color: var(--secondary-light);
 }
 
 .login-card {
