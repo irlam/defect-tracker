@@ -553,6 +553,26 @@ class Navbar {
                 ];
                 break;
 
+            case 'inspector':
+                $items = [
+                    ['label' => 'Dashboard', 'url' => '/dashboard.php'],
+                    ['label' => 'Defects', 'id' => 'defectsDropdownInspector', 'dropdown' => [
+                        ['label' => 'Defect Control Room', 'url' => '/defects.php'],
+                        ['label' => 'Create Defect', 'url' => '/create_defect.php'],
+                        ['label' => 'Visualise Defects', 'url' => '/visualize_defects.php'],
+                    ]],
+                    ['label' => 'Projects', 'id' => 'projectsDropdownInspector', 'dropdown' => [
+                        ['label' => 'Projects Directory', 'url' => '/projects.php'],
+                        ['label' => 'Project Explorer', 'url' => '/project_details.php'],
+                        ['label' => 'Floor Plans', 'url' => '/floor_plans.php'],
+                    ]],
+                    ['label' => 'Reports', 'url' => '/reports.php'],
+                    ['label' => 'Notification Centre', 'url' => '/notifications.php'],
+                    ['label' => 'Help', 'url' => '/help_index.php'],
+                    ['label' => 'Logout', 'url' => '/logout.php'],
+                ];
+                break;
+
             case 'viewer':
                 $items = [
                     ['label' => 'Dashboard', 'url' => '/dashboard.php'],
