@@ -34,5 +34,10 @@ spl_autoload_register(function ($class) {
     return false;
 });
 
-// Load TCPDF configuration
-require_once VENDOR_PATH . 'tecnickcom/tcpdf/config/tcpdf_config.php';
+// Load TCPDF configuration if available to avoid fatal errors on missing vendor assets
+$tcpdfConfigPath = VENDOR_PATH . 'tecnickcom/tcpdf/config/tcpdf_config.php';
+if (file_exists($tcpdfConfigPath)) {
+    require_once $tcpdfConfigPath;
+} else {
+    error_log('TCPDF config missing at ' . $tcpdfConfigPath . ' - skipping optional load');
+}
