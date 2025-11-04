@@ -11,17 +11,39 @@
 
 // Helper function to check if request is AJAX
 function isAjaxRequest() {
-    return (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
-           (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
-           (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false);
+    // Check X-Requested-With header
+    $requestedWith = filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH', FILTER_SANITIZE_STRING);
+    if (!empty($requestedWith) && strtolower($requestedWith) === 'xmlhttprequest') {
+        return true;
+    }
+    
+    // Check Accept header for JSON
+    $accept = filter_input(INPUT_SERVER, 'HTTP_ACCEPT', FILTER_SANITIZE_STRING);
+    if (!empty($accept) && strpos($accept, 'application/json') !== false) {
+        return true;
+    }
+    
+    // Check Content-Type header for JSON
+    $contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE', FILTER_SANITIZE_STRING);
+    if (!empty($contentType) && strpos($contentType, 'application/json') !== false) {
+        return true;
+    }
+    
+    return false;
 }
 
 // Helper function to send JSON error response
 function sendJsonError($message, $httpCode = 401) {
+    // Validate HTTP status code
+    $httpCode = filter_var($httpCode, FILTER_VALIDATE_INT);
+    if ($httpCode === false || $httpCode < 100 || $httpCode > 599) {
+        $httpCode = 500; // Default to Internal Server Error for invalid codes
+    }
+    
     http_response_code($httpCode);
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => $message]);
+    // JSON encoding automatically escapes the message, preventing XSS
+    echo json_encode(['success' => false, 'message' => $message], JSON_UNESCAPED_SLASHES);
     exit;
 }
 
