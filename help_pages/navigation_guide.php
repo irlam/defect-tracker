@@ -8,12 +8,17 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/SessionManager.php';
+require_once __DIR__ . '/../includes/navbar.php';
 
 SessionManager::start();
 if (!SessionManager::isLoggedIn()) {
     header('Location: /login.php');
     exit;
 }
+
+// Create a database connection for navbar
+$database = new Database();
+$db = $database->getConnection();
 
 $pageTitle = 'Navigation Guide';
 ?>
@@ -27,6 +32,9 @@ $pageTitle = 'Navigation Guide';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/app.css">
     <style>
+        body {
+            padding-top: 76px;
+        }
         .role-section {
             margin-bottom: 2rem;
             padding: 1.5rem;
@@ -78,7 +86,12 @@ $pageTitle = 'Navigation Guide';
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
+    <?php
+    // Render navbar
+    $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
+    $navbar->render();
+    ?>
     <div class="container my-5">
         <div class="row">
             <div class="col-12">
