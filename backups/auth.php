@@ -18,7 +18,7 @@ function isAjaxRequest() {
 }
 
 // Helper function to send JSON error response
-function sendJsonError($message, $httpCode = 403) {
+function sendJsonError($message, $httpCode = 401) {
     http_response_code($httpCode);
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => $message]);
