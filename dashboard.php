@@ -390,13 +390,13 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
         <?php endif; ?>
 
         <header class="tool-header dashboard-hero mb-5">
-            <div class="dashboard-hero__content">
-                <div class="dashboard-hero__intro">
+            <div class="dashboard-hero__main">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                     <div>
                         <h1 class="h3 mb-2">Operational Defect Command</h1>
                         <p class="text-muted mb-0">Real-time insight into contractor workloads and outstanding issues.</p>
                     </div>
-                    <div class="dashboard-hero__meta">
+                    <div class="dashboard-hero__meta text-muted small">
                         <span><i class='bx bx-user-voice'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
                         <span><i class='bx bx-label'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
                         <span><i class='bx bx-calendar-event'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
@@ -414,18 +414,18 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
                 </div>
             </div>
             <aside class="dashboard-hero__action">
-                <article class="quick-action-card">
-                    <div class="quick-action-card__icon">
+                <article class="system-tool-card dashboard-quick-card">
+                    <div class="system-tool-card__icon dashboard-quick-card__icon">
                         <i class='bx bx-plus-circle'></i>
                     </div>
-                    <div class="quick-action-card__body">
-                        <h2 class="quick-action-card__title">Log a New Defect</h2>
-                        <p class="quick-action-card__subtitle">Capture issue details, attach evidence, and assign a delivery team in one streamlined flow.</p>
+                    <div class="system-tool-card__body">
+                        <h3 class="system-tool-card__title dashboard-quick-card__title">Log a New Defect</h3>
+                        <p class="system-tool-card__description dashboard-quick-card__description">Capture issue details, attach evidence, and assign a delivery team in one streamlined flow.</p>
+                        <a class="btn btn-sm btn-primary" href="create_defect.php">
+                            <i class='bx bx-right-arrow-alt'></i>
+                            Start New Defect
+                        </a>
                     </div>
-                    <a class="btn btn-light quick-action-card__button" href="create_defect.php">
-                        <span>Start New Defect</span>
-                        <i class='bx bx-right-arrow-alt'></i>
-                    </a>
                 </article>
             </aside>
         </header>
