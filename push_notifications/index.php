@@ -30,14 +30,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $body = $_POST['message'] ?? '';
     $targetType = $_POST['target_type'] ?? 'all';
     $defectId = !empty($_POST['defect_id']) ? $_POST['defect_id'] : null;
-    $userId = ($targetType === 'user') ? $_POST['user_id'] : null;
+    $userId = ($targetType === 'user') ? ($_POST['user_id'] ?? null) : null;
+    $contractorId = ($targetType === 'contractor') ? ($_POST['contractor_id'] ?? null) : null;
     
     if (empty($title) || empty($body)) {
         $message = '<div class="alert alert-danger">Title and message are required!</div>';
     } else {
-        $result = sendNotification($title, $body, $targetType, $userId, $defectId);
+        $result = sendNotification($title, $body, $targetType, $userId, $contractorId, $defectId);
         if ($result['success']) {
-            $message = '<div class="alert alert-success">Notification sent successfully to ' . $result['recipients'] . ' recipients!</div>';
+            $successMsg = 'Notification sent successfully to ' . $result['recipients'] . ' recipient(s)';
+            if ($result['failed'] > 0) {
+                $successMsg .= ' (' . $result['failed'] . ' failed)';
+            }
+            $message = '<div class="alert alert-success">' . $successMsg . '</div>';
+            
+            // Show any errors if present
+            if (!empty($result['errors'])) {
+                $message .= '<div class="alert alert-warning">Some deliveries failed: ' . implode(', ', array_slice($result['errors'], 0, 3)) . '</div>';
+            }
         } else {
             $message = '<div class="alert alert-danger">Error: ' . $result['error'] . '</div>';
         }
@@ -51,9 +61,15 @@ try {
     
     // Get users for dropdown - showing all users regardless of FCM token
     $users = [];
-    $stmt = $db->prepare("SELECT id, username, first_name, last_name FROM users ORDER BY username");
+    $stmt = $db->prepare("SELECT id, username, first_name, last_name, contractor_id FROM users ORDER BY username");
     $stmt->execute();
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get contractors for dropdown
+    $contractors = [];
+    $stmt = $db->prepare("SELECT id, company_name, trade FROM contractors ORDER BY company_name");
+    $stmt->execute();
+    $contractors = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Get defects for dropdown
     $defects = [];
@@ -130,12 +146,24 @@ $navbar->render();
                 <label>Send to:</label>
                 <div class="radio-group">
                     <label class="me-3">
-                        <input type="radio" name="target_type" value="all" checked onchange="toggleUserSelect()"> 
-                        All Users
+                        <input type="radio" name="target_type" value="all" checked onchange="toggleRecipientSelect()"> 
+                        All Users & Contractors
+                    </label>
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="all_users" onchange="toggleRecipientSelect()"> 
+                        All Users Only
+                    </label>
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="all_contractors" onchange="toggleRecipientSelect()"> 
+                        All Contractors Only
+                    </label>
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="user" onchange="toggleRecipientSelect()"> 
+                        Specific User
                     </label>
                     <label>
-                        <input type="radio" name="target_type" value="user" onchange="toggleUserSelect()"> 
-                        Specific User
+                        <input type="radio" name="target_type" value="contractor" onchange="toggleRecipientSelect()"> 
+                        Specific Contractor
                     </label>
                 </div>
             </div>
@@ -146,6 +174,17 @@ $navbar->render();
                     <?php foreach ($users as $user): ?>
                     <option value="<?php echo htmlspecialchars($user['id']); ?>">
                         <?php echo htmlspecialchars(($user['first_name'] . ' ' . $user['last_name']) . ' (' . $user['username'] . ')'); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group mb-3" id="contractorSelectContainer" style="display: none;">
+                <label for="contractor_id">Select Contractor:</label>
+                <select id="contractor_id" name="contractor_id" class="form-control">
+                    <?php foreach ($contractors as $contractor): ?>
+                    <option value="<?php echo htmlspecialchars($contractor['id']); ?>">
+                        <?php echo htmlspecialchars($contractor['company_name'] . ' - ' . $contractor['trade']); ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
@@ -175,14 +214,20 @@ $navbar->render();
     </div>
     
     <script>
-        function toggleUserSelect() {
+        function toggleRecipientSelect() {
             const targetType = document.querySelector('input[name="target_type"]:checked').value;
             const userSelectContainer = document.getElementById('userSelectContainer');
+            const contractorSelectContainer = document.getElementById('contractorSelectContainer');
             
+            // Hide all containers first
+            userSelectContainer.style.display = 'none';
+            contractorSelectContainer.style.display = 'none';
+            
+            // Show appropriate container based on target type
             if (targetType === 'user') {
                 userSelectContainer.style.display = 'block';
-            } else {
-                userSelectContainer.style.display = 'none';
+            } else if (targetType === 'contractor') {
+                contractorSelectContainer.style.display = 'block';
             }
         }
     </script>

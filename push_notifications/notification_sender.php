@@ -6,18 +6,19 @@
  */
 
 /**
- * Sends push notifications to users
+ * Sends push notifications to users and/or contractors
  * 
  * @param string $title Notification title
  * @param string $body Notification message
- * @param string $targetType 'all' or 'user'
+ * @param string $targetType 'all', 'user', 'contractor', 'all_users', 'all_contractors'
  * @param int|null $userId User ID if targeting specific user
+ * @param int|null $contractorId Contractor ID if targeting specific contractor
  * @param int|null $defectId Optional defect ID to link to
  * @return array Result with success status and message
  */
-function sendNotification($title, $body, $targetType = 'all', $userId = null, $defectId = null) {
-    // Your Firebase Server Key from Firebase Console > Project Settings > Cloud Messaging
-    $serverKey = 'YOUR_FIREBASE_SERVER_KEY';
+function sendNotification($title, $body, $targetType = 'all', $userId = null, $contractorId = null, $defectId = null) {
+    // Get Firebase Server Key from environment or config
+    $serverKey = getenv('FIREBASE_SERVER_KEY') ?: 'YOUR_FIREBASE_SERVER_KEY';
     
     try {
         // Include database configuration if not already included
@@ -29,18 +30,10 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $d
         $database = new Database();
         $db = $database->getConnection();
         
-        // Get FCM tokens based on target type
-        if ($targetType === 'all') {
-            $stmt = $db->prepare("SELECT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ''");
-            $stmt->execute();
-        } else {
-            $stmt = $db->prepare("SELECT fcm_token FROM users WHERE id = ? AND fcm_token IS NOT NULL AND fcm_token != ''");
-            $stmt->execute([$userId]);
-        }
+        // Get recipients (users and/or contractors) with their FCM tokens and platform info
+        $recipients = getNotificationRecipients($db, $targetType, $userId, $contractorId);
         
-        $tokens = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        if (empty($tokens)) {
+        if (empty($recipients)) {
             return [
                 'success' => false,
                 'error' => 'No registered devices found for selected recipients'
@@ -49,26 +42,58 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $d
         
         // Log this notification in the database
         $stmt = $db->prepare(
-            "INSERT INTO notification_log (title, message, target_type, user_id, defect_id, sent_at) 
-             VALUES (?, ?, ?, ?, ?, NOW())"
+            "INSERT INTO notification_log (title, message, target_type, user_id, contractor_id, defect_id, delivery_status, sent_at) 
+             VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())"
         );
-        $stmt->execute([$title, $body, $targetType, $userId, $defectId]);
+        $stmt->execute([$title, $body, $targetType, $userId, $contractorId, $defectId]);
         $logId = $db->lastInsertId();
         
-        // Count successful notifications
+        // Count successful and failed notifications
         $successCount = 0;
+        $failedCount = 0;
+        $errors = [];
         
-        // Send to each token
-        foreach ($tokens as $token) {
-            $result = sendFCMNotification($serverKey, $token, $title, $body, $defectId);
+        // Send to each recipient
+        foreach ($recipients as $recipient) {
+            $result = sendFCMNotification($serverKey, $recipient['fcm_token'], $title, $body, $defectId);
+            
+            // Log individual recipient delivery status
+            $recipientStatus = $result['success'] ? 'sent' : 'failed';
+            $recipientStmt = $db->prepare(
+                "INSERT INTO notification_recipients 
+                (notification_log_id, user_id, contractor_id, fcm_token, platform, delivery_status, sent_at, failed_at, error_message, fcm_response) 
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)"
+            );
+            $recipientStmt->execute([
+                $logId,
+                $recipient['user_id'] ?? null,
+                $recipient['contractor_id'] ?? null,
+                $recipient['fcm_token'],
+                $recipient['platform'] ?? 'unknown',
+                $recipientStatus,
+                $result['success'] ? null : date('Y-m-d H:i:s'),
+                $result['error'] ?? null,
+                $result['fcm_response'] ?? null
+            ]);
+            
             if ($result['success']) {
                 $successCount++;
+            } else {
+                $failedCount++;
+                $errors[] = $result['error'] ?? 'Unknown error';
             }
         }
         
-        // Update log with success count
-        $stmt = $db->prepare("UPDATE notification_log SET success_count = ? WHERE id = ?");
-        $stmt->execute([$successCount, $logId]);
+        // Update log with success/failure counts and overall status
+        $overallStatus = $successCount > 0 ? ($failedCount > 0 ? 'sent' : 'sent') : 'failed';
+        $errorMessage = !empty($errors) ? implode('; ', array_unique($errors)) : null;
+        
+        $stmt = $db->prepare(
+            "UPDATE notification_log 
+             SET success_count = ?, failed_count = ?, delivery_status = ?, error_message = ? 
+             WHERE id = ?"
+        );
+        $stmt->execute([$successCount, $failedCount, $overallStatus, $errorMessage, $logId]);
         
         // Log activity
         $senderUserId = $_SESSION['user_id'] ?? null;
@@ -77,14 +102,17 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $d
                 "INSERT INTO activity_log (user_id, action_type, description, created_at) 
                 VALUES (?, 'sent_notification', ?, NOW())"
             );
-            $description = "Sent push notification: '$title' to " . ($targetType === 'all' ? 'all users' : 'specific user');
+            $description = "Sent push notification: '$title' to " . getTargetDescription($targetType, count($recipients));
             $stmt->execute([$senderUserId, $description]);
         }
         
         return [
-            'success' => true,
+            'success' => $successCount > 0,
             'recipients' => $successCount,
-            'total' => count($tokens)
+            'failed' => $failedCount,
+            'total' => count($recipients),
+            'log_id' => $logId,
+            'errors' => $errors
         ];
         
     } catch (PDOException $e) {
@@ -103,6 +131,121 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $d
 }
 
 /**
+ * Get notification recipients based on target type
+ * 
+ * @param PDO $db Database connection
+ * @param string $targetType Target type (all, user, contractor, all_users, all_contractors)
+ * @param int|null $userId Specific user ID
+ * @param int|null $contractorId Specific contractor ID
+ * @return array Array of recipients with fcm_token, user_id, contractor_id, platform
+ */
+function getNotificationRecipients($db, $targetType, $userId = null, $contractorId = null) {
+    $recipients = [];
+    
+    try {
+        switch ($targetType) {
+            case 'all':
+                // Get all users with FCM tokens
+                $stmt = $db->prepare(
+                    "SELECT id as user_id, NULL as contractor_id, fcm_token, device_platform as platform 
+                     FROM users 
+                     WHERE fcm_token IS NOT NULL AND fcm_token != ''"
+                );
+                $stmt->execute();
+                $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                // Get all contractor users
+                $stmt = $db->prepare(
+                    "SELECT u.id as user_id, u.contractor_id, u.fcm_token, u.device_platform as platform 
+                     FROM users u
+                     INNER JOIN contractors c ON u.contractor_id = c.id
+                     WHERE u.fcm_token IS NOT NULL AND u.fcm_token != '' AND u.contractor_id IS NOT NULL"
+                );
+                $stmt->execute();
+                $recipients = array_merge($recipients, $stmt->fetchAll(PDO::FETCH_ASSOC));
+                break;
+                
+            case 'user':
+                if ($userId) {
+                    $stmt = $db->prepare(
+                        "SELECT id as user_id, NULL as contractor_id, fcm_token, device_platform as platform 
+                         FROM users 
+                         WHERE id = ? AND fcm_token IS NOT NULL AND fcm_token != ''"
+                    );
+                    $stmt->execute([$userId]);
+                    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                }
+                break;
+                
+            case 'contractor':
+                if ($contractorId) {
+                    // Get all users associated with this contractor
+                    $stmt = $db->prepare(
+                        "SELECT u.id as user_id, u.contractor_id, u.fcm_token, u.device_platform as platform 
+                         FROM users u
+                         WHERE u.contractor_id = ? AND u.fcm_token IS NOT NULL AND u.fcm_token != ''"
+                    );
+                    $stmt->execute([$contractorId]);
+                    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                }
+                break;
+                
+            case 'all_users':
+                // Only regular users (non-contractors)
+                $stmt = $db->prepare(
+                    "SELECT id as user_id, NULL as contractor_id, fcm_token, device_platform as platform 
+                     FROM users 
+                     WHERE fcm_token IS NOT NULL AND fcm_token != '' 
+                     AND (contractor_id IS NULL OR contractor_id = 0)"
+                );
+                $stmt->execute();
+                $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                break;
+                
+            case 'all_contractors':
+                // Only contractor users
+                $stmt = $db->prepare(
+                    "SELECT u.id as user_id, u.contractor_id, u.fcm_token, u.device_platform as platform 
+                     FROM users u
+                     WHERE u.fcm_token IS NOT NULL AND u.fcm_token != '' 
+                     AND u.contractor_id IS NOT NULL AND u.contractor_id > 0"
+                );
+                $stmt->execute();
+                $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                break;
+        }
+    } catch (Exception $e) {
+        error_log("Error getting notification recipients: " . $e->getMessage());
+    }
+    
+    return $recipients;
+}
+
+/**
+ * Get human-readable description of notification target
+ * 
+ * @param string $targetType Target type
+ * @param int $count Number of recipients
+ * @return string Description
+ */
+function getTargetDescription($targetType, $count) {
+    switch ($targetType) {
+        case 'all':
+            return "$count users and contractors";
+        case 'user':
+            return "1 specific user";
+        case 'contractor':
+            return "contractor users";
+        case 'all_users':
+            return "$count users";
+        case 'all_contractors':
+            return "$count contractors";
+        default:
+            return "$count recipients";
+    }
+}
+
+/**
  * Sends a single FCM message to a device token
  * 
  * @param string $serverKey Firebase Server Key
@@ -110,7 +253,7 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $d
  * @param string $title Notification title
  * @param string $body Notification message
  * @param int|null $defectId Optional defect ID to link
- * @return array Result with success status
+ * @return array Result with success status and detailed response
  */
 function sendFCMNotification($serverKey, $token, $title, $body, $defectId = null) {
     $url = 'https://fcm.googleapis.com/fcm/send';
@@ -122,18 +265,23 @@ function sendFCMNotification($serverKey, $token, $title, $body, $defectId = null
             'title' => $title,
             'body' => $body,
             'sound' => 'default',
-            'badge' => '1'
+            'badge' => '1',
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK'
         ],
         'data' => [
             'title' => $title,
             'message' => $body,
-            'click_action' => 'OPEN_MAIN_ACTIVITY'
-        ]
+            'click_action' => 'OPEN_MAIN_ACTIVITY',
+            'type' => 'defect_notification'
+        ],
+        'priority' => 'high',
+        'content_available' => true
     ];
     
     // Add defect ID if provided
     if ($defectId !== null) {
-        $fields['data']['defectId'] = $defectId;
+        $fields['data']['defectId'] = (string)$defectId;
+        $fields['notification']['click_action'] = 'view_defect';
     }
     
     // HTTP headers
@@ -150,15 +298,19 @@ function sendFCMNotification($serverKey, $token, $title, $body, $defectId = null
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     
     $result = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     
     if (curl_errno($ch)) {
+        $error = curl_error($ch);
         curl_close($ch);
-        error_log("FCM Curl Error: " . curl_error($ch));
+        error_log("FCM Curl Error: " . $error);
         return [
             'success' => false,
-            'error' => 'Curl error: ' . curl_error($ch)
+            'error' => 'Connection error: ' . $error,
+            'fcm_response' => null
         ];
     }
     
@@ -167,15 +319,30 @@ function sendFCMNotification($serverKey, $token, $title, $body, $defectId = null
     // Parse the JSON response
     $data = json_decode($result, true);
     
-    if (isset($data['success']) && $data['success'] == 1) {
+    // Check for successful delivery
+    if (isset($data['success']) && $data['success'] >= 1) {
         return [
-            'success' => true
+            'success' => true,
+            'fcm_response' => $result,
+            'message_id' => $data['results'][0]['message_id'] ?? null
         ];
-    } else {
-        error_log("FCM Error Response: " . $result);
+    } elseif (isset($data['failure']) && $data['failure'] > 0) {
+        $errorReason = 'Unknown FCM error';
+        if (isset($data['results'][0]['error'])) {
+            $errorReason = $data['results'][0]['error'];
+        }
+        error_log("FCM Delivery Failed: " . $errorReason . " - Response: " . $result);
         return [
             'success' => false,
-            'error' => 'FCM Error: ' . $result
+            'error' => 'Delivery failed: ' . $errorReason,
+            'fcm_response' => $result
+        ];
+    } else {
+        error_log("FCM Unexpected Response (HTTP $httpCode): " . $result);
+        return [
+            'success' => false,
+            'error' => 'Unexpected response from FCM (HTTP ' . $httpCode . ')',
+            'fcm_response' => $result
         ];
     }
 }
