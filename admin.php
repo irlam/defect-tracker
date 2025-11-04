@@ -20,6 +20,8 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
     exit();
 }
 
+require_once 'includes/navbar.php';
+
 // Include database configuration
 $config = [
     'db_host' => '10.35.233.124:3306',
@@ -28,6 +30,13 @@ $config = [
     'db_pass' => 'Subaru5554346'
 ];
 
+$user_id = $_SESSION['user_id'] ?? 0;
+$username = $_SESSION['username'] ?? '';
+$full_name = $_SESSION['full_name'] ?? '';
+$sessionUserType = $_SESSION['user_type'] ?? 'viewer';
+
+$navbar = null;
+
 try {
     $db = new PDO(
         "mysql:host={$config['db_host']};dbname={$config['db_name']}",
@@ -35,16 +44,16 @@ try {
         $config['db_pass'],
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
+
+    if ($user_id > 0 && $username !== '') {
+        $navbar = new Navbar($db, (int) $user_id, $username);
+    }
 } catch (PDOException $e) {
     error_log("Database Connection Error: " . $e->getMessage());
     die("Connection failed: Database error");
 }
 
 // Get user role information
-$user_id = $_SESSION['user_id'] ?? 0;
-$username = $_SESSION['username'] ?? '';
-$full_name = $_SESSION['full_name'] ?? '';
-$sessionUserType = $_SESSION['user_type'] ?? 'viewer';
 
 // Query to get user roles from user_roles table
 $stmt = $db->prepare("SELECT role_id FROM user_roles WHERE user_id = :user_id AND deleted_at IS NULL");
@@ -275,46 +284,8 @@ $current_time = date('d-m-Y H:i:s');
     <link href="css/app.css" rel="stylesheet">
     
 </head>
-<body class="tool-body" data-bs-theme="dark">
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-        <div class="container-xl">
-            <a class="navbar-brand fw-semibold" href="admin.php">
-                <i class='bx bx-dial me-2'></i>Administrative Control Center
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="adminNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php"><i class='bx bx-line-chart me-1'></i>Overview Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reports.php"><i class='bx bx-bar-chart-alt-2 me-1'></i>Reports</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="defects.php"><i class='bx bx-error me-1'></i>Defects</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
-                    <li class="nav-item text-muted small d-flex align-items-center">
-                        <i class='bx bx-time-five me-1'></i><?php echo $current_time; ?> UTC
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminNavbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminNavbarDropdown">
-                            <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="settings.php"><i class='bx bx-cog'></i> Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body class="tool-body has-app-navbar" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
 
     <main class="tool-page container-xl py-4">
         <div class="tool-header mb-5">

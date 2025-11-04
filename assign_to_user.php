@@ -21,6 +21,7 @@ define('INCLUDED', true);
 require_once 'includes/functions.php';
 require_once 'config/database.php';
 require_once 'config/constants.php';
+require_once 'includes/navbar.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
     header('Location: ' . BASE_URL . 'login.php');
@@ -71,9 +72,16 @@ $activeDefects = 0;
 $projectCount = 0;
 $contractorCount = 0;
 
+$db = null;
+$navbar = null;
+
 try {
     $database = new Database();
     $db = $database->getConnection();
+
+    if ($currentUserId > 0 && isset($_SESSION['username'])) {
+        $navbar = new Navbar($db, $currentUserId, $_SESSION['username']);
+    }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'] ?? '';
@@ -580,57 +588,8 @@ $priorityBadgeMap = [
     <link rel="manifest" href="/favicons/site.webmanifest">
     <link href="css/app.css" rel="stylesheet">
 </head>
-<body class="tool-body" data-bs-theme="dark">
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top no-print">
-        <div class="container-xl">
-            <a class="navbar-brand fw-semibold" href="assign_to_user.php">
-                <i class='bx bx-user-pin me-2'></i>Assignment Console
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#assignmentNavbar" aria-controls="assignmentNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="assignmentNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php"><i class='bx bx-doughnut-chart me-1'></i>Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="defects.php"><i class='bx bx-bug me-1'></i>Defects</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="assign_to_user.php"><i class='bx bx-user-voice me-1'></i>Assign</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="reports.php"><i class='bx bx-bar-chart-alt-2 me-1'></i>Reports</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="my_tasks.php"><i class='bx bx-task me-1'></i>My Tasks</a>
-                    </li>
-                    <?php if (!empty($_SESSION['is_admin'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="admin.php"><i class='bx bx-dial me-1'></i>Admin</a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
-                    <li class="nav-item text-muted small d-none d-lg-flex align-items-center">
-                        <i class='bx bx-time-five me-1'></i><span data-report-time><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?></span> UK
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="assignmentUserMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="assignmentUserMenu">
-                            <li><a class="dropdown-item" href="profile.php"><i class='bx bx-user'></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="my_tasks.php"><i class='bx bx-list-check'></i> My Tasks</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php"><i class='bx bx-log-out'></i> Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body class="tool-body has-app-navbar" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
 
     <main class="tool-page container-xl py-4">
         <header class="tool-header mb-5">
