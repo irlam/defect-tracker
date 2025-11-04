@@ -48,6 +48,7 @@ class DatabaseOptimizer
                 ROUND((INDEX_LENGTH / 1024 / 1024), 2) AS index_mb
             FROM information_schema.TABLES 
             WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_TYPE = 'BASE TABLE'
             ORDER BY (DATA_LENGTH + INDEX_LENGTH) DESC
             LIMIT 12
         ";
@@ -143,6 +144,7 @@ class DatabaseOptimizer
                 ROUND((DATA_FREE / 1024 / 1024), 2) AS free_mb
             FROM information_schema.TABLES 
             WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_TYPE = 'BASE TABLE'
                 AND DATA_FREE > 0
             ORDER BY DATA_FREE DESC
             LIMIT 10
