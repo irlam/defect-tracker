@@ -52,7 +52,9 @@ class LogoManager {
         }
 
         // Save just the filename to database (not the full path)
-        // This matches existing database format and works with PDF exports
+        // Database format: filename.png (e.g., "67adb16de7b85_mcgoff.png")
+        // This matches existing database records and is required for PDF exports
+        // which build filesystem paths using: $_SERVER['DOCUMENT_ROOT'] . '/uploads/logos/' . filename
         $this->saveLogoPath($fileName, $type, $contractorId);
 
         // Return the normalized public path for display

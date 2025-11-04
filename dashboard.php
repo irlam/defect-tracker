@@ -338,13 +338,17 @@ function correctDefectImagePath($path) {
 }
 
 // Helper function to correct contractor logo paths
-function correctContractorLogoPath($path) {
+function correctContractorLogoPath(?string $path): string {
+    if (empty($path)) {
+        return BASE_URL . 'assets/icons/company-placeholder.png';
+    }
+    
     // Handle both old format (uploads/logos/filename.png) and new format (filename.png)
     $logoFilename = $path;
     if (stripos($logoFilename, 'uploads/logos/') === 0) {
         $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
     }
-    // Assuming BASE_URL is defined in your config
+    
     return BASE_URL . 'uploads/logos/' . $logoFilename;
 }
 
