@@ -2556,3 +2556,4 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in /workspaces/defect-tracker/login.php on line 55
+[04-Nov-2025 04:01:30 UTC] Database connection error: SQLSTATE[HY000] [2002] Connection timed out
