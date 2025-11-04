@@ -384,6 +384,18 @@ $pageTitle = 'Navigation Guide';
             </ul>
         </div>
 
+        <div class="mt-5">
+            <h3>Complete Function Reference</h3>
+            <p>
+                For a comprehensive, printable list of all available functions with their full URLs, visit:
+            </p>
+            <div class="mt-3">
+                <a href="/system-tools/navbar_functions_list.php" class="btn btn-outline-primary">
+                    <i class="fas fa-list-check"></i> View Complete Functions List
+                </a>
+            </div>
+        </div>
+
         <div class="mt-4">
             <a href="/help_index.php" class="btn btn-primary">
                 <i class="fas fa-arrow-left"></i> Back to Help Index
