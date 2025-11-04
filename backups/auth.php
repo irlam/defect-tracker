@@ -9,6 +9,22 @@
  * Author: irlam
  */
 
+// Helper function to check if request is AJAX
+function isAjaxRequest() {
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' ||
+           (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) ||
+           (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false);
+}
+
+// Helper function to send JSON error response
+function sendJsonError($message, $httpCode = 403) {
+    http_response_code($httpCode);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => $message]);
+    exit;
+}
+
 // Start session if not already started
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -16,6 +32,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 // Check if user is logged in via main application session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+    if (isAjaxRequest()) {
+        sendJsonError('Authentication required. Please log in.', 401);
+    }
     // Redirect to main login page
     header('Location: ../login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
     exit;
@@ -75,6 +94,9 @@ try {
 
 // Require admin or manager role to access backup system
 if (!$isAdmin && !$isManager) {
+    if (isAjaxRequest()) {
+        sendJsonError('Access denied. Admin or manager role required.', 403);
+    }
     header('Location: ../dashboard.php');
     exit;
 }
