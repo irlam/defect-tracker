@@ -118,15 +118,17 @@ $navbar->render();
         
         <div class="alert alert-info">
             <h4><i class="fa fa-info-circle"></i> About Push Notifications</h4>
-            <p>This tool allows you to send instant notifications to users of the Defect Tracker system. These notifications 
-            will appear on users' devices in real-time, helping to keep everyone informed about important updates.</p>
-            <p><strong>Features:</strong></p>
+            <p>Send instant notifications to users and contractors via PWA, iOS, and Android applications. 
+            Notifications appear on devices in real-time with delivery confirmation tracking.</p>
+            <p><strong>Enhanced Features:</strong></p>
             <ul>
-                <li>Send notifications to all users or target a specific individual</li>
-                <li>Link notifications to specific defects for easy reference</li>
-                <li>Instantly notify team members about critical updates or required actions</li>
+                <li><strong>Multi-Target Support:</strong> Send to all users, all contractors, specific users, or specific contractor companies</li>
+                <li><strong>Platform Support:</strong> Works across PWA (web browsers), iOS native app, and Android native app</li>
+                <li><strong>Delivery Confirmation:</strong> Track delivery status with success/failure counts and error details</li>
+                <li><strong>Defect Linking:</strong> Link notifications to specific defects for easy reference and navigation</li>
+                <li><strong>Comprehensive Logging:</strong> View complete notification history with filtering options</li>
             </ul>
-            <p>All sent notifications are logged in the system for future reference.</p>
+            <p>All sent notifications are logged with delivery status. <a href="notification_history.php" class="alert-link">View Notification History →</a></p>
         </div>
         
         <?php echo $message; ?>
