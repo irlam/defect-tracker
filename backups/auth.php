@@ -36,11 +36,15 @@ if (isset($_SESSION['user_type'])) {
 }
 
 // Also check legacy role field if exists
-if (!$isAdmin && isset($_SESSION['role'])) {
-    $isAdmin = strtolower($_SESSION['role']) === 'admin';
-}
-if (!$isManager && isset($_SESSION['role'])) {
-    $isManager = strtolower($_SESSION['role']) === 'manager' || strtolower($_SESSION['role']) === 'project_manager';
+if (isset($_SESSION['role'])) {
+    $lowerRole = strtolower($_SESSION['role']);
+    if (!$isAdmin) {
+        $isAdmin = $lowerRole === 'admin';
+    }
+    if (!$isManager) {
+        $managerRoles = ['manager', 'project_manager'];
+        $isManager = in_array($lowerRole, $managerRoles, true);
+    }
 }
 
 // Additionally check user_roles table for role-based permissions
