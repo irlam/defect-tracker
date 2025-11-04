@@ -195,6 +195,16 @@ $adminActionSections = [
                 ],
             ],
             [
+                'tag' => 'cleanup',
+                'tag_label' => 'Cleanup',
+                'icon' => 'bx-trash-alt',
+                'title' => 'Website Cleanup',
+                'description' => 'Clean all user data and create a fresh backup template. Use with caution!',
+                'links' => [
+                    ['label' => 'Cleanup Tool', 'href' => '/admin/cleanup_interface.php', 'icon' => 'bx-recycle', 'variant' => 'danger'],
+                ],
+            ],
+            [
                 'tag' => 'sync',
                 'tag_label' => 'Sync',
                 'icon' => 'bx-sync',
