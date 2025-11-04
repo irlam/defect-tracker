@@ -51,11 +51,12 @@ class LogoManager {
             throw new Exception('Failed to move uploaded file.');
         }
 
-        // Save path to database
-    $storedPath = ltrim($this->publicPathBase, '/') . $fileName;
-        $this->saveLogoPath($storedPath, $type, $contractorId);
+        // Save just the filename to database (not the full path)
+        // This matches existing database format and works with PDF exports
+        $this->saveLogoPath($fileName, $type, $contractorId);
 
-        return $this->normaliseLogoPath($storedPath);
+        // Return the normalized public path for display
+        return $this->normaliseLogoPath($fileName);
     }
 
     private function validateFile($file) {
@@ -201,18 +202,22 @@ class LogoManager {
             return null;
         }
 
+        // If it's already a full URL, return as-is
         if (preg_match('#^https?://#i', $trimmedPath)) {
             return $trimmedPath;
         }
 
+        // Remove any leading slashes
         $trimmedPath = ltrim($trimmedPath, '/');
         $uploadPrefix = trim($this->publicPathBase, '/');
 
+        // If path already includes uploads/logos/, just add leading slash
         if (stripos($trimmedPath, $uploadPrefix) === 0) {
-            return $trimmedPath;
+            return '/' . $trimmedPath;
         }
 
-        return rtrim($uploadPrefix, '/') . '/' . $trimmedPath;
+        // Otherwise, it's just a filename, so prepend the uploads/logos/ path
+        return '/' . rtrim($uploadPrefix, '/') . '/' . $trimmedPath;
     }
 
     private function resolveFilesystemPath($path) {

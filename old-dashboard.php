@@ -410,7 +410,14 @@ $navbar->render();
                                 <td>
                                     <?php echo htmlspecialchars($contractor['company_name'], ENT_QUOTES, 'UTF-8'); ?>
                                     <?php if ($contractor['logo']) : ?>
-                                        <img src="<?php echo getBaseUrl() . '/uploads/logos/' . htmlspecialchars($contractor['logo'], ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" style="max-height: 30px; margin-left: 5px;">
+                                        <?php
+                                        $logoFilename = $contractor['logo'];
+                                        // Handle both old format (uploads/logos/filename.png) and new format (filename.png)
+                                        if (stripos($logoFilename, 'uploads/logos/') === 0) {
+                                            $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                                        }
+                                        ?>
+                                        <img src="<?php echo getBaseUrl() . '/uploads/logos/' . htmlspecialchars($logoFilename, ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" style="max-height: 30px; margin-left: 5px;">
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo $contractor['total_defects']; ?></td>
@@ -451,7 +458,14 @@ $navbar->render();
         <td>
             <?php echo htmlspecialchars($defect['company_name'], ENT_QUOTES, 'UTF-8'); ?>
             <?php if ($defect['logo']) : ?>
-                <img src="<?php echo getBaseUrl() . '/uploads/logos/' . htmlspecialchars($defect['logo'], ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" style="max-height: 30px; margin-left: 5px;">
+                <?php
+                $logoFilename = $defect['logo'];
+                // Handle both old format (uploads/logos/filename.png) and new format (filename.png)
+                if (stripos($logoFilename, 'uploads/logos/') === 0) {
+                    $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                }
+                ?>
+                <img src="<?php echo getBaseUrl() . '/uploads/logos/' . htmlspecialchars($logoFilename, ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" style="max-height: 30px; margin-left: 5px;">
             <?php endif; ?>
         </td>
         <td><?php echo htmlspecialchars($defect['reported_by'], ENT_QUOTES, 'UTF-8'); ?></td>

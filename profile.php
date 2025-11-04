@@ -246,7 +246,14 @@ try {
                                 </div>
                                 <?php if ($contractor && !empty($contractor['logo'])): ?>
                                     <div style="margin-left: auto;">
-                                        <img src="https://mcgoff.defecttracker.uk/uploads/logos/<?php echo htmlspecialchars($contractor['logo']); ?>" 
+                                        <?php
+                                        $logoFilename = $contractor['logo'];
+                                        // Handle both old format (uploads/logos/filename.png) and new format (filename.png)
+                                        if (stripos($logoFilename, 'uploads/logos/') === 0) {
+                                            $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                                        }
+                                        ?>
+                                        <img src="https://mcgoff.defecttracker.uk/uploads/logos/<?php echo htmlspecialchars($logoFilename); ?>" 
                                              alt="<?php echo htmlspecialchars($contractor['company_name']); ?> Logo"
                                              style="max-height: 50px;">
                                     </div>
