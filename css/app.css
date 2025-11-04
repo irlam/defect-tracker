@@ -582,6 +582,13 @@ body.tool-body {
   width: 100%;
 }
 
+.login-page__logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+}
+
 /* Contractors Page ---------------------------------------------------- */
 
 .contractor-page-body {
@@ -1222,6 +1229,13 @@ body.has-app-navbar .app-content-offset {
   backdrop-filter: blur(18px);
 }
 
+.app-brand-logo {
+  height: clamp(48px, 12vw, 72px);
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 26px rgba(37, 99, 235, 0.2));
+}
+
 .login-card__layout {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.9fr);
@@ -1232,6 +1246,7 @@ body.has-app-navbar .app-content-offset {
   gap: var(--spacing-lg);
   padding: var(--spacing-xl);
   align-items: start;
+  overflow: hidden;
 }
 
 .login-card__hero {
@@ -1290,7 +1305,7 @@ body.has-app-navbar .app-content-offset {
 .login-logo {
   display: block;
   margin: 0 auto var(--spacing-md);
-  max-width: 110px;
+  max-width: min(110px, 25vw);
   filter: drop-shadow(0 12px 30px rgba(34, 211, 238, 0.25));
 }
 

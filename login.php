@@ -196,6 +196,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-page__glow login-page__glow--two"></div>
     <?php // --- Main Login Container --- ?>
     <div class="login-container">
+        <div class="login-page__logo-wrapper">
+            <img src="assets/icons/app-logo.svg" alt="Defect Tracker" class="app-brand-logo" loading="lazy">
+        </div>
 
         <?php // Removed the hardcoded time and user display divs that were here. ?>
 
@@ -203,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="login-card__layout">
                 <section class="login-card__hero text-center">
                     <span class="login-badge">Welcome back</span>
-                    <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo">
+                    <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo" loading="lazy">
                     <h1 class="login-title">Construction Defect Tracker</h1>
                     <p class="login-subtitle">Spot, track, and close defects with confidence.</p>
                     <ul class="login-quick-stats">
