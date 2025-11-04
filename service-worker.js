@@ -93,11 +93,12 @@ self.addEventListener('push', event => {
         icon: data.icon || notificationData.icon,
         badge: data.badge || notificationData.badge,
         data: {
-          // Standardize the data structure
+          // Spread operator first to allow standardized fields to override
+          ...data,
+          // Standardize the data structure - these take precedence
           defectId: data.defectId || data.data?.defectId,
           log_id: data.log_id || data.data?.log_id,
-          user_id: data.user_id || data.data?.user_id,
-          ...data
+          user_id: data.user_id || data.data?.user_id
         },
         tag: data.tag || 'defect-notification',
         requireInteraction: data.requireInteraction || false

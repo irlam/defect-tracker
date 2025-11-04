@@ -145,7 +145,7 @@ function getNotificationRecipients($db, $targetType, $userId = null, $contractor
     try {
         switch ($targetType) {
             case 'all':
-                // Get all users with FCM tokens (using UNION to avoid duplicates)
+                // Get all users with FCM tokens (using DISTINCT to avoid duplicates)
                 $stmt = $db->prepare(
                     "SELECT DISTINCT u.id as user_id, u.contractor_id, u.fcm_token, u.device_platform as platform 
                      FROM users u
