@@ -1,6 +1,8 @@
 <?php
-session_start();
-session_destroy();
-header('Location: index.php');
+/**
+ * Backup Manager Logout
+ * Redirects to main application logout
+ */
+header('Location: ../logout.php');
 exit;
 ?>
