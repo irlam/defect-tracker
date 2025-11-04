@@ -457,7 +457,7 @@ $priorityBadgeMap = [
         </div>
 
         <section class="mb-5">
-            <div class="report-metrics-grid">
+            <div class="report-metrics-grid report-metrics-grid--defects">
                 <?php foreach ($defectMetrics as $metric): ?>
                     <article class="report-metric-card <?php echo htmlspecialchars($metric['class'], ENT_QUOTES, 'UTF-8'); ?>">
                         <div class="report-metric-card__icon">
@@ -476,46 +476,42 @@ $priorityBadgeMap = [
                         </div>
                     </article>
                 <?php endforeach; ?>
-            </div>
-        </section>
 
-        <section class="mb-5">
-            <div class="row g-4 align-items-stretch">
-                <div class="col-xl-5">
-                    <article class="system-tool-card h-100">
-                        <div class="system-tool-card__icon">
-                            <i class='bx bx-pulse'></i>
-                        </div>
-                        <div class="system-tool-card__body">
-                            <span class="system-tool-card__tag system-tool-card__tag--insight">Live overview</span>
-                            <h2 class="system-tool-card__title">Portfolio Snapshot</h2>
-                            <p class="system-tool-card__description">Where the workload sits across projects and delivery partners.</p>
-                            <span class="system-tool-card__stat"><?php echo number_format($activeDefects); ?></span>
-                            <p class="text-muted small mb-3">Currently open or in progress.</p>
-                            <ul class="list-unstyled text-muted small mb-0 d-flex flex-column gap-1">
-                                <li><i class='bx bx-building-house me-1'></i><?php echo number_format($projectCount); ?> projects engaged</li>
-                                <li><i class='bx bx-user-voice me-1'></i><?php echo number_format($contractorCount); ?> contractors assigned</li>
-                                <li><i class='bx bx-refresh me-1'></i><?php echo htmlspecialchars($lastUpdateDisplay, ENT_QUOTES, 'UTF-8'); ?></li>
-                            </ul>
-                        </div>
-                    </article>
-                </div>
-                <div class="col-xl-7">
-                    <div class="system-callout system-callout--info h-100" role="status">
-                        <div class="system-callout__icon"><i class='bx bx-target-lock'></i></div>
-                        <div>
-                            <h2 class="system-callout__title">Triage Focus</h2>
-                            <p class="system-callout__body mb-3">Direct teams to the high-impact items demanding attention right now.</p>
-                            <div class="d-flex flex-wrap gap-3 text-muted small mb-0">
-                                <span><i class='bx bx-error me-1'></i><?php echo number_format($criticalDefects); ?> critical</span>
-                                <span><i class='bx bx-timer me-1'></i><?php echo number_format($overdueDefects); ?> overdue</span>
-                                <span><i class='bx bx-x-circle me-1'></i><?php echo number_format($rejectedDefects); ?> rejected</span>
-                                <span><i class='bx bx-check-circle me-1'></i><?php echo number_format($closedDefects); ?> resolved</span>
-                            </div>
-                            <p class="text-muted small mb-0 mt-3"><i class='bx bx-slider-alt me-1'></i><?php echo htmlspecialchars($filterSummary, ENT_QUOTES, 'UTF-8'); ?></p>
-                        </div>
+                <article class="report-metric-card report-metric-card--snapshot">
+                    <div class="report-metric-card__icon">
+                        <i class='bx bx-pulse'></i>
                     </div>
-                </div>
+                    <div class="report-metric-card__content">
+                        <span class="report-metric-card__tag">Live overview</span>
+                        <h3 class="report-metric-card__title">Portfolio Snapshot</h3>
+                        <p class="report-metric-card__lead">Where the workload sits across projects and delivery partners.</p>
+                        <p class="report-metric-card__value mb-1"><?php echo number_format($activeDefects); ?></p>
+                        <p class="report-metric-card__description"><i class='bx bx-trending-up'></i>Currently open or in progress.</p>
+                        <ul class="report-metric-card__list">
+                            <li><i class='bx bx-building-house'></i><?php echo number_format($projectCount); ?> projects engaged</li>
+                            <li><i class='bx bx-user-voice'></i><?php echo number_format($contractorCount); ?> contractors assigned</li>
+                            <li><i class='bx bx-refresh'></i><?php echo htmlspecialchars($lastUpdateDisplay, ENT_QUOTES, 'UTF-8'); ?></li>
+                        </ul>
+                    </div>
+                </article>
+
+                <article class="report-metric-card report-metric-card--triage report-metric-card--wide">
+                    <div class="report-metric-card__icon">
+                        <i class='bx bx-target-lock'></i>
+                    </div>
+                    <div class="report-metric-card__content">
+                        <span class="report-metric-card__tag">Action centre</span>
+                        <h3 class="report-metric-card__title mb-1">Triage Focus</h3>
+                        <p class="report-metric-card__lead">Direct teams to the high-impact items demanding attention right now.</p>
+                        <ul class="report-metric-card__stats">
+                            <li><i class='bx bx-error'></i><?php echo number_format($criticalDefects); ?> critical</li>
+                            <li><i class='bx bx-timer'></i><?php echo number_format($overdueDefects); ?> overdue</li>
+                            <li><i class='bx bx-x-circle'></i><?php echo number_format($rejectedDefects); ?> rejected</li>
+                            <li><i class='bx bx-check-circle'></i><?php echo number_format($closedDefects); ?> resolved</li>
+                        </ul>
+                        <p class="report-metric-card__description mt-2"><i class='bx bx-slider-alt'></i><?php echo htmlspecialchars($filterSummary, ENT_QUOTES, 'UTF-8'); ?></p>
+                    </div>
+                </article>
             </div>
         </section>
 

@@ -2919,6 +2919,10 @@ hr {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.report-metrics-grid--defects {
+  align-items: stretch;
+}
+
 .report-metric-card,
 .task-metric-card {
   --report-card-start: rgba(37, 99, 235, 0.45);
@@ -3003,6 +3007,13 @@ hr {
   letter-spacing: 0.02em;
 }
 
+.report-metric-card__lead {
+  margin: 0 0 0.65rem 0;
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.85);
+  line-height: 1.5;
+}
+
 .report-metric-card__subtitle,
 .task-metric-card__subtitle {
   margin: 0 0 0.35rem 0;
@@ -3032,6 +3043,62 @@ hr {
 .report-metric-card__description .bx,
 .task-metric-card__description .bx {
   font-size: 1.1rem;
+}
+
+.report-metric-card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.82);
+  background: rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(226, 232, 240, 0.18);
+  margin-bottom: 0.5rem;
+}
+
+.report-metric-card__list,
+.report-metric-card__stats {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-sm) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.report-metric-card__list li,
+.report-metric-card__stats li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.report-metric-card__list .bx,
+.report-metric-card__stats .bx {
+  font-size: 1.05rem;
+  color: rgba(248, 250, 252, 0.82);
+}
+
+.report-metric-card__stats {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.report-metric-card--wide {
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .report-metric-card--wide {
+    grid-column: span 2;
+  }
 }
 
 .report-metric-card--total {
@@ -3080,6 +3147,22 @@ hr {
   --report-card-border: rgba(52, 211, 153, 0.55);
   --report-card-shadow: rgba(52, 211, 153, 0.35);
   --report-icon-bg: rgba(22, 101, 52, 0.28);
+}
+
+.report-metric-card--snapshot {
+  --report-card-start: #1e3c72;
+  --report-card-end: #2a5298;
+  --report-card-border: rgba(59, 130, 246, 0.45);
+  --report-card-shadow: rgba(30, 64, 175, 0.35);
+  --report-icon-bg: rgba(30, 64, 175, 0.38);
+}
+
+.report-metric-card--triage {
+  --report-card-start: #1e3a8a;
+  --report-card-end: #2563eb;
+  --report-card-border: rgba(59, 130, 246, 0.58);
+  --report-card-shadow: rgba(37, 99, 235, 0.35);
+  --report-icon-bg: rgba(37, 99, 235, 0.32);
 }
 
 .report-metric-card--contractors {
