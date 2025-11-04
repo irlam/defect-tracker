@@ -1,5 +1,19 @@
 <?php
 // reports_readme.php
+session_start();
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/navbar.php';
+
+// Check if the user is logged in
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+// Create a database connection
+$database = new Database();
+$db = $database->getConnection();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,20 +23,14 @@
     <title>Reports Dashboard - Construction Defect Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
     <style>
+        body {
+            padding-top: 76px;
+        }
         .main-content {
             padding: 20px;
-            margin-left: 250px;
-            transition: margin-left 0.3s;
-            background-color: #f8f9fa;
-            min-height: 100vh;
-        }
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
+            max-width: 1200px;
+            margin: 0 auto;
         }
         .card {
             box-shadow: 0 2px 4px rgba(0,0,0,.05);
@@ -31,8 +39,8 @@
         }
 
         .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid rgba(0,0,0,.05);
+            background-color: var(--bs-secondary-bg);
+            border-bottom: 1px solid var(--bs-border-color);
             padding: 1rem;
         }
 
@@ -41,13 +49,20 @@
         }
     </style>
 </head>
-<body>
+<body class="tool-body" data-bs-theme="dark">
 
+    <?php
+    $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
+    $navbar->render();
+    ?>
 
     <!-- Main Content -->
     <div class="main-content">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">Reports Dashboard - Construction Defect Tracker</h1>
+            <a href="../help_index.php" class="btn btn-outline-secondary">
+                <i class='bx bx-arrow-back'></i> Back to Help
+            </a>
         </div>
 
         <div class="card">
@@ -100,6 +115,5 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/main.js"></script>
 </body>
 </html>
