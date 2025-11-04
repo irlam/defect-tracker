@@ -34,7 +34,7 @@ class TestDatabase {
             "CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username VARCHAR(50) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
+                password VARCHAR(255) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 role TEXT CHECK (role IN ('admin', 'manager', 'contractor', 'user')) DEFAULT 'user',
                 first_name VARCHAR(50),
@@ -177,10 +177,10 @@ class TestDatabase {
             $stmt = $this->conn->prepare("SELECT COUNT(*) FROM users");
             $stmt->execute();
             if ($stmt->fetchColumn() == 0) {
-                $this->conn->exec("INSERT INTO users (username, password_hash, email, role, first_name, last_name, full_name, active, is_active, created_by) 
+                $this->conn->exec("INSERT INTO users (username, password, email, role, first_name, last_name, full_name, active, is_active, created_by) 
                                  VALUES ('admin', '" . password_hash('admin123', PASSWORD_DEFAULT) . "', 'admin@test.com', 'admin', 'Admin', 'User', 'Admin User', 1, 1, 'system')");
                 
-                $this->conn->exec("INSERT INTO users (username, password_hash, email, role, first_name, last_name, full_name, active, is_active, created_by) 
+                $this->conn->exec("INSERT INTO users (username, password, email, role, first_name, last_name, full_name, active, is_active, created_by) 
                                  VALUES ('testuser', '" . password_hash('test123', PASSWORD_DEFAULT) . "', 'test@test.com', 'user', 'Test', 'User', 'Test User', 1, 1, 'system')");
                                  
                 // Insert test project

@@ -27,7 +27,7 @@ try {
         INSERT INTO users (
             username, 
             email, 
-            password_hash, 
+            password, 
             user_type, 
             status, 
             created_by, 
@@ -35,7 +35,7 @@ try {
         ) VALUES (
             :username,
             :email,
-            :password_hash,
+            :password,
             :user_type,
             'active',
             :created_by,
@@ -46,7 +46,7 @@ try {
     $stmt->execute([
         ':username' => $_POST['username'],
         ':email' => $_POST['email'],
-        ':password_hash' => $hashedPassword,
+        ':password' => $hashedPassword,
         ':user_type' => $_POST['user_type'],
         ':created_by' => 'irlam',
         ':created_at' => '2025-01-14 21:11:42'
