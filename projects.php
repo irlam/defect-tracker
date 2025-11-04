@@ -19,21 +19,28 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
 // Define INCLUDED constant for navbar security
 define('INCLUDED', true);
 require_once 'config/database.php';
-// Removed navbar include
 require_once 'includes/functions.php';
+require_once 'includes/navbar.php';
 
 $pageTitle = 'Projects Management';
 $success_message = '';
 $error_message = '';
-$currentDateTime = '2025-01-24 17:36:21';
 $currentUser = $_SESSION['user_id'];
+
+date_default_timezone_set('Europe/London');
+$currentDateTime = date('Y-m-d H:i:s');
+$navbar = null;
 
 try {
     $database = new Database();
     $db = $database->getConnection();
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Removed navbar initialization
+    try {
+        $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
+    } catch (Exception $navbarException) {
+        error_log('Navbar initialisation failed in projects.php: ' . $navbarException->getMessage());
+    }
 
     // Handle form submissions
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -155,46 +162,260 @@ try {
     ";
     $projects = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
+    $totalProjects = count($projects);
+    $statusCounts = [
+        'pending' => 0,
+        'active' => 0,
+        'completed' => 0,
+        'on-hold' => 0,
+        'archived' => 0,
+        'other' => 0,
+    ];
+    $upcomingCount = 0;
+    $overdueCount = 0;
+    $progressSum = 0;
+    $progressCount = 0;
+    $latestUpdate = null;
+    $nextDeadlineProject = null;
+
+    foreach ($projects as &$project) {
+        $statusKey = strtolower((string) ($project['status'] ?? 'pending'));
+        if (!array_key_exists($statusKey, $statusCounts)) {
+            $statusCounts['other']++;
+        } else {
+            $statusCounts[$statusKey]++;
+        }
+
+        $progress = calculateProgress($project['start_date'], $project['end_date']);
+        $project['progress'] = $progress;
+        $progressSum += $progress;
+        $progressCount++;
+
+        $daysRemaining = is_numeric($project['days_remaining']) ? (int) $project['days_remaining'] : null;
+        $project['days_remaining'] = $daysRemaining;
+
+        if ($daysRemaining !== null) {
+            if ($daysRemaining >= 0 && $daysRemaining <= 14) {
+                $upcomingCount++;
+            }
+
+            if ($daysRemaining < 0) {
+                $overdueCount++;
+            }
+
+            if ($daysRemaining >= 0 && ($nextDeadlineProject === null || $daysRemaining < $nextDeadlineProject['days_remaining'])) {
+                $nextDeadlineProject = [
+                    'name' => $project['project_name'],
+                    'days_remaining' => $daysRemaining,
+                ];
+            }
+        }
+
+        $project['total_days'] = is_numeric($project['total_days']) ? (int) $project['total_days'] : null;
+        $project['days_elapsed'] = is_numeric($project['days_elapsed']) ? (int) $project['days_elapsed'] : null;
+
+        $updatedAt = $project['updated_at'] ?? $project['created_at'] ?? null;
+        if ($updatedAt) {
+            if ($latestUpdate === null || $updatedAt > $latestUpdate) {
+                $latestUpdate = $updatedAt;
+            }
+            $project['updated_relative'] = formatRelativeTime($updatedAt);
+        } else {
+            $project['updated_relative'] = 'No updates logged';
+        }
+
+        $project['status_icon'] = getStatusIcon($statusKey);
+        $project['status_key'] = $statusKey;
+    }
+    unset($project);
+
+    $averageProgress = $progressCount > 0 ? (int) round($progressSum / $progressCount) : 0;
+    $lastUpdateRelative = $latestUpdate ? formatRelativeTime($latestUpdate) : 'No recent updates';
+
+    if ($totalProjects === 0) {
+        $heroSubtitle = 'Create your first project to kick-start the programme tracker.';
+    } else {
+        $heroDetails = [];
+        $heroDetails[] = 'Tracking ' . number_format($totalProjects) . ' projects across the portfolio.';
+        if ($upcomingCount > 0) {
+            $heroDetails[] = number_format($upcomingCount) . ' approaching their completion window.';
+        }
+        if ($overdueCount > 0) {
+            $heroDetails[] = number_format($overdueCount) . ' require recovery support.';
+        }
+        if (empty($heroDetails)) {
+            $heroDetails[] = 'All projects are currently on track.';
+        }
+        $heroSubtitle = implode(' ', $heroDetails);
+    }
+
+    if ($overdueCount === 0) {
+        $portfolioHealthSummary = 'Delivery cadence holding steady.';
+    } elseif ($overdueCount >= max(1, (int) ceil(($statusCounts['active'] ?? 0) * 0.4))) {
+        $portfolioHealthSummary = 'Escalate focus on critical recoveries.';
+    } else {
+        $portfolioHealthSummary = 'Monitor the flagged programmes closely.';
+    }
+
+    $projectHeroMetrics = [
+        [
+            'icon' => 'bx-rocket',
+            'label' => 'Active Projects',
+            'value_display' => number_format($statusCounts['active'] ?? 0),
+            'note' => ($statusCounts['pending'] ?? 0) > 0
+                ? number_format($statusCounts['pending']) . ' ready to launch'
+                : 'All teams mobilised',
+            'variant' => 'indigo',
+        ],
+        [
+            'icon' => 'bx-calendar-event',
+            'label' => 'Due Within 14 Days',
+            'value_display' => number_format($upcomingCount),
+            'note' => $nextDeadlineProject
+                ? ($nextDeadlineProject['days_remaining'] === 0
+                    ? 'Next: ' . $nextDeadlineProject['name'] . ' completes today'
+                    : 'Next: ' . $nextDeadlineProject['name'] . ' in ' . $nextDeadlineProject['days_remaining'] . 'd')
+                : 'No imminent deadlines',
+            'variant' => 'amber',
+        ],
+        [
+            'icon' => 'bx-line-chart',
+            'label' => 'Average Progress',
+            'value_display' => number_format($averageProgress) . '%',
+            'note' => $portfolioHealthSummary,
+            'variant' => 'teal',
+        ],
+        [
+            'icon' => 'bx-error-circle',
+            'label' => 'Overdue Projects',
+            'value_display' => number_format($overdueCount),
+            'note' => $overdueCount > 0 ? 'Prioritise recovery plans' : 'All milestones on schedule',
+            'variant' => 'crimson',
+        ],
+    ];
+
 } catch (Exception $e) {
     error_log("Database error in projects.php: " . $e->getMessage());
     $error_message = "Database error: " . $e->getMessage();
 }
 
 // Helper function for status badge classes
-function getStatusBadgeClass($status) {
-    switch (strtolower($status)) {
+function getStatusIcon($status)
+{
+    switch (strtolower((string) $status)) {
         case 'active':
-            return 'bg-success';
+            return 'bx-rocket';
         case 'pending':
-            return 'bg-warning text-dark';
+            return 'bx-hourglass';
         case 'completed':
-            return 'bg-info';
+            return 'bx-badge-check';
         case 'on-hold':
-            return 'bg-secondary';
+            return 'bx-pause-circle';
+        case 'archived':
+            return 'bx-archive';
         default:
-            return 'bg-primary';
+            return 'bx-folder';
     }
 }
 
-// Helper function to format dates
-function formatDate($date) {
-    return date('d m, Y', strtotime($date));
+function formatRelativeTime(?string $dateTime): string
+{
+    if (empty($dateTime)) {
+        return 'Not recorded';
+    }
+
+    try {
+        $target = new DateTime($dateTime, new DateTimeZone('UTC'));
+        $now = new DateTime('now', new DateTimeZone('UTC'));
+        $diff = $now->diff($target);
+
+        if ($diff->invert === 0) {
+            // Future date
+            if ($diff->d > 0) {
+                return 'In ' . $diff->d . 'd';
+            }
+            if ($diff->h > 0) {
+                return 'In ' . $diff->h . 'h';
+            }
+            if ($diff->i > 0) {
+                return 'In ' . $diff->i . 'm';
+            }
+            return 'Moments away';
+        }
+
+        if ($diff->y > 0) {
+            return $diff->y . 'y ago';
+        }
+        if ($diff->m > 0) {
+            return $diff->m . 'mo ago';
+        }
+        if ($diff->d > 0) {
+            return $diff->d . 'd ago';
+        }
+        if ($diff->h > 0) {
+            return $diff->h . 'h ago';
+        }
+        if ($diff->i > 0) {
+            return $diff->i . 'm ago';
+        }
+        return 'Just now';
+    } catch (Exception $e) {
+        error_log('Relative time parsing error: ' . $e->getMessage());
+        return 'Unknown';
+    }
 }
-// Helper function to calculate project progress
-function calculateProgress($start_date, $end_date) {
+
+function formatDate($date)
+{
+    return date('d M, Y', strtotime($date));
+}
+
+function calculateProgress($start_date, $end_date)
+{
     $start = strtotime($start_date);
     $end = strtotime($end_date);
     $now = time();
 
-    if ($start >= $end) return 0;
-    if ($now >= $end) return 100;
-    if ($now <= $start) return 0;
+    if (!$start || !$end || $start >= $end) {
+        return 0;
+    }
+    if ($now >= $end) {
+        return 100;
+    }
+    if ($now <= $start) {
+        return 0;
+    }
 
     $total = $end - $start;
     $elapsed = $now - $start;
     $progress = ($elapsed / $total) * 100;
 
     return round(max(0, min(100, $progress)));
+}
+
+function formatProjectDeadline(?int $daysRemaining): string
+{
+    if ($daysRemaining === null) {
+        return 'Target date pending';
+    }
+
+    if ($daysRemaining > 1) {
+        return $daysRemaining . ' days remaining';
+    }
+
+    if ($daysRemaining === 1) {
+        return '1 day remaining';
+    }
+
+    if ($daysRemaining === 0) {
+        return 'Due today';
+    }
+
+    if ($daysRemaining === -1) {
+        return '1 day overdue';
+    }
+
+    return abs($daysRemaining) . ' days overdue';
 }
 ?>
 <!DOCTYPE html>
@@ -204,430 +425,343 @@ function calculateProgress($start_date, $end_date) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Projects Management - Defect Tracker System">
     <meta name="author" content="<?php echo htmlspecialchars($_SESSION['username']); ?>">
-    <meta name="last-modified" content="2025-02-27 21:24:23">
+    <meta name="last-modified" content="<?php echo htmlspecialchars($currentDateTime); ?>">
     <title>Projects Management - Defect Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-	<link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
-<link rel="shortcut icon" href="/favicons/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
-<link rel="manifest" href="/favicons/site.webmanifest" />
-    <style>
-        .main-content {
-            padding: 20px;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-
-        .card {
-            border: none;
-            background: linear-gradient(to right, #ffffff, #f8f9fa);
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
-            padding: 1rem;
-        }
-
-        .date-info {
-            background: linear-gradient(135deg, #f6f9fc 0%, #f1f4f8 100%);
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .date-info i {
-            color: #3498db;
-            margin-right: 5px;
-        }
-
-        .date-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-
-        .date-value {
-            font-size: 0.95rem;
-            color: #2c3e50;
-        }
-
-        .progress {
-            height: 8px;
-            border-radius: 4px;
-            margin-top: 10px;
-            background-color: #e9ecef;
-        }
-
-        .progress-bar {
-            background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
-        }
-
-        .modal-content {
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            border-bottom: none;
-        }
-
-        .modal-header .btn-close {
-            color: white;
-            opacity: 0.8;
-        }
-
-        .modal-footer {
-            background: linear-gradient(to right, #f8f9fa, #ffffff);
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2980b9 0%, #2c3e50 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
-        }
-
-        .status-badge {
-            font-weight: 500;
-            padding: 0.5em 1em;
-            border-radius: 20px;
-        }
-
-        .time-remaining {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        }
-
-    </style>
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <link href="/css/app.css?v=20251103" rel="stylesheet">
 </head>
-<body class="tool-body" data-bs-theme="dark">
-    <div class="main-content">
-        <div class="page-header d-flex justify-content-between align-items-center mb-4">
+<body class="tool-body projects-page-body has-app-navbar" data-bs-theme="dark">
+<?php
+try {
+    if ($navbar instanceof Navbar) {
+        $navbar->render();
+    }
+} catch (Exception $renderException) {
+    error_log('Navbar render error on projects.php: ' . $renderException->getMessage());
+    echo '<div class="alert alert-danger m-3" role="alert">Navigation failed to load. Refresh the page or contact support.</div>';
+}
+?>
+
+<div class="app-content-offset"></div>
+
+<main class="projects-page container-fluid px-4 pb-5">
+    <section class="projects-hero shadow-lg mb-4">
+        <div class="projects-hero__headline">
             <div>
-                <h1 class="h3 mb-0">Projects Management</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="dashboard.php">Home</a></li>
-                        <li class="breadcrumb-item active">Projects</li>
-                    </ol>
-                </nav>
+                <span class="projects-hero__pill"><i class='bx bx-map-pin me-1'></i>Programme Delivery</span>
+                <h1 class="projects-hero__title">Projects Management</h1>
+                <p class="projects-hero__subtitle"><?php echo htmlspecialchars($heroSubtitle); ?></p>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
-                <i class='bx bx-plus-circle'></i> Create Project
+            <div class="projects-hero__actions text-end">
+                <button type="button" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                    <i class='bx bx-plus-circle me-2'></i>Create Project
+                </button>
+                <p class="projects-hero__timestamp mt-3">
+                    <i class='bx bx-time-five me-1'></i>Updated <?php echo htmlspecialchars($lastUpdateRelative); ?>
+                </p>
+            </div>
+        </div>
+        <div class="projects-hero__metrics">
+            <?php foreach ($projectHeroMetrics as $metric): ?>
+                <article class="projects-metric projects-metric--<?php echo htmlspecialchars($metric['variant']); ?>">
+                    <div class="projects-metric__icon"><i class='bx <?php echo htmlspecialchars($metric['icon']); ?>'></i></div>
+                    <div class="projects-metric__details">
+                        <span class="projects-metric__label"><?php echo htmlspecialchars($metric['label']); ?></span>
+                        <span class="projects-metric__value"><?php echo htmlspecialchars($metric['value_display']); ?></span>
+                        <span class="projects-metric__note"><?php echo htmlspecialchars($metric['note']); ?></span>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <?php if ($success_message): ?>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm projects-alert" role="alert">
+            <i class='bx bx-check-circle me-2'></i><?php echo htmlspecialchars($success_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error_message): ?>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm projects-alert" role="alert">
+            <i class='bx bx-error-circle me-2'></i><?php echo htmlspecialchars($error_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <section class="projects-controls row g-3 align-items-center mb-4">
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 d-flex flex-wrap gap-2 projects-controls__filters">
+            <button type="button" class="projects-filter__button is-active" data-filter="all">
+                <i class='bx bx-show me-1'></i>All
+                <span class="projects-filter__count"><?php echo number_format($totalProjects); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="active">
+                <i class='bx bx-rocket me-1'></i>Active
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['active'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="pending">
+                <i class='bx bx-hourglass me-1'></i>Pending
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['pending'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="completed">
+                <i class='bx bx-badge-check me-1'></i>Completed
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['completed'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="on-hold">
+                <i class='bx bx-pause-circle me-1'></i>On Hold
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['on-hold'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="archived">
+                <i class='bx bx-archive me-1'></i>Archived
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['archived'] ?? 0); ?></span>
             </button>
         </div>
+    </section>
 
-        <?php if ($success_message): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($success_message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
+    <?php if ($totalProjects === 0): ?>
+        <section class="projects-empty-state text-center py-5">
+            <div class="projects-empty-state__icon mb-3"><i class='bx bx-folder-open'></i></div>
+            <h2 class="h4 mb-3">No projects in the tracker yet</h2>
+            <p class="text-muted mb-4">Kick off your portfolio management by creating a new project. You can import milestones and deliverables once the record is created.</p>
+            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                <i class='bx bx-plus-circle me-2'></i>Create your first project
+            </button>
+        </section>
+    <?php else: ?>
+        <section class="projects-grid row g-3" id="projectsGrid">
+            <?php foreach ($projects as $project): ?>
+                <div class="col-12 col-lg-6 col-xxl-4 projects-grid__item" data-project-status="<?php echo htmlspecialchars($project['status_key']); ?>" data-project-name="<?php echo htmlspecialchars($project['project_name']); ?>">
+                    <article class="project-card">
+                        <header class="project-card__header">
+                            <div>
+                                <span class="project-card__pill project-card__pill--<?php echo htmlspecialchars($project['status_key']); ?>">
+                                    <i class='bx <?php echo htmlspecialchars($project['status_icon']); ?>'></i>
+                                    <?php echo ucwords(str_replace('-', ' ', htmlspecialchars($project['status_key']))); ?>
+                                </span>
+                                <h2 class="project-card__title"><?php echo htmlspecialchars($project['project_name']); ?></h2>
+                            </div>
+                            <div class="project-card__actions">
+                                <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#editProjectModal<?php echo $project['id']; ?>">
+                                    <i class='bx bx-edit-alt'></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteProject(<?php echo (int) $project['id']; ?>)">
+                                    <i class='bx bx-trash'></i>
+                                </button>
+                            </div>
+                        </header>
+                        <div class="project-card__body">
+                            <p class="project-card__description">
+                                <?php echo htmlspecialchars($project['description'] ?: 'No description provided yet.'); ?>
+                            </p>
+                            <div class="project-card__schedule">
+                                <div class="project-card__date">
+                                    <span class="project-card__date-label"><i class='bx bx-calendar'></i>Start</span>
+                                    <span class="project-card__date-value"><?php echo formatDate($project['start_date']); ?></span>
+                                </div>
+                                <div class="project-card__date">
+                                    <span class="project-card__date-label"><i class='bx bx-calendar-check'></i>Completion</span>
+                                    <span class="project-card__date-value"><?php echo formatDate($project['end_date']); ?></span>
+                                </div>
+                                <div class="project-card__date">
+                                    <span class="project-card__date-label"><i class='bx bx-refresh'></i>Updated</span>
+                                    <span class="project-card__date-value"><?php echo htmlspecialchars($project['updated_relative']); ?></span>
+                                </div>
+                            </div>
+                            <div class="project-card__progress" title="<?php echo (int) $project['progress']; ?>% complete">
+                                <div class="project-card__progress-bar" style="width: <?php echo (int) $project['progress']; ?>%"></div>
+                                <div class="project-card__progress-value"><?php echo (int) $project['progress']; ?>%</div>
+                            </div>
+                            <div class="project-card__deadline">
+                                <i class='bx bx-time-five'></i>
+                                <span><?php echo htmlspecialchars(formatProjectDeadline($project['days_remaining'])); ?></span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
 
-        <?php if ($error_message): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($error_message); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
-
-        <div class="row">
-            <?php if (empty($projects)): ?>
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        No projects found. Create your first project using the 'Create Project' button.
+                <div class="modal fade" id="editProjectModal<?php echo $project['id']; ?>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <form method="POST" class="needs-validation" novalidate>
+                                <input type="hidden" name="action" value="update_project">
+                                <input type="hidden" name="project_id" value="<?php echo $project['id']; ?>">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class='bx bx-edit me-2'></i>Edit Project</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label required">Project Name</label>
+                                            <input type="text" name="project_name" class="form-control" value="<?php echo htmlspecialchars($project['project_name']); ?>" required>
+                                            <div class="invalid-feedback">Project name is required.</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Description</label>
+                                            <textarea name="description" class="form-control" rows="3" placeholder="Add programme notes or scope details"><?php echo htmlspecialchars($project['description']); ?></textarea>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Start Date</label>
+                                            <input type="date" name="start_date" class="form-control" value="<?php echo date('Y-m-d', strtotime($project['start_date'])); ?>" required>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">End Date</label>
+                                            <input type="date" name="end_date" class="form-control" value="<?php echo date('Y-m-d', strtotime($project['end_date'])); ?>" required>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Status</label>
+                                            <select name="status" class="form-select" required>
+                                                <option value="pending" <?php echo $project['status_key'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                <option value="active" <?php echo $project['status_key'] === 'active' ? 'selected' : ''; ?>>Active</option>
+                                                <option value="completed" <?php echo $project['status_key'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
+                                                <option value="on-hold" <?php echo $project['status_key'] === 'on-hold' ? 'selected' : ''; ?>>On Hold</option>
+                                                <option value="archived" <?php echo $project['status_key'] === 'archived' ? 'selected' : ''; ?>>Archived</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-text text-muted">
+                                                <i class='bx bx-info-circle me-1'></i>Adjust dates and status to keep programme visibility accurate.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            <?php else: ?>
-                <?php foreach ($projects as $project): ?>
-                    <div class="col-md-6 col-xl-4">
-                        <div class="project-card">
-                            <div class="card h-100">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0">
-                                        <?php echo htmlspecialchars($project['project_name']); ?>
-                                    </h5>
-                                    <span class="badge <?php echo getStatusBadgeClass($project['status']); ?> status-badge">
-                                        <?php echo ucfirst(htmlspecialchars($project['status'])); ?>
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">
-                                        <?php echo htmlspecialchars($project['description'] ?? 'No description available'); ?>
-                                    </p>
-                                    
-                                    <div class="date-info">
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <div class="date-label">
-                                                    <i class='bx bx-calendar'></i> Start Date
-                                                </div>
-                                                <div class="date-value">
-                                                    <?php echo formatDate($project['start_date']); ?>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="date-label">
-                                                    <i class='bx bx-calendar-check'></i> End Date
-                                                </div>
-                                                <div class="date-value">
-                                                    <?php echo formatDate($project['end_date']); ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+            <?php endforeach; ?>
+        </section>
+    <?php endif; ?>
 
-                                    <div class="date-info">
-                                        <div class="date-label">
-                                            <i class='bx bx-time'></i> Created
-                                        </div>
-                                        <div class="date-value">
-                                            <?php echo date('M d, Y H:i', strtotime($project['created_at'])); ?>
-                                        </div>
-                                    </div>
+    <div class="projects-footer-actions d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+        <div class="text-muted small"><i class='bx bx-info-circle me-1'></i>Need to bulk import projects? Contact support for onboarding options.</div>
+        <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+            <i class='bx bx-plus-circle me-1'></i>New Project
+        </button>
+    </div>
+</main>
 
-                                    <?php 
-                                    $progress = calculateProgress($project['start_date'], $project['end_date']);
-                                    $daysRemaining = $project['days_remaining'];
-                                    ?>
-                                    
-                                    <div class="progress" title="<?php echo $progress; ?>% Complete">
-                                        <div class="progress-bar" role="progressbar" 
-                                             style="width: <?php echo $progress; ?>%" 
-                                             aria-valuenow="<?php echo $progress; ?>" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="time-remaining">
-                                        <i class='bx bx-time-five'></i>
-                                        <?php 
-                                        if ($daysRemaining > 0) {
-                                            echo "$daysRemaining days remaining";
-                                        } elseif ($daysRemaining == 0) {
-                                            echo "Due today";
-                                        } else {
-                                            echo abs($daysRemaining) . " days overdue";
-                                        }
-                                        ?>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-sm btn-primary" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#editProjectModal<?php echo $project['id']; ?>">
-                                            <i class='bx bx-edit'></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger"
-                                                onclick="confirmDeleteProject(<?php echo $project['id']; ?>)">
-                                            <i class='bx bx-trash'></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+<div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" class="needs-validation" novalidate>
+                <input type="hidden" name="action" value="create_project">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class='bx bx-briefcase-alt-2 me-2'></i>Create New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label required">Project Name</label>
+                            <input type="text" name="project_name" class="form-control" placeholder="e.g. Plot Handover Programme" required>
+                            <div class="invalid-feedback">Provide a name so the team can recognise this programme.</div>
                         </div>
-
-                        <!-- Edit Project Modal -->
-                        <div class="modal fade" id="editProjectModal<?php echo $project['id']; ?>" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form method="POST" class="needs-validation" novalidate>
-                                        <input type="hidden" name="action" value="update_project">
-                                        <input type="hidden" name="project_id" value="<?php echo $project['id']; ?>">
-
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Edit Project</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label required">Project Name</label>
-                                                <input type="text" name="project_name" class="form-control" 
-                                                       value="<?php echo htmlspecialchars($project['project_name']); ?>" required>
-                                                <div class="invalid-feedback">Project name is required</div>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Description</label>
-                                                <textarea name="description" class="form-control" rows="3"><?php echo htmlspecialchars($project['description']); ?></textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Start Date</label>
-                                                <input type="date" name="start_date" class="form-control" 
-                                                       value="<?php echo date('Y-m-d', strtotime($project['start_date'])); ?>" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">End Date</label>
-                                                <input type="date" name="end_date" class="form-control" 
-                                                       value="<?php echo date('Y-m-d', strtotime($project['end_date'])); ?>" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Status</label>
-                                                <select name="status" class="form-select" required>
-                                                    <option value="pending" <?php echo $project['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                                    <option value="active" <?php echo $project['status'] == 'active' ? 'selected' : ''; ?>>Active</option>
-                                                    <option value="completed" <?php echo $project['status'] == 'completed' ? 'selected' : ''; ?>>Completed</option>
-                                                    <option value="on-hold" <?php echo $project['status'] == 'on-hold' ? 'selected' : ''; ?>>On Hold</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                                        </div>
-                                    </form>
-                                </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Key deliverables, stakeholders, or scope notes"></textarea>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="end_date" class="form-control" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="pending">Pending</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="on-hold">On Hold</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-text text-muted">
+                                <i class='bx bx-calendar-week me-1'></i>Set accurate dates to power progress tracking and reporting insights.
                             </div>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-
-        <!-- Create Project Modal -->
-        <div class="modal fade" id="createProjectModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="POST">
-                        <input type="hidden" name="action" value="create_project">
-                        
-                        <div class="modal-header">
-                            <h5 class="modal-title">Create New Project</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Project Name</label>
-                                <input type="text" name="project_name" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea name="description" class="form-control" rows="3"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Start Date</label>
-                                <input type="date" name="start_date" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">End Date</label>
-                                <input type="date" name="end_date" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Status</label>
-                                <select name="status" class="form-select" required>
-                                    <option value="pending">Pending</option>
-                                    <option value="active">Active</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="on-hold">On Hold</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Create Project</button>
-                        </div>
-                    </form>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Delete Project Form -->
-    <form id="deleteProjectForm" method="POST" style="display: none;">
-        <input type="hidden" name="action" value="delete_project">
-        <input type="hidden" name="project_id" id="deleteProjectId">
-    </form>
+<form id="deleteProjectForm" method="POST" class="d-none">
+    <input type="hidden" name="action" value="delete_project">
+    <input type="hidden" name="project_id" id="deleteProjectId">
+</form>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Form validation
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                });
-            });
-
-            // Delete project confirmation
-            window.confirmDeleteProject = function(projectId) {
-                if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-                    const form = document.getElementById('deleteProjectForm');
-                    document.getElementById('deleteProjectId').value = projectId;
-                    form.submit();
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
-            };
-
-            // Date validation
-            const startDateInputs = document.querySelectorAll('input[name="start_date"]');
-            const endDateInputs = document.querySelectorAll('input[name="end_date"]');
-
-            startDateInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    const endDateInput = this.closest('form').querySelector('input[name="end_date"]');
-                    endDateInput.min = this.value;
-                });
-            });
-
-            endDateInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    const startDateInput = this.closest('form').querySelector('input[name="start_date"]');
-                    startDateInput.max = this.value;
-                });
-            });
-
-            // Initialize tooltips
-            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+                form.classList.add('was-validated');
             });
         });
-    </script>
+
+        const projectItems = document.querySelectorAll('.projects-grid__item');
+        const filterButtons = document.querySelectorAll('.projects-filter__button');
+        const searchInput = document.getElementById('projectsSearch');
+
+        function applyFilters() {
+            const activeFilter = document.querySelector('.projects-filter__button.is-active')?.dataset.filter ?? 'all';
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            projectItems.forEach((item) => {
+                const matchesStatus = activeFilter === 'all' || item.dataset.projectStatus === activeFilter;
+                const matchesSearch = searchTerm.length === 0 || item.dataset.projectName.toLowerCase().includes(searchTerm);
+                item.style.display = matchesStatus && matchesSearch ? '' : 'none';
+            });
+        }
+
+        filterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach((btn) => btn.classList.remove('is-active'));
+                button.classList.add('is-active');
+                applyFilters();
+            });
+        });
+
+        searchInput.addEventListener('input', () => {
+            applyFilters();
+        });
+
+        window.confirmDeleteProject = (projectId) => {
+            if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                document.getElementById('deleteProjectId').value = projectId;
+                document.getElementById('deleteProjectForm').submit();
+            }
+        };
+
+        applyFilters();
+    });
+</script>
 </body>
 </html>
