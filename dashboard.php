@@ -389,32 +389,45 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
             </div>
         <?php endif; ?>
 
-        <header class="tool-header mb-5">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                <div>
-                    <h1 class="h3 mb-2">Operational Defect Command</h1>
-                    <p class="text-muted mb-0">Real-time insight into contractor workloads and outstanding issues.</p>
+        <header class="tool-header dashboard-hero mb-5">
+            <div class="dashboard-hero__content">
+                <div class="dashboard-hero__intro">
+                    <div>
+                        <h1 class="h3 mb-2">Operational Defect Command</h1>
+                        <p class="text-muted mb-0">Real-time insight into contractor workloads and outstanding issues.</p>
+                    </div>
+                    <div class="dashboard-hero__meta">
+                        <span><i class='bx bx-user-voice'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span><i class='bx bx-label'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span><i class='bx bx-calendar-event'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+                    </div>
                 </div>
-                <div class="d-flex flex-column align-items-start text-muted small gap-1">
-                    <span><i class='bx bx-user-voice me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span><i class='bx bx-calendar-event me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+                <div class="dashboard-hero__cta">
+                    <a class="btn btn-sm btn-outline-light" href="defects.php">
+                        <i class='bx bx-list-ol'></i>
+                        View Defects
+                    </a>
+                    <a class="btn btn-sm btn-outline-light" href="reports.php">
+                        <i class='bx bx-bar-chart'></i>
+                        Reports Hub
+                    </a>
                 </div>
             </div>
-            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
-                <a class="btn btn-sm btn-primary" href="create_defect.php">
-                    <i class='bx bx-plus-circle'></i>
-                    Create Defect
-                </a>
-                <a class="btn btn-sm btn-outline-light" href="defects.php">
-                    <i class='bx bx-list-ol'></i>
-                    View Defects
-                </a>
-                <a class="btn btn-sm btn-outline-light" href="reports.php">
-                    <i class='bx bx-bar-chart'></i>
-                    Reports Hub
-                </a>
-            </div>
+            <aside class="dashboard-hero__action">
+                <article class="quick-action-card">
+                    <div class="quick-action-card__icon">
+                        <i class='bx bx-plus-circle'></i>
+                    </div>
+                    <div class="quick-action-card__body">
+                        <h2 class="quick-action-card__title">Log a New Defect</h2>
+                        <p class="quick-action-card__subtitle">Capture issue details, attach evidence, and assign a delivery team in one streamlined flow.</p>
+                    </div>
+                    <a class="btn btn-light quick-action-card__button" href="create_defect.php">
+                        <span>Start New Defect</span>
+                        <i class='bx bx-right-arrow-alt'></i>
+                    </a>
+                </article>
+            </aside>
         </header>
 
         <?php if (!empty($dashboardMetrics)): ?>
