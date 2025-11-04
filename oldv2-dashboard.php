@@ -751,15 +751,7 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="d-flex align-items-center">
                                         <?php if (!empty($contractor['logo'])): ?>
-                                            <?php
-                                            $logoFilename = $contractor['logo'];
-                                            // Handle both old format (uploads/logos/filename.png) and new format (filename.png)
-                                            if (stripos($logoFilename, 'uploads/logos/') === 0) {
-                                                $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
-                                            }
-                                            $logoSrc = '/uploads/logos/' . $logoFilename;
-                                            ?>
-                                            <img src="<?php echo htmlspecialchars($logoSrc); ?>" 
+                                            <img src="<?php echo htmlspecialchars($contractor['logo']); ?>" 
                                                  class="company-logo me-2" alt="Logo">
                                         <?php else: ?>
                                             <div class="company-icon me-2">
