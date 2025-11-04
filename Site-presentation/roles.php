@@ -2,6 +2,16 @@
 // Set page title and other variables
 $pageTitle = "Defect Tracker Roles & Permissions";
 
+// Set default timezone to UK for date/time display formatting
+date_default_timezone_set('Europe/London');
+
+// Initialize date and time variables
+$currentDate = date('d/m/Y');
+$currentTime = date('H:i:s');
+
+// Set logged-in username (fallback for when auth/session is unavailable)
+$username = 'System User'; // Default for presentation page
+
 // Define roles and their permissions
 $roles = [
     'admin' => [
