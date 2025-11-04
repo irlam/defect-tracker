@@ -1,21 +1,22 @@
 <?php
-// system_analysis_report.php - Comprehensive analysis of the defect tracker system
+/**
+ * system-tools/system_analysis_report.php
+ * Comprehensive analysis of the defect tracker system with themed layout
+ */
 
-echo "=== Defect Tracker System Analysis Report ===\n";
-echo "Generated: " . date('Y-m-d H:i:s') . "\n\n";
+declare(strict_types=1);
 
-// System Overview
-echo "SYSTEM OVERVIEW\n";
-echo str_repeat("=", 50) . "\n";
-echo "• Project Type: PHP-based Construction Defect Tracking System\n";
-echo "• Architecture: Traditional PHP with PDO, RBAC, and REST-like APIs\n";
-echo "• Database: MySQL/MariaDB (with SQLite test setup)\n";
-echo "• Key Features: User management, project management, defect tracking, file uploads\n\n";
+require_once __DIR__ . '/includes/tool_bootstrap.php';
+
+// System Overview Data
+$systemOverview = [
+    'Project Type' => 'PHP-based Construction Defect Tracking System',
+    'Architecture' => 'Traditional PHP with PDO, RBAC, and REST-like APIs',
+    'Database' => 'MySQL/MariaDB (with SQLite test setup)',
+    'Key Features' => 'User management, project management, defect tracking, file uploads',
+];
 
 // Issues Found
-echo "ISSUES IDENTIFIED\n";
-echo str_repeat("=", 50) . "\n";
-
 $issues = [
     "CRITICAL" => [
         "Database connection timeout to remote server (10.35.233.124:3306)",
@@ -46,37 +47,33 @@ $issues = [
     ]
 ];
 
-foreach ($issues as $severity => $issueList) {
-    echo "$severity PRIORITY:\n";
-    foreach ($issueList as $issue) {
-        echo "  • $issue\n";
-    }
-    echo "\n";
-}
-
 // Functions Status
-echo "FUNCTIONS STATUS SUMMARY\n";
-echo str_repeat("=", 50) . "\n";
-echo "✓ WORKING (100% Success Rate):\n";
-echo "  • Database connection (SQLite test)\n";
-echo "  • Core PHP scripts syntax validation\n";
-echo "  • Most API endpoints (27/28 pass syntax check)\n";
-echo "  • Image processing capabilities (GD, ImageMagick)\n";
-echo "  • File upload directories and permissions\n";
-echo "  • Basic authentication system\n";
-echo "  • Defect CRUD operations\n";
-echo "  • JSON API responses\n\n";
+$functionsStatus = [
+    'working' => [
+        'label' => 'WORKING (100% Success Rate)',
+        'items' => [
+            "Database connection (SQLite test)",
+            "Core PHP scripts syntax validation",
+            "Most API endpoints (27/28 pass syntax check)",
+            "Image processing capabilities (GD, ImageMagick)",
+            "File upload directories and permissions",
+            "Basic authentication system",
+            "Defect CRUD operations",
+            "JSON API responses"
+        ]
+    ],
+    'needs_attention' => [
+        'label' => 'NEEDS ATTENTION',
+        'items' => [
+            "Remote database connectivity",
+            "Session management in production",
+            "Complete RBAC implementation",
+            "Input validation and security measures"
+        ]
+    ]
+];
 
-echo "⚠ NEEDS ATTENTION:\n";
-echo "  • Remote database connectivity\n";
-echo "  • Session management in production\n";
-echo "  • Complete RBAC implementation\n";
-echo "  • Input validation and security measures\n\n";
-
-// Improvements Suggested
-echo "SUGGESTED IMPROVEMENTS\n";
-echo str_repeat("=", 50) . "\n";
-
+// Suggested Improvements
 $improvements = [
     "Security Enhancements" => [
         "Implement CSRF token protection",
@@ -128,55 +125,272 @@ $improvements = [
     ]
 ];
 
-foreach ($improvements as $category => $improvementList) {
-    echo "$category:\n";
-    foreach ($improvementList as $improvement) {
-        echo "  • $improvement\n";
-    }
-    echo "\n";
-}
-
 // Priority Implementation Plan
-echo "PRIORITY IMPLEMENTATION PLAN\n";
-echo str_repeat("=", 50) . "\n";
-echo "PHASE 1 (Immediate - Critical Fixes):\n";
-echo "  1. Fix database connectivity issues\n";
-echo "  2. Complete incomplete API endpoints\n";
-echo "  3. Fix syntax errors in PHP files\n";
-echo "  4. Implement proper database schema\n\n";
-
-echo "PHASE 2 (Short-term - Security & Stability):\n";
-echo "  1. Add CSRF protection\n";
-echo "  2. Implement input validation\n";
-echo "  3. Add proper error handling\n";
-echo "  4. Secure configuration management\n\n";
-
-echo "PHASE 3 (Medium-term - Features & Performance):\n";
-echo "  1. Add comprehensive testing\n";
-echo "  2. Implement caching\n";
-echo "  3. Add API documentation\n";
-echo "  4. Improve user interface\n\n";
-
-echo "PHASE 4 (Long-term - Scalability & Monitoring):\n";
-echo "  1. Add monitoring and alerting\n";
-echo "  2. Implement CI/CD pipeline\n";
-echo "  3. Add performance optimizations\n";
-echo "  4. Scale infrastructure\n\n";
+$implementationPlan = [
+    [
+        'phase' => 'PHASE 1',
+        'title' => 'Immediate - Critical Fixes',
+        'items' => [
+            "Fix database connectivity issues",
+            "Complete incomplete API endpoints",
+            "Fix syntax errors in PHP files",
+            "Implement proper database schema"
+        ]
+    ],
+    [
+        'phase' => 'PHASE 2',
+        'title' => 'Short-term - Security & Stability',
+        'items' => [
+            "Add CSRF protection",
+            "Implement input validation",
+            "Add proper error handling",
+            "Secure configuration management"
+        ]
+    ],
+    [
+        'phase' => 'PHASE 3',
+        'title' => 'Medium-term - Features & Performance',
+        'items' => [
+            "Add comprehensive testing",
+            "Implement caching",
+            "Add API documentation",
+            "Improve user interface"
+        ]
+    ],
+    [
+        'phase' => 'PHASE 4',
+        'title' => 'Long-term - Scalability & Monitoring',
+        'items' => [
+            "Add monitoring and alerting",
+            "Implement CI/CD pipeline",
+            "Add performance optimizations",
+            "Scale infrastructure"
+        ]
+    ]
+];
 
 // Test Results Summary
-echo "TEST RESULTS SUMMARY\n";
-echo str_repeat("=", 50) . "\n";
-echo "Syntax Tests: 100% (111/111 passed)\n";
-echo "Functional Tests: 82.35% (14/17 passed)\n";
-echo "Overall System Health: GOOD with room for improvement\n\n";
+$testResults = [
+    'syntax_tests' => ['passed' => 111, 'total' => 111, 'percentage' => 100],
+    'functional_tests' => ['passed' => 14, 'total' => 17, 'percentage' => 82.35],
+    'overall_health' => 'GOOD with room for improvement'
+];
 
-echo "CONCLUSION\n";
-echo str_repeat("=", 50) . "\n";
-echo "The defect tracker system has a solid foundation with most core\n";
-echo "functionality working correctly. The main issues are related to\n";
-echo "database connectivity, incomplete API endpoints, and missing\n";
-echo "security measures. With the suggested improvements, this system\n";
-echo "can become a robust, secure, and scalable solution.\n\n";
+// Render the page header
+tool_render_header(
+    'System Analysis Report',
+    'Comprehensive analysis of the defect tracker system architecture and health.',
+    [
+        ['label' => 'Admin Dashboard', 'href' => '../admin.php'],
+        ['label' => 'System Analysis Report'],
+    ]
+);
 
-echo "Report generated successfully!\n";
-?>
+// System Overview Card
+echo '<div class="row g-4 mb-4">';
+    echo '<div class="col-12">';
+        echo '<div class="tool-card">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">System Overview</h2>';
+                echo '<i class="bx bx-box text-info fs-3"></i>';
+            echo '</div>';
+            echo '<dl class="row mb-0">';
+            foreach ($systemOverview as $label => $value) {
+                echo '<dt class="col-sm-4 text-muted">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</dt>';
+                echo '<dd class="col-sm-8">' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '</dd>';
+            }
+            echo '</dl>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+// Test Results Summary
+echo '<div class="row g-4 mb-4">';
+    echo '<div class="col-lg-4">';
+        echo '<div class="tool-card h-100">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Syntax Tests</h2>';
+                echo '<span class="tool-status-pill tool-status-pill-success">';
+                    echo '<i class="bx bx-check-circle"></i> ' . $testResults['syntax_tests']['percentage'] . '%';
+                echo '</span>';
+            echo '</div>';
+            echo '<p class="mb-2 fs-3 fw-semibold">' . $testResults['syntax_tests']['passed'] . ' / ' . $testResults['syntax_tests']['total'] . '</p>';
+            echo '<div class="progress" style="height: 8px;">';
+                echo '<div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>';
+            echo '</div>';
+        echo '</div>';
+    echo '</div>';
+    
+    echo '<div class="col-lg-4">';
+        echo '<div class="tool-card h-100">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Functional Tests</h2>';
+                echo '<span class="tool-status-pill tool-status-pill-success">';
+                    echo '<i class="bx bx-check-circle"></i> ' . number_format($testResults['functional_tests']['percentage'], 2) . '%';
+                echo '</span>';
+            echo '</div>';
+            echo '<p class="mb-2 fs-3 fw-semibold">' . $testResults['functional_tests']['passed'] . ' / ' . $testResults['functional_tests']['total'] . '</p>';
+            echo '<div class="progress" style="height: 8px;">';
+                echo '<div class="progress-bar bg-success" role="progressbar" style="width: 82.35%" aria-valuenow="82.35" aria-valuemin="0" aria-valuemax="100"></div>';
+            echo '</div>';
+        echo '</div>';
+    echo '</div>';
+    
+    echo '<div class="col-lg-4">';
+        echo '<div class="tool-card h-100 tool-card--success">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Overall Health</h2>';
+                echo '<i class="bx bx-heart text-success fs-3"></i>';
+            echo '</div>';
+            echo '<p class="mb-0 fs-5 fw-semibold">' . htmlspecialchars($testResults['overall_health'], ENT_QUOTES, 'UTF-8') . '</p>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+// Issues Identified Section
+echo '<div class="row g-4 mb-4">';
+    echo '<div class="col-12">';
+        echo '<div class="tool-card">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Issues Identified</h2>';
+                echo '<i class="bx bx-error text-warning fs-3"></i>';
+            echo '</div>';
+            
+            $severityConfig = [
+                'CRITICAL' => ['variant' => 'danger', 'icon' => 'bx-x-circle'],
+                'HIGH' => ['variant' => 'warning', 'icon' => 'bx-error'],
+                'MEDIUM' => ['variant' => 'info', 'icon' => 'bx-info-circle'],
+                'LOW' => ['variant' => 'secondary', 'icon' => 'bx-circle']
+            ];
+            
+            echo '<div class="row g-3">';
+            foreach ($issues as $severity => $issueList) {
+                $config = $severityConfig[$severity];
+                echo '<div class="col-lg-6">';
+                    echo '<div class="border border-' . $config['variant'] . ' rounded p-3">';
+                        echo '<h3 class="h6 mb-2 text-' . $config['variant'] . '">';
+                            echo '<i class="bx ' . $config['icon'] . '"></i> ' . $severity . ' PRIORITY';
+                        echo '</h3>';
+                        echo '<ul class="mb-0 small">';
+                        foreach ($issueList as $issue) {
+                            echo '<li>' . htmlspecialchars($issue, ENT_QUOTES, 'UTF-8') . '</li>';
+                        }
+                        echo '</ul>';
+                    echo '</div>';
+                echo '</div>';
+            }
+            echo '</div>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+// Functions Status
+echo '<div class="row g-4 mb-4">';
+    echo '<div class="col-lg-6">';
+        echo '<div class="tool-card h-100 tool-card--success">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">' . htmlspecialchars($functionsStatus['working']['label'], ENT_QUOTES, 'UTF-8') . '</h2>';
+                echo '<i class="bx bx-check-circle text-success fs-3"></i>';
+            echo '</div>';
+            echo '<ul class="list-unstyled mb-0">';
+            foreach ($functionsStatus['working']['items'] as $item) {
+                echo '<li class="mb-2">';
+                    echo '<i class="bx bx-check text-success me-2"></i>';
+                    echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8');
+                echo '</li>';
+            }
+            echo '</ul>';
+        echo '</div>';
+    echo '</div>';
+    
+    echo '<div class="col-lg-6">';
+        echo '<div class="tool-card h-100 tool-card--warning">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">' . htmlspecialchars($functionsStatus['needs_attention']['label'], ENT_QUOTES, 'UTF-8') . '</h2>';
+                echo '<i class="bx bx-error text-warning fs-3"></i>';
+            echo '</div>';
+            echo '<ul class="list-unstyled mb-0">';
+            foreach ($functionsStatus['needs_attention']['items'] as $item) {
+                echo '<li class="mb-2">';
+                    echo '<i class="bx bx-error text-warning me-2"></i>';
+                    echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8');
+                echo '</li>';
+            }
+            echo '</ul>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+// Suggested Improvements
+echo '<div class="row g-4 mb-4">';
+    echo '<div class="col-12">';
+        echo '<div class="tool-card">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Suggested Improvements</h2>';
+                echo '<i class="bx bx-bulb text-warning fs-3"></i>';
+            echo '</div>';
+            
+            echo '<div class="row g-3">';
+            foreach ($improvements as $category => $improvementList) {
+                echo '<div class="col-lg-6">';
+                    echo '<div class="border border-secondary rounded p-3 h-100">';
+                        echo '<h3 class="h6 mb-2 text-info">' . htmlspecialchars($category, ENT_QUOTES, 'UTF-8') . '</h3>';
+                        echo '<ul class="mb-0 small">';
+                        foreach ($improvementList as $improvement) {
+                            echo '<li>' . htmlspecialchars($improvement, ENT_QUOTES, 'UTF-8') . '</li>';
+                        }
+                        echo '</ul>';
+                    echo '</div>';
+                echo '</div>';
+            }
+            echo '</div>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+// Priority Implementation Plan
+echo '<div class="row g-4 mb-4">';
+    echo '<div class="col-12">';
+        echo '<div class="tool-card">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Priority Implementation Plan</h2>';
+                echo '<i class="bx bx-time text-info fs-3"></i>';
+            echo '</div>';
+            
+            echo '<div class="row g-3">';
+            foreach ($implementationPlan as $plan) {
+                echo '<div class="col-lg-6">';
+                    echo '<div class="border border-info rounded p-3">';
+                        echo '<h3 class="h6 mb-2 fw-bold">' . htmlspecialchars($plan['phase'], ENT_QUOTES, 'UTF-8') . '</h3>';
+                        echo '<p class="small text-muted mb-2">' . htmlspecialchars($plan['title'], ENT_QUOTES, 'UTF-8') . '</p>';
+                        echo '<ol class="mb-0 small ps-3">';
+                        foreach ($plan['items'] as $item) {
+                            echo '<li>' . htmlspecialchars($item, ENT_QUOTES, 'UTF-8') . '</li>';
+                        }
+                        echo '</ol>';
+                    echo '</div>';
+                echo '</div>';
+            }
+            echo '</div>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+// Conclusion
+echo '<div class="row g-4">';
+    echo '<div class="col-12">';
+        echo '<div class="tool-card tool-card--success">';
+            echo '<div class="d-flex justify-content-between align-items-center mb-3">';
+                echo '<h2 class="h5 mb-0">Conclusion</h2>';
+                echo '<i class="bx bx-check-shield text-success fs-3"></i>';
+            echo '</div>';
+            echo '<p class="mb-0">';
+                echo 'The defect tracker system has a solid foundation with most core functionality working correctly. ';
+                echo 'The main issues are related to database connectivity, incomplete API endpoints, and missing security measures. ';
+                echo 'With the suggested improvements, this system can become a robust, secure, and scalable solution.';
+            echo '</p>';
+        echo '</div>';
+    echo '</div>';
+echo '</div>';
+
+tool_render_footer();
