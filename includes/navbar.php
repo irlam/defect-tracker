@@ -11,6 +11,7 @@
  * - Determines the correct set of navigation links and dropdown menus based on the user's type.
  * - Fetches and displays a logo for 'contractor' user types (using 'contractor_id' from 'users' table
  *   and querying the 'contractors' table) or a default admin logo for 'admin' user types.
+ * - Fetches and displays the company logo/brandmark in the navbar brand section.
  * - Renders the navigation bar using Bootstrap 5 HTML structure.
  * - Includes a dynamic clock displaying the current date and time in UK format (DD-MM-YYYY HH:MM:SS),
  *   using the 'Europe/London' timezone, updated every second via client-side JavaScript.
@@ -22,6 +23,11 @@
  * - UTC Timestamp (YYYY-MM-DD HH:MM:SS): 2025-04-12 09:49:22
  * - User Login: irlam
  */
+
+// Load constants if available (for COMPANY_CONTRACTOR_ID)
+if (file_exists(__DIR__ . '/../config/constants.php')) {
+    require_once __DIR__ . '/../config/constants.php';
+}
 
 // Ensure PDO class is available. If your DB connection setup is in another file, require it here.
 // require_once('path/to/your/db_connection.php'); // Example: Adjust path as necessary
@@ -54,6 +60,11 @@ class Navbar {
     private $username;
 
     /**
+     * @var string The path to the company logo/brandmark image, or an empty string if not set.
+     */
+    private $companyLogo = '';
+
+    /**
      * Navbar Constructor.
      *
      * Initializes the navigation bar component. Stores the database connection,
@@ -72,6 +83,8 @@ class Navbar {
         $this->username = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
         // Fetch the user's type (from user_type column) and determine their logo path right away upon object creation.
         $this->setUserTypeAndLogo(); // Renamed method call for clarity
+        // Fetch the company logo/brandmark
+        $this->setCompanyLogo();
     }
 
     /**
@@ -141,6 +154,36 @@ class Navbar {
         }
     }
 
+    /**
+     * Fetches the company logo/brandmark from the database.
+     * 
+     * Queries the contractors table where id = COMPANY_CONTRACTOR_ID (defaults to 1) for the logo path.
+     * Updates the $this->companyLogo property with the normalized logo path.
+     */
+    private function setCompanyLogo() {
+        try {
+            // Use constant if defined, otherwise default to 1
+            $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+            
+            // Query for company logo stored in contractors table with id = company ID
+            $query = "SELECT logo FROM contractors WHERE id = :company_id LIMIT 1";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':company_id', $companyId, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            // If a logo path is found, normalize and store it
+            if ($result && !empty($result['logo'])) {
+                $this->companyLogo = $this->buildLogoPath($result['logo']);
+            }
+        } catch (PDOException $e) {
+            // Log database errors but don't expose to user
+            error_log("Navbar PDOException in setCompanyLogo: " . $e->getMessage());
+        } catch (Exception $e) {
+            error_log("Navbar General Exception in setCompanyLogo: " . $e->getMessage());
+        }
+    }
+
     private function buildLogoPath($path)
     {
         if (empty($path)) {
@@ -159,10 +202,10 @@ class Navbar {
         $trimmed = ltrim($trimmed, '/');
 
         if (stripos($trimmed, 'uploads/logos/') === 0) {
-            return htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+            return '/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
         }
 
-        return 'uploads/logos/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+        return '/uploads/logos/' . htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
     }
 
     /**
@@ -216,8 +259,12 @@ class Navbar {
             <div class="container-xxl">
                 <div class="d-flex align-items-center w-100 gap-3">
                     <a class="navbar-brand" href="/dashboard.php">
-                        <span class="app-navbar__brand-icon"><i class="fas fa-layer-group"></i></span>
-                        <span>McGoff Defect Tracker</span>
+                        <?php if (!empty($this->companyLogo)): ?>
+                            <img src="<?php echo $this->companyLogo; ?>" alt="Company Logo" class="app-navbar__company-logo">
+                        <?php else: ?>
+                            <span class="app-navbar__brand-icon"><i class="fas fa-layer-group"></i></span>
+                            <span>McGoff Defect Tracker</span>
+                        <?php endif; ?>
                     </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>

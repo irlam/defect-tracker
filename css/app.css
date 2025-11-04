@@ -636,6 +636,12 @@ body.has-app-navbar .app-content-offset {
   font-size: 1.35rem;
 }
 
+.app-navbar__company-logo {
+  max-height: 45px;
+  width: auto;
+  object-fit: contain;
+}
+
 .app-navbar .nav-link {
   color: rgba(203, 213, 225, 0.88);
   font-weight: 500;
