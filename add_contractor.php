@@ -22,13 +22,19 @@ if (!isset($_SESSION['username'])) {
 // Define INCLUDED constant for navbar security
 define('INCLUDED', true);
 
+require_once 'includes/functions.php';
 require_once 'config/database.php';
+require_once 'includes/navbar.php';
+
 $database = new Database();
 $db = $database->getConnection();
 
 // Current user and datetime
 $currentUser = $_SESSION['username'];
 $currentDateTime = date('Y-m-d H:i:s');
+$displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $currentUser));
+$userRoleLabel = ucwords(str_replace(['_', '-'], [' ', ' '], $_SESSION['user_type'] ?? 'User'));
+$currentTimestamp = date('d/m/Y H:i');
 
 // Initialize variables for form data
 $error_message = '';
@@ -139,89 +145,208 @@ $counties = [
     'Surrey', 'Tyne and Wear', 'Warwickshire', 'West Midlands',
     'West Sussex', 'West Yorkshire', 'Wiltshire', 'Worcestershire'
 ];
+
+// Initialize navbar
+$navbar = null;
+try {
+    $navbar = new Navbar($db, (int)($_SESSION['user_id'] ?? 0), $_SESSION['username'] ?? '');
+} catch (Throwable $navbarError) {
+    error_log('Navbar initialisation error on add_contractor.php: ' . $navbarError->getMessage());
+    $navbar = null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Contractor - Construction Defect Tracker</title>
+    <meta name="description" content="Add New Contractor - Defect Tracker System">
+    <meta name="author" content="<?php echo htmlspecialchars($currentUser, ENT_QUOTES, 'UTF-8'); ?>">
+    <title>Add Contractor - Defect Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="/css/app.css" rel="stylesheet">
     <style>
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
+        body {
+            background: radial-gradient(circle at top, rgba(30, 64, 175, 0.25), rgba(15, 23, 42, 0.95) 45%, rgba(2, 6, 23, 1) 100%);
+            color: rgba(226, 232, 240, 0.92);
             min-height: 100vh;
-            background-color: #f8f9fa;
+        }
+
+        .contractor-page {
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .contractor-header {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(30, 41, 59, 0.92));
+            border-radius: var(--bs-border-radius-xl);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            padding: 2.25rem;
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .contractor-header h1 {
+            color: rgba(248, 250, 252, 0.96);
+        }
+
+        .contractor-header p {
+            color: rgba(148, 163, 184, 0.78);
+        }
+
+        .contractor-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(148, 163, 184, 0.82);
+        }
+
+        .contractor-meta i {
+            color: rgba(96, 165, 250, 0.8);
         }
 
         .card {
-            box-shadow: 0 2px 4px rgba(0,0,0,.05);
-            border: none;
-            margin-bottom: 1rem;
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: var(--bs-border-radius-xl);
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+            margin-bottom: 1.5rem;
         }
 
         .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid rgba(0,0,0,.05);
-            padding: 1rem;
+            background: rgba(30, 41, 59, 0.88);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+            padding: 1.25rem;
+            border-radius: var(--bs-border-radius-xl) var(--bs-border-radius-xl) 0 0;
+        }
+
+        .card-header h5 {
+            color: rgba(226, 232, 240, 0.95);
+            margin-bottom: 0;
         }
 
         .card-body {
-            padding: 1.25rem;
+            padding: 2rem;
         }
 
         .form-label {
             font-weight: 500;
-            color: #2c3e50;
+            color: rgba(226, 232, 240, 0.9);
         }
 
-        .form-control:focus, .form-select:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        .form-control,
+        .form-select {
+            background: rgba(30, 41, 59, 0.88);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            color: rgba(226, 232, 240, 0.92);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.65rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: rgba(96, 165, 250, 0.75);
+            box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.25);
+            background: rgba(15, 23, 42, 0.92);
+            color: rgba(226, 232, 240, 0.95);
+        }
+
+        .form-control::placeholder {
+            color: rgba(148, 163, 184, 0.5);
+        }
+
+        .form-text {
+            color: rgba(148, 163, 184, 0.78) !important;
         }
 
         .required-field::after {
             content: " *";
-            color: #dc3545;
+            color: rgba(248, 113, 113, 0.9);
         }
 
-        @media (max-width: 991.98px) {
-            .main-content {
-                margin-left: 0;
-                padding-top: 60px;
+        .btn {
+            border-radius: 0.65rem;
+            font-weight: 500;
+            padding: 0.65rem 1.4rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #4338ca);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            color: rgba(226, 232, 240, 0.9);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(100, 116, 139, 0.85);
+            color: rgba(226, 232, 240, 1);
+        }
+
+        .alert {
+            border-radius: 0.65rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(34, 197, 94, 0.35);
+            color: rgba(190, 242, 100, 0.95);
+        }
+
+        .alert-danger {
+            background: rgba(248, 113, 113, 0.12);
+            border-color: rgba(248, 113, 113, 0.4);
+            color: rgba(254, 202, 202, 0.95);
+        }
+
+        .alert .btn-close {
+            filter: invert(1);
+        }
+
+        .invalid-feedback {
+            color: rgba(248, 113, 113, 0.95);
+        }
+
+        @media (max-width: 768px) {
+            .contractor-header {
+                padding: 1.6rem;
             }
-        }
-
-        /* Form validation styles */
-        .was-validated .form-control:invalid:focus,
-        .form-control.is-invalid:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
-        }
-
-        .was-validated .form-control:valid:focus,
-        .form-control.is-valid:focus {
-            border-color: #198754;
-            box-shadow: 0 0 0 0.2rem rgba(25,135,84,.25);
+            
+            .card-body {
+                padding: 1.25rem;
+            }
         }
     </style>
 </head>
 <body class="tool-body" data-bs-theme="dark">
-    <!-- Include Navbar -->
-    <?php include 'includes/navbar.php'; ?>
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
+    <div class="app-content-offset"></div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Add New Contractor</h1>
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <a href="contractors.php" class="btn btn-sm btn-outline-secondary">
-                    <i class='bx bx-arrow-back'></i> Back to Contractors
-                </a>
+    <main class="tool-page container-xl py-4 contractor-page">
+        <header class="contractor-header mb-4">
+            <div>
+                <h1 class="h3 mb-2"><i class='bx bx-building-house me-2'></i>Add New Contractor</h1>
+                <p class="mb-0">Register contractors with full business details and compliance information for project assignment.</p>
             </div>
-        </div>
+            <div class="contractor-meta">
+                <span><i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                <span><i class='bx bx-label me-1'></i><?php echo htmlspecialchars($userRoleLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                <span><i class='bx bx-time-five me-1'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</span>
+            </div>
+        </header>
 
         <?php if ($error_message): ?>
             <div class="alert alert-danger" role="alert">
@@ -379,7 +504,7 @@ $counties = [
                 </a>
             </div>
         </form>
-    </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>
