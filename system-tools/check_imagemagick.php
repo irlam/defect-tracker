@@ -9,7 +9,7 @@ declare(strict_types=1);
 function checkImageMagickCli(): void
 {
     exec("convert -version", $output, $return_var);
-    if ($return_var == 0) {
+    if ($return_var === 0) {
         echo "ImageMagick is installed:\n";
         echo implode("\n", $output);
     } else {
@@ -25,7 +25,7 @@ if (PHP_SAPI === 'cli') {
 require_once __DIR__ . '/includes/tool_bootstrap.php';
 
 exec("convert -version", $output, $return_var);
-$imageMagickInstalled = ($return_var == 0);
+$imageMagickInstalled = ($return_var === 0);
 $versionInfo = [];
 
 if ($imageMagickInstalled && !empty($output)) {
