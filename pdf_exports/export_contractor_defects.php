@@ -207,7 +207,11 @@ foreach ($contractorStats as $stat) {
     
     // If logo exists, add it with reduced size
     if (!empty($stat['logo'])) {
-        $logoPath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/logos/' . $stat['logo'];
+        $logoFilename = $stat['logo'];
+        if (stripos($logoFilename, 'uploads/logos/') === 0) {
+            $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+        }
+        $logoPath = $_SERVER['DOCUMENT_ROOT'] . '/uploads/logos/' . $logoFilename;
         if (file_exists($logoPath) && is_readable($logoPath)) {
             try {
                 // Get image dimensions to maintain aspect ratio

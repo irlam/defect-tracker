@@ -267,9 +267,16 @@ function correctPinImagePath(string $path): string
 
 function correctContractorLogoPath(?string $path): string
 {
-    return !empty($path)
-        ? BASE_URL . 'uploads/logos/' . ltrim($path, '/')
-        : BASE_URL . 'assets/icons/company-placeholder.png';
+    if (empty($path)) {
+        return BASE_URL . 'assets/icons/company-placeholder.png';
+    }
+
+    $logoFilename = ltrim($path, '/');
+    if (stripos($logoFilename, 'uploads/logos/') === 0) {
+        $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+    }
+
+    return BASE_URL . 'uploads/logos/' . $logoFilename;
 }
 
 $filtersApplied = $statusFilter !== 'all'

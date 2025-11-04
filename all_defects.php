@@ -781,7 +781,13 @@ if ($selectedFloorPlanId && !empty($floorPlans)) {
                                         </td>
                                         <td class="d-flex align-items-center gap-2">
                                             <?php if (!empty($defect['contractor_logo'])): ?>
-                                                <img src="<?php echo htmlspecialchars(getImageUrl('/uploads/logos/' . $defect['contractor_logo'])); ?>" alt="Contractor logo" class="contractor-logo">
+                                                <?php
+                                                    $logoFilename = $defect['contractor_logo'];
+                                                    if (stripos($logoFilename, 'uploads/logos/') === 0) {
+                                                        $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                                                    }
+                                                ?>
+                                                <img src="<?php echo htmlspecialchars(getImageUrl('/uploads/logos/' . $logoFilename)); ?>" alt="Contractor logo" class="contractor-logo">
                                             <?php endif; ?>
                                             <span><?php echo htmlspecialchars($defect['company_name'] ?? 'Not Assigned'); ?></span>
                                         </td>

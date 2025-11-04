@@ -504,7 +504,14 @@ try {
                         $searchableText = strtolower(implode(' ', array_filter($searchableValues, function ($value) {
                             return !empty(trim((string) $value));
                         })));
-                        $logoPath = !empty($contractor['logo']) ? '/uploads/logos/' . $contractor['logo'] : '';
+                        $logoPath = '';
+                        if (!empty($contractor['logo'])) {
+                            $logoFilename = $contractor['logo'];
+                            if (stripos($logoFilename, 'uploads/logos/') === 0) {
+                                $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                            }
+                            $logoPath = '/uploads/logos/' . $logoFilename;
+                        }
                         $initialsSource = $contractor['company_name'] ?? 'NA';
                         $initials = strtoupper(substr($initialsSource, 0, 2));
                         $updatedRelative = formatRelativeTime($contractor['updated_at'] ?: $contractor['created_at']);
@@ -664,8 +671,15 @@ try {
                                                     <input type="file" name="logo" class="form-control">
                                                 </div>
                                                 <?php if ($contractor['logo']): ?>
+                                                    <?php
+                                                        $logoFilename = $contractor['logo'];
+                                                        if (stripos($logoFilename, 'uploads/logos/') === 0) {
+                                                            $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                                                        }
+                                                        $logoSrc = '/uploads/logos/' . $logoFilename;
+                                                    ?>
                                                     <div class="col-md-6 d-flex align-items-end">
-                                                        <img src="<?php echo htmlspecialchars('/uploads/logos/' . $contractor['logo']); ?>" alt="<?php echo htmlspecialchars($contractor['company_name']); ?> logo" class="img-fluid rounded shadow-sm contractor-modal__preview">
+                                                        <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="<?php echo htmlspecialchars($contractor['company_name']); ?> logo" class="img-fluid rounded shadow-sm contractor-modal__preview">
                                                     </div>
                                                 <?php endif; ?>
                                             </div>

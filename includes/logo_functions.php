@@ -51,11 +51,10 @@ class LogoManager {
             throw new Exception('Failed to move uploaded file.');
         }
 
-        // Save path to database
-    $storedPath = ltrim($this->publicPathBase, '/') . $fileName;
-        $this->saveLogoPath($storedPath, $type, $contractorId);
+        // Store only the filename in the database so downstream consumers build paths consistently
+        $this->saveLogoPath($fileName, $type, $contractorId);
 
-        return $this->normaliseLogoPath($storedPath);
+        return $this->normaliseLogoPath($fileName);
     }
 
     private function validateFile($file) {
@@ -209,10 +208,10 @@ class LogoManager {
         $uploadPrefix = trim($this->publicPathBase, '/');
 
         if (stripos($trimmedPath, $uploadPrefix) === 0) {
-            return $trimmedPath;
+            return '/' . $trimmedPath;
         }
 
-        return rtrim($uploadPrefix, '/') . '/' . $trimmedPath;
+        return '/' . rtrim($uploadPrefix, '/') . '/' . $trimmedPath;
     }
 
     private function resolveFilesystemPath($path) {
