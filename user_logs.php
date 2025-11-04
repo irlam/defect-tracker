@@ -43,12 +43,25 @@ $logsPerPage = 10;
 $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($currentPage - 1) * $logsPerPage;
 
-// Search functionality
-$searchKeyword = isset($_GET['search']) ? $_GET['search'] : '';
-$searchCondition = '';
-if (!empty($searchKeyword)) {
-    $searchCondition = " AND (u.username LIKE :search OR ul.action LIKE :search OR ul.ip_address LIKE :search OR ul.details LIKE :search)";
-}
+    // Build search condition for SQL queries
+    $buildSearchCondition = function($tablePrefix = '') use ($searchKeyword) {
+        if (empty($searchKeyword)) {
+            return '';
+        }
+        
+        $prefix = $tablePrefix ? $tablePrefix . '.' : '';
+        return " AND (
+            u.username LIKE :search 
+            OR {$prefix}action LIKE :search 
+            OR {$prefix}action_type LIKE :search 
+            OR {$prefix}details LIKE :search 
+            OR {$prefix}ip_address LIKE :search
+            OR CONCAT('Defect #', d.id) LIKE :search
+        )";
+    };
+    
+    $userLogsSearchCondition = $buildSearchCondition('ul');
+    $activityLogsSearchCondition = $buildSearchCondition('al');
 
 try {
     $database = new Database();
@@ -67,7 +80,7 @@ try {
             SELECT ul.action_at as log_time
             FROM user_logs ul 
             LEFT JOIN users u ON ul.user_id = u.id 
-            WHERE ul.action_at >= :thirtyDaysAgo $searchCondition
+            WHERE ul.action_at >= :thirtyDaysAgo $userLogsSearchCondition
             
             UNION ALL
             
@@ -76,7 +89,7 @@ try {
             LEFT JOIN users u ON al.user_id = u.id
             LEFT JOIN defects d ON al.defect_id = d.id
             WHERE al.created_at >= :thirtyDaysAgo
-            " . (!empty($searchKeyword) ? "AND (u.username LIKE :search OR al.action LIKE :search OR al.action_type LIKE :search OR al.details LIKE :search OR CONCAT('Defect #', d.id) LIKE :search)" : "") . "
+            $activityLogsSearchCondition
         ) as combined_logs
     ";
     
@@ -105,7 +118,7 @@ try {
         FROM user_logs ul
         LEFT JOIN users u ON ul.user_id = u.id
         LEFT JOIN users ua ON ul.action_by = ua.id
-        WHERE ul.action_at >= :thirtyDaysAgo $searchCondition
+        WHERE ul.action_at >= :thirtyDaysAgo $userLogsSearchCondition
         
         UNION ALL
         
@@ -124,7 +137,7 @@ try {
         LEFT JOIN users u ON al.user_id = u.id
         LEFT JOIN defects d ON al.defect_id = d.id
         WHERE al.created_at >= :thirtyDaysAgo
-        " . (!empty($searchKeyword) ? "AND (u.username LIKE :search OR al.action LIKE :search OR al.action_type LIKE :search OR al.details LIKE :search OR CONCAT('Defect #', d.id) LIKE :search)" : "") . "
+        $activityLogsSearchCondition
         
         ORDER BY log_time DESC
         LIMIT :offset, :logsPerPage
@@ -239,7 +252,7 @@ function formatLogDetails($details, $action_by_username) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="User Logs - Defect Tracker System">
     <meta name="author" content="<?php echo htmlspecialchars($currentUser); ?>">
-    <meta name="last-modified" content="2025-11-04 08:44:00">
+    <meta name="last-modified" content="<?php echo date('Y-m-d H:i:s'); ?>">
     <title><?php echo $pageTitle; ?> - Defect Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
