@@ -52,11 +52,11 @@ header('X-XSS-Protection: 1; mode=block');
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 $cspWebSocketHost = isset($_SERVER['HTTP_HOST']) ? ' wss://' . $_SERVER['HTTP_HOST'] : '';
 $contentSecurityPolicy = "default-src 'self'; "
-    . "connect-src 'self' https://cdn.jsdelivr.net" . $cspWebSocketHost . '; '
-    . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
-    . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    . "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com" . $cspWebSocketHost . '; '
+    . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
     . "img-src 'self' data: https:; "
-    . "font-src 'self' https://cdn.jsdelivr.net";
+    . "font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com";
 
 header('Content-Security-Policy: ' . $contentSecurityPolicy);
 
