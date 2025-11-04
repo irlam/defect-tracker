@@ -84,11 +84,14 @@ class LogoManager {
         try {
             // Determine which table to update based on logo type
             if ($type === 'company') {
-                //For company logo, store in contractors table (as requested)
-                $sql = "UPDATE contractors SET logo = ? WHERE id = 1"; // Assuming company info is stored with ID 1
+                // Use constant if defined, otherwise default to 1
+                $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+                
+                //For company logo, store in contractors table
+                $sql = "UPDATE contractors SET logo = ? WHERE id = ?";
 
                 $stmt = $this->db->prepare($sql);
-                $result = $stmt->execute([$filePath]);
+                $result = $stmt->execute([$filePath, $companyId]);
 
             } elseif ($type === 'contractor' && $contractorId) {
                 // Update contractor logo path in the contractors table
@@ -109,10 +112,13 @@ class LogoManager {
     }
 
     public function getCompanyLogo() {
-        // Retrieve company logo path from contractors table (as requested)
-        $sql = "SELECT logo FROM contractors WHERE id = 1"; // Assuming company info is stored with ID 1
+        // Use constant if defined, otherwise default to 1
+        $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+        
+        // Retrieve company logo path from contractors table
+        $sql = "SELECT logo FROM contractors WHERE id = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute();
+        $stmt->execute([$companyId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($result && $result['logo']) {
@@ -141,11 +147,14 @@ class LogoManager {
             if ($type === 'company') {
                 // Get the current company logo path
                 $currentLogo = $this->getCompanyLogo();
+                
+                // Use constant if defined, otherwise default to 1
+                $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
 
-                // Delete the company logo path from contractors table (as requested)
-                 $sql = "UPDATE contractors SET logo = NULL WHERE id = 1"; // Assuming company info is stored with ID 1
+                // Delete the company logo path from contractors table
+                 $sql = "UPDATE contractors SET logo = NULL WHERE id = ?";
                 $stmt = $this->db->prepare($sql);
-                $result = $stmt->execute();
+                $result = $stmt->execute([$companyId]);
 
 
                 if (!$result) {
