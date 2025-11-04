@@ -7,10 +7,25 @@
  * 
  * Created: 2025-11-04
  * Purpose: Document all system functions and their URLs
+ * 
+ * Security Note: This page provides system structure information.
+ * In a production environment, consider adding authentication
+ * or restricting access to admin users only.
  */
 
-// This is a documentation-only page, no authentication required for viewing
-// In production, you may want to add authentication
+// Authentication check - Uncomment in production
+// if (session_status() === PHP_SESSION_NONE) {
+//     session_start();
+// }
+// if (!isset($_SESSION['username'])) {
+//     header("Location: /login.php");
+//     exit();
+// }
+// // Optional: Restrict to admin users only
+// if ($_SESSION['user_type'] !== 'admin') {
+//     header("Location: /dashboard.php");
+//     exit();
+// }
 
 $pageTitle = 'Complete Navbar Functions Reference';
 
@@ -167,9 +182,10 @@ function checkFileExists($url) {
 
 // Extract all unique URLs
 $allUrls = [];
+$seenUrls = []; // Use associative array for O(1) lookups
 foreach ($navbarStructure as $role => $items) {
     foreach ($items as $item) {
-        if (isset($item['url']) && !in_array($item['url'], array_column($allUrls, 'url'))) {
+        if (isset($item['url']) && !isset($seenUrls[$item['url']])) {
             $check = checkFileExists($item['url']);
             $allUrls[] = [
                 'url' => $item['url'],
@@ -177,10 +193,11 @@ foreach ($navbarStructure as $role => $items) {
                 'role' => $role,
                 'exists' => $check['exists']
             ];
+            $seenUrls[$item['url']] = true;
         }
         if (isset($item['dropdown'])) {
             foreach ($item['dropdown'] as $subItem) {
-                if (isset($subItem['url']) && !in_array($subItem['url'], array_column($allUrls, 'url'))) {
+                if (isset($subItem['url']) && !isset($seenUrls[$subItem['url']])) {
                     $check = checkFileExists($subItem['url']);
                     $allUrls[] = [
                         'url' => $subItem['url'],
@@ -189,6 +206,7 @@ foreach ($navbarStructure as $role => $items) {
                         'parent' => $item['label'],
                         'exists' => $check['exists']
                     ];
+                    $seenUrls[$subItem['url']] = true;
                 }
             }
         }

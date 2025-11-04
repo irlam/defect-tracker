@@ -55,12 +55,12 @@ function checkFileExists($url) {
 }
 
 // Function to extract navbar items for all user types
-function getAllNavbarItems() {
+        function getAllNavbarItems() {
     $userTypes = ['admin', 'manager', 'contractor', 'inspector', 'viewer', 'client'];
     $allItems = [];
     
     foreach ($userTypes as $userType) {
-        $reflection = new ReflectionClass('Navbar');
+        $reflection = new ReflectionClass(Navbar::class);
         $method = $reflection->getMethod('getNavbarItems');
         $method->setAccessible(true);
         
@@ -282,7 +282,11 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
                                     </td>
                                     <td>
                                         <small class="text-muted font-monospace">
-                                            <?php echo htmlspecialchars(str_replace($_SERVER['DOCUMENT_ROOT'], '', $result['path'])); ?>
+                                            <?php 
+                                            $displayPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $result['path']);
+                                            // Don't expose absolute paths, just show relative path
+                                            echo htmlspecialchars($displayPath); 
+                                            ?>
                                         </small>
                                     </td>
                                 </tr>
@@ -392,7 +396,7 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
         }
 
         function exportToCSV() {
-            const results = <?php echo json_encode($verificationResults); ?>;
+            const results = <?php echo json_encode($verificationResults, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
             let csv = 'Status,URL,Label,Parent Menu,User Type,File Path\n';
             
             results.forEach(result => {
