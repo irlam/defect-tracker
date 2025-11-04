@@ -2,57 +2,68 @@
 /**
  * McGoff Backup Manager - Authentication Handler
  * 
- * This file handles user authentication for the backup system. It displays a login form
- * and validates user credentials before granting access to the backup system.
+ * This file checks for an existing authenticated session from the main application
+ * and ensures the user has appropriate permissions (admin or manager role).
  * 
- * Created: 2025-02-26 19:27:55
+ * Updated: 2025-11-04
  * Author: irlam
  */
-session_start();
-require_once 'config.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['username']) && isset($_POST['password'])) {
-    if ($_POST['username'] === USERNAME && $_POST['password'] === PASSWORD) {
-        $_SESSION['authenticated'] = true;
-        header('Location: index.php');
-        exit;
-    } else {
-        $error = "Invalid credentials";
+// Start session if not already started
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Check if user is logged in via main application session
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+    // Redirect to main login page
+    header('Location: ../login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+    exit;
+}
+
+// Load database connection to check user roles
+require_once __DIR__ . '/../config/database.php';
+
+$userId = (int)$_SESSION['user_id'];
+$isAdmin = false;
+$isManager = false;
+
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    // Check user roles from user_roles table
+    $stmt = $db->prepare('SELECT role_id FROM user_roles WHERE user_id = :user_id AND deleted_at IS NULL');
+    $stmt->execute(['user_id' => $userId]);
+    $userRoles = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    
+    // Role IDs: 1 = Administrator, 2 = Manager
+    $isAdmin = in_array(1, $userRoles, true);
+    $isManager = in_array(2, $userRoles, true);
+    
+    // Also check legacy role field if exists
+    if (!$isAdmin && isset($_SESSION['role'])) {
+        $isAdmin = strtolower($_SESSION['role']) === 'admin';
+    }
+    if (!$isManager && isset($_SESSION['user_type'])) {
+        $isManager = strtolower($_SESSION['user_type']) === 'manager';
+    }
+} catch (Exception $e) {
+    error_log('Backup auth error: ' . $e->getMessage());
+    // Fall back to session-based role check
+    if (isset($_SESSION['role'])) {
+        $isAdmin = strtolower($_SESSION['role']) === 'admin';
+    }
+    if (isset($_SESSION['user_type'])) {
+        $isManager = strtolower($_SESSION['user_type']) === 'manager';
     }
 }
 
-// If not authenticated, show login form
-if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>McGoff Backup Manager - Login</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <h1>McGoff Backup Manager Login</h1>
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger"><?php echo $error; ?></div>
-        <?php endif; ?>
-        <form method="post" action="auth.php">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-    </div>
-</body>
-</html>
-<?php
+// Require admin or manager role to access backup system
+if (!$isAdmin && !$isManager) {
+    header('Location: ../dashboard.php');
     exit;
 }
+
+// Authentication successful - user can access backup system
 ?>
