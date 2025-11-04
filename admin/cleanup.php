@@ -26,6 +26,8 @@ if (php_sapi_name() !== 'cli') {
 $skipConfirmation = false;
 if (isset($argv[1]) && $argv[1] === '--yes') {
     $skipConfirmation = true;
+    // Set a global flag that cleanup_website.php can check
+    define('CLEANUP_SKIP_CONFIRMATION', true);
 }
 
 // Include the cleanup script

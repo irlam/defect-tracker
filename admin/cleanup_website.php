@@ -40,6 +40,14 @@ if (php_sapi_name() !== 'cli') {
 }
 
 /**
+ * Validate table name to prevent SQL injection
+ */
+function validateTableName($table) {
+    // Only allow alphanumeric characters and underscores
+    return preg_match('/^[a-zA-Z0-9_]+$/', $table);
+}
+
+/**
  * Clean all user-generated data from the database
  */
 function cleanDatabase($db) {
@@ -62,6 +70,11 @@ function cleanDatabase($db) {
         
         foreach ($tables_to_truncate as $table) {
             try {
+                // Validate table name for security
+                if (!validateTableName($table)) {
+                    $results[] = "⚠ Skipped invalid table name: $table";
+                    continue;
+                }
                 $stmt = $db->prepare("TRUNCATE TABLE `$table`");
                 $stmt->execute();
                 $results[] = "✓ Cleaned table: $table";
@@ -88,8 +101,12 @@ function cleanDatabase($db) {
         // $results[] = "✓ Cleaned table: categories";
         
         // 5. Clean contractors except those tied to admin user
-        // Keep contractors that might be needed for demo/testing
-        $stmt = $db->prepare("DELETE FROM `contractors` WHERE id NOT IN (SELECT DISTINCT contractor_id FROM users WHERE contractor_id IS NOT NULL AND user_type = 'admin')");
+        // Optimized query using LEFT JOIN instead of subquery
+        $stmt = $db->prepare("
+            DELETE c FROM `contractors` c 
+            LEFT JOIN `users` u ON c.id = u.contractor_id AND u.user_type = 'admin' 
+            WHERE u.contractor_id IS NULL
+        ");
         $stmt->execute();
         $deletedContractors = $stmt->rowCount();
         $results[] = "✓ Deleted $deletedContractors contractors (preserved admin-linked contractors)";
@@ -167,6 +184,11 @@ function cleanDatabase($db) {
         
         foreach ($sync_tables as $table) {
             try {
+                // Validate table name for security
+                if (!validateTableName($table)) {
+                    $results[] = "⚠ Skipped invalid table name: $table";
+                    continue;
+                }
                 $stmt = $db->prepare("TRUNCATE TABLE `$table`");
                 $stmt->execute();
                 $results[] = "✓ Cleaned table: $table";
@@ -251,8 +273,8 @@ function executeCleanup() {
     echo "WARNING: This will delete ALL user-generated data!\n";
     echo "Only the admin account (irlam) and system configuration will be preserved.\n\n";
     
-    // If running from CLI, ask for confirmation
-    if (php_sapi_name() === 'cli') {
+    // If running from CLI, ask for confirmation (unless --yes flag is set)
+    if (php_sapi_name() === 'cli' && !defined('CLEANUP_SKIP_CONFIRMATION')) {
         echo "Are you sure you want to continue? (yes/no): ";
         $handle = fopen("php://stdin", "r");
         $line = trim(fgets($handle));
