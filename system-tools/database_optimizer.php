@@ -69,6 +69,7 @@ class DatabaseOptimizer
                 AND tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
                 AND tc.TABLE_SCHEMA = DATABASE()
             WHERE t.TABLE_SCHEMA = DATABASE()
+                AND t.TABLE_TYPE = 'BASE TABLE'
                 AND tc.CONSTRAINT_NAME IS NULL
         ";
 
