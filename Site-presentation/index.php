@@ -193,14 +193,19 @@ $statusCountsJSON = json_encode($statusCounts);
             opacity: 1 !important;
             transform: translateY(0) !important;
         }
-        /* Initial state for elements to be animated */
+        /* Initial state for elements to be animated - Set to visible by default since anime.js is blocked */
         .diagram-component, .feature-card, .schema-table, .workflow-diagram, .role-card {
-             opacity: 0;
-             transform: translateY(20px);
+             opacity: 1;
+             transform: translateY(0);
              transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        /* Basic connector style if styles.css is missing */
-        .connector { height: 0; width: 2px; background-color: #ccc; margin: 0 auto 1rem; /* Height animated by anime.js */ }
+        /* Connector styles - visible by default since anime.js is blocked */
+        .connector { 
+            height: 3rem; 
+            width: 2px; 
+            background-color: var(--text-muted-color, #94a3b8); 
+            margin: 0 auto 1rem;
+        }
 
     </style>
 </head>

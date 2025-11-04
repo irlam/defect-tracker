@@ -1,18 +1,45 @@
 :root {
+    /* Color scheme set to dark to match app.css */
+    color-scheme: dark;
+
+    /* Primary colors */
     --primary: #2563eb;
     --primary-light: #3b82f6;
     --primary-dark: #1d4ed8;
+    --primary-color: #2563eb;
+    
+    /* Status colors */
     --secondary: #059669;
+    --secondary-color: #22d3ee;
     --danger: #dc2626;
+    --danger-color: #f87171;
     --warning: #d97706;
+    --warning-color: #facc15;
     --success: #16a34a;
-    --background: #f9fafb;
-    --card-bg: #ffffff;
-    --text: #1f2937;
-    --text-light: #6b7280;
-    --border: #e5e7eb;
+    --success-color: #22c55e;
+    --info-color: #38bdf8;
+    
+    /* Background colors - dark theme */
+    --background: #0b1220;
+    --background-color: #0b1220;
+    --background-elevated: #111c2f;
+    --card-bg: #16213d;
+    --surface-color: #16213d;
+    --surface-muted: #1a2742;
+    --surface-hover: #1f2a44;
+    
+    /* Text colors */
+    --text: #e2e8f0;
+    --text-color: #e2e8f0;
+    --text-light: #94a3b8;
+    --text-muted-color: #94a3b8;
+    
+    /* Border colors */
+    --border: rgba(148, 163, 184, 0.25);
+    --border-color: rgba(148, 163, 184, 0.25);
     --border-dark: #d1d5db;
     
+    /* Role colors */
     --admin-color: #8b5cf6;
     --manager-color: #2563eb;
     --contractor-color: #059669;
@@ -27,8 +54,8 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: var(--background);
-    color: var(--text);
+    background-color: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
 }
 
@@ -40,8 +67,8 @@ body {
 
 /* Header styles */
 header {
-    background-color: var(--card-bg);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--surface-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -87,7 +114,7 @@ header {
 }
 
 .datetime, .username {
-    color: var(--text-light);
+    color: var(--text-muted-color);
     font-size: 0.875rem;
 }
 
@@ -151,7 +178,7 @@ header {
     font-size: 1.35rem;
     font-weight: 500;
     margin-bottom: 1rem;
-    color: var(--text);
+    color: var(--text-color);
 }
 
 /* Card grid */
@@ -162,10 +189,10 @@ header {
 }
 
 .card {
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
 }
 
@@ -186,7 +213,7 @@ header {
 }
 
 .card-label {
-    color: var(--text-light);
+    color: var(--text-muted-color);
     font-size: 1rem;
     font-weight: 500;
 }
@@ -206,10 +233,10 @@ header {
 .diagram-component {
     width: 90%;
     max-width: 800px;
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     text-align: center;
 }
 
@@ -228,7 +255,7 @@ header {
 .connector {
     height: 3rem;
     width: 2px;
-    background-color: var(--border-dark);
+    background-color: var(--text-muted-color);
     position: relative;
 }
 
@@ -239,7 +266,7 @@ header {
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 8px solid var(--border-dark);
+    border-top: 8px solid var(--text-muted-color);
     left: 50%;
     transform: translateX(-50%);
 }
@@ -257,12 +284,12 @@ header {
 }
 
 .component {
-    background-color: var(--background);
+    background-color: var(--surface-hover);
     border-radius: 6px;
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
-    color: var(--text);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .db-components {
@@ -272,8 +299,8 @@ header {
 }
 
 .db-component {
-    background-color: #f0f9ff;
-    border: 1px solid #bae6fd;
+    background-color: var(--surface-muted);
+    border: 1px solid var(--border-color);
 }
 
 /* Component sections */
@@ -308,9 +335,9 @@ header {
     gap: 0.5rem;
     margin: 1.5rem 0;
     padding: 1.5rem;
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .workflow-step {
@@ -328,15 +355,15 @@ header {
 }
 
 .workflow-branch div:first-child {
-    background-color: var(--danger);
+    background-color: var(--danger-color);
 }
 
 .workflow-branch div:last-child {
-    background-color: var(--success);
+    background-color: var(--success-color);
 }
 
 .workflow-arrow {
-    color: var(--text-light);
+    color: var(--text-muted-color);
     font-size: 1.2rem;
     font-weight: 700;
 }
@@ -351,12 +378,12 @@ header {
 }
 
 .role-card {
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
     padding: 1.5rem;
     width: calc(50% - 1.5rem);
     min-width: 200px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -403,7 +430,7 @@ header {
 }
 
 .role-desc {
-    color: var(--text-light);
+    color: var(--text-muted-color);
     font-size: 0.9rem;
 }
 
@@ -414,13 +441,13 @@ header {
     justify-content: space-between;
     margin: 1.5rem 0;
     padding: 1.5rem;
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .sync-device, .sync-server {
-    background-color: var(--background);
+    background-color: var(--surface-hover);
     padding: 1rem 1.5rem;
     border-radius: 6px;
     font-weight: 500;
@@ -464,11 +491,11 @@ header {
 }
 
 .schema-table {
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .table-header {
@@ -496,7 +523,7 @@ header {
 }
 
 .table-row:nth-child(even) {
-    background-color: var(--background);
+    background-color: var(--surface-hover);
 }
 
 .pk, .fk, .field {
@@ -506,7 +533,7 @@ header {
 }
 
 .pk {
-    color: var(--danger);
+    color: var(--danger-color);
 }
 
 .pk::after {
@@ -532,10 +559,10 @@ header {
 }
 
 .feature-card {
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -569,7 +596,7 @@ header {
 }
 
 .feature-card p {
-    color: var(--text-light);
+    color: var(--text-muted-color);
     font-size: 0.95rem;
     margin: 0;
 }
@@ -585,10 +612,10 @@ header {
 .chart-wrapper {
     flex: 1;
     min-width: 300px;
-    background-color: var(--card-bg);
+    background-color: var(--surface-muted);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .chart-wrapper h3 {
