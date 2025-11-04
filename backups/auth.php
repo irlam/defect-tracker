@@ -28,6 +28,22 @@ $userId = (int)$_SESSION['user_id'];
 $isAdmin = false;
 $isManager = false;
 
+// First check session-based user_type (primary method used by the application)
+if (isset($_SESSION['user_type'])) {
+    $userType = strtolower($_SESSION['user_type']);
+    $isAdmin = $userType === 'admin';
+    $isManager = $userType === 'manager';
+}
+
+// Also check legacy role field if exists
+if (!$isAdmin && isset($_SESSION['role'])) {
+    $isAdmin = strtolower($_SESSION['role']) === 'admin';
+}
+if (!$isManager && isset($_SESSION['role'])) {
+    $isManager = strtolower($_SESSION['role']) === 'manager' || strtolower($_SESSION['role']) === 'project_manager';
+}
+
+// Additionally check user_roles table for role-based permissions
 try {
     $database = new Database();
     $db = $database->getConnection();
@@ -38,25 +54,16 @@ try {
     $userRoles = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
     
     // Role IDs: 1 = Administrator, 2 = Manager
-    $isAdmin = in_array(1, $userRoles, true);
-    $isManager = in_array(2, $userRoles, true);
-    
-    // Also check legacy role field if exists
-    if (!$isAdmin && isset($_SESSION['role'])) {
-        $isAdmin = strtolower($_SESSION['role']) === 'admin';
+    // These checks supplement the session-based checks above
+    if (!$isAdmin) {
+        $isAdmin = in_array(1, $userRoles, true);
     }
-    if (!$isManager && isset($_SESSION['user_type'])) {
-        $isManager = strtolower($_SESSION['user_type']) === 'manager';
+    if (!$isManager) {
+        $isManager = in_array(2, $userRoles, true);
     }
 } catch (Exception $e) {
     error_log('Backup auth error: ' . $e->getMessage());
-    // Fall back to session-based role check
-    if (isset($_SESSION['role'])) {
-        $isAdmin = strtolower($_SESSION['role']) === 'admin';
-    }
-    if (isset($_SESSION['user_type'])) {
-        $isManager = strtolower($_SESSION['user_type']) === 'manager';
-    }
+    // Session-based checks already performed above, so we can continue
 }
 
 // Require admin or manager role to access backup system
