@@ -232,9 +232,9 @@ class LogoManager {
             $actor = $_SESSION['username'] ?? 'system';
             $timestamp = gmdate('Y-m-d H:i:s');
 
-            $sql = "INSERT INTO system_configurations (config_key, config_value, created_by, created_at, updated_by, updated_at)
-                    VALUES (:key, :value, :actor, :created_at, :actor, :updated_at)
-                    ON DUPLICATE KEY UPDATE config_value = VALUES(config_value), updated_by = VALUES(updated_by), updated_at = VALUES(updated_at)";
+        $sql = "INSERT INTO system_configurations (config_key, config_value, created_by, created_at, updated_by, updated_at)
+            VALUES (:key, :value, :actor, :created_at, :actor_update, :updated_at)
+            ON DUPLICATE KEY UPDATE config_value = VALUES(config_value), updated_by = VALUES(updated_by), updated_at = VALUES(updated_at)";
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
@@ -242,6 +242,7 @@ class LogoManager {
                 ':value' => $value,
                 ':actor' => $actor,
                 ':created_at' => $timestamp,
+                ':actor_update' => $actor,
                 ':updated_at' => $timestamp,
             ]);
         } catch (Throwable $configError) {
