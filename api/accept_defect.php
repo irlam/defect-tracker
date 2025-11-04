@@ -68,6 +68,23 @@ try {
     $defectId = (int)$_POST['defect_id'];
     $acceptanceComment = isset($_POST['acceptance_comment']) ? trim($_POST['acceptance_comment']) : '';
 
+    // Check if defect exists and can be accepted
+    $checkQuery = "SELECT id, status FROM defects WHERE id = :defect_id";
+    $checkStmt = $db->prepare($checkQuery);
+    $checkStmt->bindParam(':defect_id', $defectId);
+    $checkStmt->execute();
+    
+    if ($checkStmt->rowCount() === 0) {
+        throw new Exception("Defect #{$defectId} not found");
+    }
+    
+    $defect = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    $validStatusesForAcceptance = ['pending', 'completed', 'verified'];
+    
+    if (!in_array($defect['status'], $validStatusesForAcceptance)) {
+        throw new Exception("Defect #{$defectId} cannot be accepted from current status: {$defect['status']}");
+    }
+
     // Update the defect with acceptance information
     $query = "UPDATE defects 
               SET acceptance_comment = :acceptance_comment, 
@@ -105,7 +122,7 @@ try {
             'defect_id' => $defectId
         ]);
     } else {
-        throw new Exception("Failed to accept defect #{$defectId}. Defect may not exist.");
+        throw new Exception("Failed to update defect #{$defectId}");
     }
 } catch (Exception $e) {
     error_log("Accept Defect API Error: " . $e->getMessage());
