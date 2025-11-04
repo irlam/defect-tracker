@@ -92,13 +92,19 @@ self.addEventListener('push', event => {
         body: data.body || data.message || data.notification?.body || notificationData.body,
         icon: data.icon || notificationData.icon,
         badge: data.badge || notificationData.badge,
-        data: data.data || data,
+        data: {
+          // Standardize the data structure
+          defectId: data.defectId || data.data?.defectId,
+          log_id: data.log_id || data.data?.log_id,
+          user_id: data.user_id || data.data?.user_id,
+          ...data
+        },
         tag: data.tag || 'defect-notification',
         requireInteraction: data.requireInteraction || false
       };
       
       // Add action buttons if defect ID is present
-      if (data.defectId || data.data?.defectId) {
+      if (notificationData.data.defectId) {
         notificationData.actions = [
           { action: 'view', title: 'View Defect' },
           { action: 'close', title: 'Dismiss' }
@@ -122,15 +128,15 @@ self.addEventListener('push', event => {
       requireInteraction: notificationData.requireInteraction
     }).then(() => {
       // Confirm delivery to the server
-      const defectId = notificationData.data?.defectId || notificationData.data?.data?.defectId;
+      const defectId = notificationData.data.defectId;
       return fetch('/api/confirm_notification_delivery.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          log_id: notificationData.data?.log_id,
-          user_id: notificationData.data?.user_id,
+          log_id: notificationData.data.log_id,
+          user_id: notificationData.data.user_id,
           defect_id: defectId
         })
       }).catch(err => {
@@ -146,8 +152,9 @@ self.addEventListener('notificationclick', event => {
   
   event.notification.close();
   
-  // Get the defect ID from notification data
-  const defectId = event.notification.data?.defectId || event.notification.data?.data?.defectId;
+  // Get the defect ID from notification data (standardized structure)
+  const notificationData = event.notification.data || {};
+  const defectId = notificationData.defectId || (notificationData.data && notificationData.data.defectId);
   let urlToOpen = '/dashboard.php';
   
   if (event.action === 'view' && defectId) {
@@ -162,9 +169,13 @@ self.addEventListener('notificationclick', event => {
       // Check if there's already a window open
       for (let client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.focus();
-          client.navigate(urlToOpen);
-          return;
+          // Focus existing window and send navigation message
+          return client.focus().then(focusedClient => {
+            return focusedClient.postMessage({
+              type: 'NAVIGATE',
+              url: urlToOpen
+            });
+          });
         }
       }
       // If no window is open, open a new one

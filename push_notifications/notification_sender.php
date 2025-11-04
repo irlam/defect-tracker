@@ -85,7 +85,7 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $c
         }
         
         // Update log with success/failure counts and overall status
-        $overallStatus = $successCount > 0 ? ($failedCount > 0 ? 'sent' : 'sent') : 'failed';
+        $overallStatus = $successCount > 0 ? 'sent' : 'failed';
         $errorMessage = !empty($errors) ? implode('; ', array_unique($errors)) : null;
         
         $stmt = $db->prepare(
@@ -145,24 +145,14 @@ function getNotificationRecipients($db, $targetType, $userId = null, $contractor
     try {
         switch ($targetType) {
             case 'all':
-                // Get all users with FCM tokens
+                // Get all users with FCM tokens (using UNION to avoid duplicates)
                 $stmt = $db->prepare(
-                    "SELECT id as user_id, NULL as contractor_id, fcm_token, device_platform as platform 
-                     FROM users 
-                     WHERE fcm_token IS NOT NULL AND fcm_token != ''"
+                    "SELECT DISTINCT u.id as user_id, u.contractor_id, u.fcm_token, u.device_platform as platform 
+                     FROM users u
+                     WHERE u.fcm_token IS NOT NULL AND u.fcm_token != ''"
                 );
                 $stmt->execute();
                 $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                
-                // Get all contractor users
-                $stmt = $db->prepare(
-                    "SELECT u.id as user_id, u.contractor_id, u.fcm_token, u.device_platform as platform 
-                     FROM users u
-                     INNER JOIN contractors c ON u.contractor_id = c.id
-                     WHERE u.fcm_token IS NOT NULL AND u.fcm_token != '' AND u.contractor_id IS NOT NULL"
-                );
-                $stmt->execute();
-                $recipients = array_merge($recipients, $stmt->fetchAll(PDO::FETCH_ASSOC));
                 break;
                 
             case 'user':
