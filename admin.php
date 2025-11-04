@@ -214,6 +214,18 @@ $adminActionSections = [
                     ['label' => 'Inspect Logs', 'href' => 'user_logs.php', 'icon' => 'bx-search-alt-2', 'variant' => 'outline'],
                 ],
             ],
+            [
+                'tag' => 'presentation',
+                'tag_label' => 'Presentation',
+                'icon' => 'bx-presentation',
+                'title' => 'Site Presentation',
+                'description' => 'Access system analysis, training materials, and role documentation.',
+                'links' => [
+                    ['label' => 'System Analysis', 'href' => 'Site-presentation/index.php', 'icon' => 'bx-bar-chart-alt', 'variant' => 'primary'],
+                    ['label' => 'Training', 'href' => 'Site-presentation/training.php', 'icon' => 'bx-book-open', 'variant' => 'outline'],
+                    ['label' => 'Roles & Permissions', 'href' => 'Site-presentation/roles.php', 'icon' => 'bx-user-check', 'variant' => 'outline'],
+                ],
+            ],
         ],
     ],
 ];
