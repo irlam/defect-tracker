@@ -10,7 +10,7 @@
  */
 
 // Helper function to check if request is AJAX
-function isAjaxRequest() {
+function isAjaxRequest(): bool {
     // Check X-Requested-With header
     $requestedWith = filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH', FILTER_SANITIZE_STRING);
     if (!empty($requestedWith) && strtolower($requestedWith) === 'xmlhttprequest') {
@@ -33,7 +33,7 @@ function isAjaxRequest() {
 }
 
 // Helper function to send JSON error response
-function sendJsonError($message, $httpCode = 401) {
+function sendJsonError(string $message, int $httpCode = 401): void {
     // Validate HTTP status code
     $httpCode = filter_var($httpCode, FILTER_VALIDATE_INT);
     if ($httpCode === false || $httpCode < 100 || $httpCode > 599) {
