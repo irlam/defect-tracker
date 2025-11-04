@@ -249,8 +249,9 @@ try {
                                         <?php
                                         $logoFilename = $contractor['logo'];
                                         // Handle both old format (uploads/logos/filename.png) and new format (filename.png)
-                                        if (stripos($logoFilename, 'uploads/logos/') === 0) {
-                                            $logoFilename = substr($logoFilename, strlen('uploads/logos/'));
+                                        $logoPrefix = 'uploads/logos/';
+                                        if (stripos($logoFilename, $logoPrefix) === 0) {
+                                            $logoFilename = substr($logoFilename, strlen($logoPrefix));
                                         }
                                         ?>
                                         <img src="https://mcgoff.defecttracker.uk/uploads/logos/<?php echo htmlspecialchars($logoFilename); ?>" 
