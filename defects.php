@@ -3,7 +3,6 @@
  * defects.php
  * Defect register with themed operations centre layout.
  */
-        'class' => 'report-metric-card--closed report-metric-card--wide',
 ini_set('output_buffering', '1');
 ob_start();
 
@@ -381,7 +380,7 @@ $defectMetrics = [
         'title' => 'Closed & Resolved',
         'subtitle' => 'Verified fixes',
         'icon' => 'bx-check-circle',
-        'class' => 'report-metric-card--closed',
+        'class' => 'report-metric-card--closed report-metric-card--wide',
         'value' => $closedDefects,
         'description' => 'Accepted or resolved',
         'description_icon' => 'bx-badge-check',
@@ -477,7 +476,7 @@ $priorityBadgeMap = [
                     </article>
                 <?php endforeach; ?>
 
-                <article class="report-metric-card report-metric-card--snapshot">
+                <article class="report-metric-card report-metric-card--snapshot report-metric-card--wide">
                     <div class="report-metric-card__icon">
                         <i class='bx bx-pulse'></i>
                     </div>
