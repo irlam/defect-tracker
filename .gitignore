@@ -37,4 +37,5 @@ uploads/*
 
 # Config files with sensitive data
 config/database.local.php
-config/local.phplogs/error.log
+config/local.php
+logs/error.log
