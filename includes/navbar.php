@@ -11,6 +11,7 @@
  * - Determines the correct set of navigation links and dropdown menus based on the user's type.
  * - Fetches and displays a logo for 'contractor' user types (using 'contractor_id' from 'users' table
  *   and querying the 'contractors' table) or a default admin logo for 'admin' user types.
+ * - Fetches and displays the company logo/brandmark in the navbar brand section.
  * - Renders the navigation bar using Bootstrap 5 HTML structure.
  * - Includes a dynamic clock displaying the current date and time in UK format (DD-MM-YYYY HH:MM:SS),
  *   using the 'Europe/London' timezone, updated every second via client-side JavaScript.
@@ -22,6 +23,11 @@
  * - UTC Timestamp (YYYY-MM-DD HH:MM:SS): 2025-04-12 09:49:22
  * - User Login: irlam
  */
+
+// Load constants if available (for COMPANY_CONTRACTOR_ID)
+if (file_exists(__DIR__ . '/../config/constants.php')) {
+    require_once __DIR__ . '/../config/constants.php';
+}
 
 // Ensure PDO class is available. If your DB connection setup is in another file, require it here.
 // require_once('path/to/your/db_connection.php'); // Example: Adjust path as necessary

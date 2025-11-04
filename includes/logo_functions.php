@@ -1,5 +1,10 @@
 <?php
 
+// Load constants if available (for COMPANY_CONTRACTOR_ID)
+if (file_exists(__DIR__ . '/../config/constants.php')) {
+    require_once __DIR__ . '/../config/constants.php';
+}
+
 class LogoManager {
     private $uploadDir; // Absolute filesystem directory to store logos
     private $publicPathBase = '/uploads/logos/'; // Public path prefix for logos
