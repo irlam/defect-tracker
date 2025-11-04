@@ -50,7 +50,15 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header('X-XSS-Protection: 1; mode=block');
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-header('Content-Security-Policy: default-src \'self\'; script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' https://cdn.jsdelivr.net; style-src \'self\' \'unsafe-inline\' https://cdn.jsdelivr.net; img-src \'self\' data: https:; font-src \'self\' https://cdn.jsdelivr.net');
+$cspWebSocketHost = isset($_SERVER['HTTP_HOST']) ? ' wss://' . $_SERVER['HTTP_HOST'] : '';
+$contentSecurityPolicy = "default-src 'self'; "
+    . "connect-src 'self' https://cdn.jsdelivr.net" . $cspWebSocketHost . '; '
+    . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+    . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    . "img-src 'self' data: https:; "
+    . "font-src 'self' https://cdn.jsdelivr.net";
+
+header('Content-Security-Policy: ' . $contentSecurityPolicy);
 
 // Load required files
 require_once __DIR__ . '/../config/database.php';

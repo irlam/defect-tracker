@@ -208,10 +208,10 @@ class LogoManager {
         $uploadPrefix = trim($this->publicPathBase, '/');
 
         if (stripos($trimmedPath, $uploadPrefix) === 0) {
-            return '/' . $trimmedPath;
+            return rtrim(BASE_URL, '/') . '/' . ltrim($trimmedPath, '/');
         }
 
-        return '/' . rtrim($uploadPrefix, '/') . '/' . $trimmedPath;
+        return rtrim(BASE_URL, '/') . '/' . trim($uploadPrefix, '/') . '/' . ltrim($trimmedPath, '/');
     }
 
     private function resolveFilesystemPath($path) {
