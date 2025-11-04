@@ -38,7 +38,7 @@ try {
     $db = $database->getConnection();
     $navbar = new Navbar($db, $userId, $username);
 } catch (Throwable $navbarError) {
-    error_log('Navbar initialisation error on backups/index.php: ' . $navbarError->getMessage());
+    error_log('Navbar initialization error on backups/index.php: ' . $navbarError->getMessage());
 }
 
 // Get list of existing backups
@@ -283,7 +283,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="schedule-form-title">New Scheduled Backup</h5>
-                            <button type="button" class="btn-close close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" aria-label="Close" onclick="closeScheduleDialog()"></button>
                         </div>
                         <div class="modal-body">
                             <form method="post" action="index.php" id="schedule-form">
@@ -583,7 +583,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         const newScheduleBtn = document.getElementById('new-schedule-btn');
         const scheduleDialog = document.getElementById('schedule-dialog');
         const scheduleForm = document.getElementById('schedule-form');
-        const closeBtn = scheduleDialog ? scheduleDialog.querySelector('.close') : null;
+        const closeBtn = scheduleDialog ? scheduleDialog.querySelector('.btn-close') : null;
         
         // Setup event listeners for schedule dialog
         if (newScheduleBtn) {
