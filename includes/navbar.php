@@ -151,14 +151,18 @@ class Navbar {
     /**
      * Fetches the company logo/brandmark from the database.
      * 
-     * Queries the contractors table where id = 1 (company record) for the logo path.
+     * Queries the contractors table where id = COMPANY_CONTRACTOR_ID (defaults to 1) for the logo path.
      * Updates the $this->companyLogo property with the normalized logo path.
      */
     private function setCompanyLogo() {
         try {
-            // Query for company logo stored in contractors table with id = 1
-            $query = "SELECT logo FROM contractors WHERE id = 1 LIMIT 1";
+            // Use constant if defined, otherwise default to 1
+            $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+            
+            // Query for company logo stored in contractors table with id = company ID
+            $query = "SELECT logo FROM contractors WHERE id = :company_id LIMIT 1";
             $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':company_id', $companyId, PDO::PARAM_INT);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             

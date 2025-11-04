@@ -42,3 +42,8 @@ if (!defined('APP_VERSION')) {
 if (!defined('DEFAULT_TIMEZONE')) {
     define('DEFAULT_TIMEZONE', 'Europe/London');
 }
+
+// Company configuration
+if (!defined('COMPANY_CONTRACTOR_ID')) {
+    define('COMPANY_CONTRACTOR_ID', 1); // ID of the company record in contractors table
+}
