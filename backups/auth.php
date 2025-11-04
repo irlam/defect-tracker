@@ -12,19 +12,19 @@
 // Helper function to check if request is AJAX
 function isAjaxRequest(): bool {
     // Check X-Requested-With header
-    $requestedWith = filter_input(INPUT_SERVER, 'HTTP_X_REQUESTED_WITH', FILTER_SANITIZE_STRING);
+    $requestedWith = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
     if (!empty($requestedWith) && strtolower($requestedWith) === 'xmlhttprequest') {
         return true;
     }
     
     // Check Accept header for JSON
-    $accept = filter_input(INPUT_SERVER, 'HTTP_ACCEPT', FILTER_SANITIZE_STRING);
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
     if (!empty($accept) && strpos($accept, 'application/json') !== false) {
         return true;
     }
     
     // Check Content-Type header for JSON
-    $contentType = filter_input(INPUT_SERVER, 'CONTENT_TYPE', FILTER_SANITIZE_STRING);
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
     if (!empty($contentType) && strpos($contentType, 'application/json') !== false) {
         return true;
     }
@@ -34,9 +34,8 @@ function isAjaxRequest(): bool {
 
 // Helper function to send JSON error response
 function sendJsonError(string $message, int $httpCode = 401): void {
-    // Validate HTTP status code
-    $httpCode = filter_var($httpCode, FILTER_VALIDATE_INT);
-    if ($httpCode === false || $httpCode < 100 || $httpCode > 599) {
+    // Validate HTTP status code range
+    if ($httpCode < 100 || $httpCode > 599) {
         $httpCode = 500; // Default to Internal Server Error for invalid codes
     }
     
