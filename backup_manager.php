@@ -20,5 +20,5 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
 }
 
 // Redirect to the backup manager interface
-header("Location: /backups/index.php");
+header("Location: backups/index.php");
 exit();
