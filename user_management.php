@@ -684,6 +684,8 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <!-- Boxicons CSS -->
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- App CSS for theme -->
+    <link href="/css/app.css?v=20251104" rel="stylesheet">
 
     <?php // --- Favicons (replace with your actual favicon paths) --- ?>
     <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
@@ -707,7 +709,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
 
         /* Basic body styling */
         body {
-            background-color: #f8f9fa; /* Light grey background */
             padding-top: 70px; /* Increased padding for potentially taller fixed navbar */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Standard system font stack */
             font-size: 0.95rem; /* Slightly smaller base font size */
@@ -731,29 +732,14 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
             position: sticky; /* Make it stick to the top when scrolling */
             top: 60px; /* Position below the fixed navbar (adjust if navbar height changes) */
             z-index: 100; /* Ensure it stays above table content */
-            background-color: #f8f9fa; /* Match body background */
             padding: 0.75rem 0; /* Vertical padding */
             margin-bottom: 1.5rem; /* Space below search bar */
             transition: box-shadow 0.3s ease-in-out; /* Smooth shadow transition */
         }
         /* Add shadow when search bar is scrolled past its original position */
         .search-container.scrolled {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.075);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        /* Style search input group elements */
-        .search-container .input-group-text {
-             background-color: #fff;
-             border-right: 0; /* Remove border between icon and input */
-             color: #6c757d; /* Secondary color for icon */
-        }
-        .search-container .form-control {
-            border-left: 0; /* Remove border between icon and input */
-        }
-         .search-container .form-control:focus {
-             box-shadow: none; /* Remove default focus glow */
-             border-color: #86b7fe; /* Bootstrap focus border color */
-             z-index: 3; /* Ensure focus border overlaps icon */
-         }
 
 
         /* User status indicator (colored circle) */
@@ -816,10 +802,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
         .table th {
             white-space: nowrap; /* Prevent table headers from wrapping unnecessarily */
             font-weight: 500; /* Slightly bolder headers */
-            background-color: #f8f9fa; /* Light header background */
-        }
-        .table-hover tbody tr:hover {
-            background-color: rgba(0,0,0,.03); /* Subtle hover effect */
         }
 
         /* Fixed alert container positioning */
@@ -844,13 +826,11 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
         /* Card Styles - for mobile view */
         .card-view .dropdown { margin-bottom: 1rem; } /* Add space below mobile filter */
         .user-card {
-            border: 1px solid #dee2e6; /* Add border matching table */
             border-radius: 0.375rem; /* Standard Bootstrap card radius */
             overflow: hidden;
             margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,.05); /* Softer shadow */
+            box-shadow: 0 1px 3px rgba(0,0,0,.2); /* Shadow for dark theme */
             transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            background-color: #fff;
         }
         /* Subtle press effect on mobile */
         .user-card:active {
@@ -863,8 +843,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 1rem;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
         }
         .user-card .card-header strong { font-weight: 500; } /* Match table header weight */
         /* Card body styling */
@@ -872,7 +850,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
         /* Styling for data rows within the card body */
         .user-card .data-row {
             display: flex;
-            border-bottom: 1px solid #e9ecef; /* Lighter border inside card */
             padding: 0.7rem 0; /* Adjust padding */
             align-items: flex-start;
         }
@@ -881,7 +858,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
         .user-card .data-label {
             flex: 0 0 110px; /* Fixed width for labels */
             font-weight: 500;
-            color: #495057;
             font-size: 0.875rem;
             padding-right: 0.5rem;
             white-space: nowrap; /* Prevent labels wrapping */
@@ -889,7 +865,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
         /* Styling for values in card rows */
         .user-card .data-value {
             flex: 1;
-            color: #212529;
             font-size: 0.875rem;
             word-break: break-word; /* Prevent long text overflow */
         }
@@ -907,8 +882,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Creates a cryptographica
             display: flex;
             gap: 0.5rem;
             padding: 0.75rem 1rem;
-            background-color: #f8f9fa; /* Match header background */
-            border-top: 1px solid #dee2e6;
         }
         /* Styling for action buttons within cards */
         .action-btn {
@@ -1014,16 +987,16 @@ try {
     <?php // --- Sticky Search Bar ---
           // Allows users to filter the list by typing keywords. ?>
     <div class="search-container sticky-top">
-        <div class="input-group">
+        <div class="input-group input-group-lg">
             <span class="input-group-text" id="search-addon"><i class="bx bx-search"></i></span>
-            <input type="text" class="form-control" id="searchInput" placeholder="Search users by name, username, or email..." aria-label="Search users" aria-describedby="search-addon">
+            <input type="search" class="form-control" id="searchInput" placeholder="Search users by name, username, or email..." aria-label="Search users" aria-describedby="search-addon">
         </div>
     </div>
 
     <?php // --- Table View (Displayed on Larger Screens) --- ?>
     <div class="table-view">
         <div class="card shadow-sm"> <?php // Wrap table in a card for consistent styling ?>
-            <div class="card-header bg-light border-bottom d-none d-lg-block"> <?php // Optional header for the card ?>
+            <div class="card-header border-bottom d-none d-lg-block"> <?php // Optional header for the card ?>
                 <h5 class="card-title mb-0 d-flex align-items-center">
                     <i class="bx bx-list-ul me-2"></i>Users List
                 </h5>
@@ -1031,7 +1004,7 @@ try {
             <div class="card-body p-0"> <?php // Remove card body padding to let table fill it ?>
                 <div class="table-responsive"> <?php // Make table horizontally scrollable on smaller viewports if needed ?>
                     <table class="table table-hover mb-0"> <?php // Use table-hover for row highlighting ?>
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <?php // Table Headers ?>
                                 <th scope="col" style="width: 5%;">Status</th>
