@@ -3,7 +3,7 @@
  * defects.php
  * Defect register with themed operations centre layout.
  */
-
+        'class' => 'report-metric-card--closed report-metric-card--wide',
 ini_set('output_buffering', '1');
 ob_start();
 
@@ -484,12 +484,12 @@ $priorityBadgeMap = [
                     <div class="report-metric-card__content">
                         <span class="report-metric-card__tag">Live overview</span>
                         <h3 class="report-metric-card__title">Portfolio Snapshot</h3>
-                        <p class="report-metric-card__lead">Where the workload sits across projects and delivery partners.</p>
+                        <p class="report-metric-card__lead">Workload across active projects and partners.</p>
                         <p class="report-metric-card__value mb-1"><?php echo number_format($activeDefects); ?></p>
                         <p class="report-metric-card__description"><i class='bx bx-trending-up'></i>Currently open or in progress.</p>
                         <ul class="report-metric-card__list">
-                            <li><i class='bx bx-building-house'></i><?php echo number_format($projectCount); ?> projects engaged</li>
-                            <li><i class='bx bx-user-voice'></i><?php echo number_format($contractorCount); ?> contractors assigned</li>
+                            <li><i class='bx bx-building-house'></i><?php echo number_format($projectCount); ?> projects</li>
+                            <li><i class='bx bx-user-voice'></i><?php echo number_format($contractorCount); ?> contractors</li>
                             <li><i class='bx bx-refresh'></i><?php echo htmlspecialchars($lastUpdateDisplay, ENT_QUOTES, 'UTF-8'); ?></li>
                         </ul>
                     </div>
@@ -502,7 +502,7 @@ $priorityBadgeMap = [
                     <div class="report-metric-card__content">
                         <span class="report-metric-card__tag">Action centre</span>
                         <h3 class="report-metric-card__title mb-1">Triage Focus</h3>
-                        <p class="report-metric-card__lead">Direct teams to the high-impact items demanding attention right now.</p>
+                        <p class="report-metric-card__lead">Highlights the items needing immediate attention.</p>
                         <ul class="report-metric-card__stats">
                             <li><i class='bx bx-error'></i><?php echo number_format($criticalDefects); ?> critical</li>
                             <li><i class='bx bx-timer'></i><?php echo number_format($overdueDefects); ?> overdue</li>

@@ -2917,6 +2917,7 @@ hr {
   display: grid;
   gap: var(--spacing-md);
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-auto-flow: dense;
 }
 
 .report-metrics-grid--defects {
@@ -3009,9 +3010,9 @@ hr {
 
 .report-metric-card__lead {
   margin: 0 0 0.65rem 0;
-  font-size: 0.9rem;
-  color: rgba(226, 232, 240, 0.85);
-  line-height: 1.5;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.82);
+  line-height: 1.4;
 }
 
 .report-metric-card__subtitle,
@@ -3064,7 +3065,7 @@ hr {
 .report-metric-card__stats {
   list-style: none;
   padding: 0;
-  margin: var(--spacing-sm) 0 0;
+  margin: var(--spacing-xs) 0 0;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
@@ -3093,11 +3094,12 @@ hr {
 
 .report-metric-card--wide {
   width: 100%;
+  grid-column: span 2;
 }
 
-@media (min-width: 1200px) {
+@media (max-width: 992px) {
   .report-metric-card--wide {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 }
 
