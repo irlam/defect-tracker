@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'], $_SESSION['username'])) {
     exit;
 }
 
-if (empty($_SESSION['is_admin'])) {
+if (!isset($_SESSION['user_type']) || !in_array($_SESSION['user_type'], ['admin', 'manager'])) {
     header('Location: dashboard.php');
     exit;
 }
