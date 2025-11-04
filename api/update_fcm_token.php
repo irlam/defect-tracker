@@ -2,7 +2,6 @@
 // api/update_fcm_token.php
 // file to receive tokens from the Android app
 
-<?php
 // Error reporting and logging setup
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't display errors in API

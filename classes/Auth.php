@@ -19,7 +19,7 @@ class Auth {
     // Login user
     public function login($username, $password) {
         try {
-            $query = "SELECT id, username, password_hash, role, email, full_name 
+            $query = "SELECT id, username, password, role, email, full_name 
                      FROM " . $this->table_name . " 
                      WHERE username = :username AND is_active = 1";
             
@@ -31,7 +31,7 @@ class Auth {
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 // Verify password
-                if(password_verify($password, $row['password_hash'])) {
+                if(password_verify($password, $row['password'])) {
                     // Start session and store user data
                     if (session_status() === PHP_SESSION_NONE) {
                         session_start();
