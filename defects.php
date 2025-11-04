@@ -487,7 +487,9 @@ $priorityBadgeMap = [
                 </ul>
             </div>
         </div>
+    </nav>
 
+    <main class="tool-page container-xl py-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div class="text-muted small">
                 <?php if ($totalRecords > 0): ?>
