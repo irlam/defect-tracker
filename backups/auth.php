@@ -28,6 +28,9 @@ $userId = (int)$_SESSION['user_id'];
 $isAdmin = false;
 $isManager = false;
 
+// Define manager role values for legacy role field checks
+$managerRoles = ['manager', 'project_manager'];
+
 // First check session-based user_type (primary method used by the application)
 if (isset($_SESSION['user_type'])) {
     $userType = strtolower($_SESSION['user_type']);
@@ -42,7 +45,6 @@ if (isset($_SESSION['role'])) {
         $isAdmin = $lowerRole === 'admin';
     }
     if (!$isManager) {
-        $managerRoles = ['manager', 'project_manager'];
         $isManager = in_array($lowerRole, $managerRoles, true);
     }
 }
@@ -67,7 +69,8 @@ try {
     }
 } catch (Exception $e) {
     error_log('Backup auth error: ' . $e->getMessage());
-    // Session-based checks already performed above, so we can continue
+    // Session-based authentication checks have already been performed above.
+    // The system gracefully degrades to session-only authentication when the database is unavailable.
 }
 
 // Require admin or manager role to access backup system
