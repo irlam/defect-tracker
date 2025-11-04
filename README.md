@@ -48,6 +48,7 @@ The McGoff Defect Tracker is a complete construction management solution that en
 
 ### 🔧 System Administration
 - **Backup & Restore**: Automated database backups with point-in-time recovery
+- **Website Cleanup**: Tool to reset the system to fresh state while preserving admin account (see [CLEANUP_README.md](CLEANUP_README.md))
 - **System Health Monitoring**: Built-in diagnostics and performance monitoring
 - **Configuration Management**: Environment-based configuration with secure credential storage
 - **Log Management**: Centralized logging with automatic rotation
@@ -81,6 +82,7 @@ The McGoff Defect Tracker is a complete construction management solution that en
 - User management and role assignment
 - System settings and maintenance
 - Backup and restore operations
+- Website cleanup and fresh template creation
 - Complete audit trail access
 
 ### 👔 Manager
