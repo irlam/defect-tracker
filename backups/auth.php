@@ -9,6 +9,43 @@
  * Author: irlam
  */
 
+// Helper function to check if request is AJAX
+function isAjaxRequest(): bool {
+    // Check X-Requested-With header
+    $requestedWith = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+    if (!empty($requestedWith) && strtolower($requestedWith) === 'xmlhttprequest') {
+        return true;
+    }
+    
+    // Check Accept header for JSON
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    if (!empty($accept) && strpos($accept, 'application/json') !== false) {
+        return true;
+    }
+    
+    // Check Content-Type header for JSON (handles both CONTENT_TYPE and HTTP_CONTENT_TYPE)
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
+    if (!empty($contentType) && strpos($contentType, 'application/json') !== false) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Helper function to send JSON error response
+function sendJsonError(string $message, int $httpCode = 401): void {
+    // Validate HTTP status code range
+    if ($httpCode < 100 || $httpCode > 599) {
+        $httpCode = 500; // Default to Internal Server Error for invalid codes
+    }
+    
+    http_response_code($httpCode);
+    header('Content-Type: application/json');
+    // JSON encoding automatically escapes the message, preventing XSS
+    echo json_encode(['success' => false, 'message' => $message], JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 // Start session if not already started
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -16,6 +53,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 // Check if user is logged in via main application session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+    if (isAjaxRequest()) {
+        sendJsonError('Authentication required. Please log in.', 401);
+    }
     // Redirect to main login page
     header('Location: ../login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
     exit;
@@ -75,6 +115,9 @@ try {
 
 // Require admin or manager role to access backup system
 if (!$isAdmin && !$isManager) {
+    if (isAjaxRequest()) {
+        sendJsonError('Access denied. Admin or manager role required.', 403);
+    }
     header('Location: ../dashboard.php');
     exit;
 }
