@@ -23,8 +23,8 @@ function isAjaxRequest(): bool {
         return true;
     }
     
-    // Check Content-Type header for JSON
-    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    // Check Content-Type header for JSON (handles both CONTENT_TYPE and HTTP_CONTENT_TYPE)
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '';
     if (!empty($contentType) && strpos($contentType, 'application/json') !== false) {
         return true;
     }
