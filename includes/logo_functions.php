@@ -88,15 +88,19 @@ class LogoManager {
         try {
             // Determine which table to update based on logo type
             if ($type === 'company') {
-                // Use constant if defined, otherwise default to 1
-                $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
-                
-                //For company logo, store in contractors table
-                $sql = "UPDATE contractors SET logo = ? WHERE id = ?";
+                $this->persistCompanyLogoConfig($filePath);
 
-                $stmt = $this->db->prepare($sql);
-                $result = $stmt->execute([$filePath, $companyId]);
+                // Attempt to update the legacy contractors record for compatibility (ignore if missing)
+                try {
+                    $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+                    $legacySql = "UPDATE contractors SET logo = ? WHERE id = ?";
+                    $legacyStmt = $this->db->prepare($legacySql);
+                    $legacyStmt->execute([$filePath, $companyId]);
+                } catch (Throwable $legacyUpdateError) {
+                    error_log('LogoManager legacy contractor logo update skipped: ' . $legacyUpdateError->getMessage());
+                }
 
+                $result = true;
             } elseif ($type === 'contractor' && $contractorId) {
                 // Update contractor logo path in the contractors table
                 $sql = "UPDATE contractors SET logo = ? WHERE id = ?";
@@ -116,17 +120,24 @@ class LogoManager {
     }
 
     public function getCompanyLogo() {
-        // Use constant if defined, otherwise default to 1
-        $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
-        
-        // Retrieve company logo path from contractors table
-        $sql = "SELECT logo FROM contractors WHERE id = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$companyId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $configLogo = $this->fetchCompanyLogoConfig();
+        if ($configLogo !== null) {
+            return $this->normaliseLogoPath($configLogo);
+        }
 
-        if ($result && $result['logo']) {
-            return $this->normaliseLogoPath($result['logo']);
+        // Legacy fallback to contractors table
+        try {
+            $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+            $sql = "SELECT logo FROM contractors WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$companyId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($result && $result['logo']) {
+                return $this->normaliseLogoPath($result['logo']);
+            }
+        } catch (Throwable $legacyLookupError) {
+            error_log('LogoManager legacy company logo lookup failed: ' . $legacyLookupError->getMessage());
         }
 
         return null;
@@ -152,18 +163,19 @@ class LogoManager {
                 // Get the current company logo path
                 $currentLogo = $this->getCompanyLogo();
                 
-                // Use constant if defined, otherwise default to 1
-                $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+                // Clear configuration entry
+                $this->persistCompanyLogoConfig(null);
 
-                // Delete the company logo path from contractors table
-                 $sql = "UPDATE contractors SET logo = NULL WHERE id = ?";
-                $stmt = $this->db->prepare($sql);
-                $result = $stmt->execute([$companyId]);
-
-
-                if (!$result) {
-                    throw new Exception('Failed to delete company logo path from the database.');
+                // Attempt to clear legacy contractors record for compatibility
+                try {
+                    $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
+                    $legacySql = "UPDATE contractors SET logo = NULL WHERE id = ?";
+                    $legacyStmt = $this->db->prepare($legacySql);
+                    $legacyStmt->execute([$companyId]);
+                } catch (Throwable $legacyDeleteError) {
+                    error_log('LogoManager legacy contractor logo delete skipped: ' . $legacyDeleteError->getMessage());
                 }
+
             } elseif ($type === 'contractor' && $contractorId) {
                 // Get the current contractor logo path
                 $currentLogo = $this->getContractorLogo($contractorId);
@@ -212,6 +224,48 @@ class LogoManager {
         }
 
         return '/' . trim($uploadPrefix, '/') . '/' . ltrim($trimmedPath, '/');
+    }
+
+    private function persistCompanyLogoConfig($value): void
+    {
+        try {
+            $actor = $_SESSION['username'] ?? 'system';
+            $timestamp = gmdate('Y-m-d H:i:s');
+
+            $sql = "INSERT INTO system_configurations (config_key, config_value, created_by, created_at, updated_by, updated_at)
+                    VALUES (:key, :value, :actor, :created_at, :actor, :updated_at)
+                    ON DUPLICATE KEY UPDATE config_value = VALUES(config_value), updated_by = VALUES(updated_by), updated_at = VALUES(updated_at)";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':key' => 'company_logo_path',
+                ':value' => $value,
+                ':actor' => $actor,
+                ':created_at' => $timestamp,
+                ':updated_at' => $timestamp,
+            ]);
+        } catch (Throwable $configError) {
+            error_log('LogoManager configuration persistence failed: ' . $configError->getMessage());
+        }
+    }
+
+    private function fetchCompanyLogoConfig(): ?string
+    {
+        try {
+            $sql = "SELECT config_value FROM system_configurations WHERE config_key = :key LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':key' => 'company_logo_path']);
+            $value = $stmt->fetchColumn();
+
+            if ($value === false || $value === null || $value === '') {
+                return null;
+            }
+
+            return (string) $value;
+        } catch (Throwable $configLookupError) {
+            error_log('LogoManager configuration lookup failed: ' . $configLookupError->getMessage());
+            return null;
+        }
     }
 
     private function resolveFilesystemPath($path) {

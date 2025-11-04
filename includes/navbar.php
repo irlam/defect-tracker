@@ -162,17 +162,21 @@ class Navbar {
      */
     private function setCompanyLogo() {
         try {
-            // Use constant if defined, otherwise default to 1
+            // First try the system configuration store
+            $configLogo = $this->fetchConfigValue('company_logo_path');
+            if (!empty($configLogo)) {
+                $this->companyLogo = $this->buildLogoPath($configLogo);
+                return;
+            }
+
+            // Legacy fallback to contractors table for backwards compatibility
             $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
-            
-            // Query for company logo stored in contractors table with id = company ID
             $query = "SELECT logo FROM contractors WHERE id = :company_id LIMIT 1";
             $stmt = $this->db->prepare($query);
             $stmt->bindParam(':company_id', $companyId, PDO::PARAM_INT);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            // If a logo path is found, normalize and store it
+
             if ($result && !empty($result['logo'])) {
                 $this->companyLogo = $this->buildLogoPath($result['logo']);
             }
@@ -181,6 +185,22 @@ class Navbar {
             error_log("Navbar PDOException in setCompanyLogo: " . $e->getMessage());
         } catch (Exception $e) {
             error_log("Navbar General Exception in setCompanyLogo: " . $e->getMessage());
+        }
+    }
+
+    private function fetchConfigValue(string $key): ?string
+    {
+        try {
+            $stmt = $this->db->prepare('SELECT config_value FROM system_configurations WHERE config_key = :key LIMIT 1');
+            $stmt->execute([':key' => $key]);
+            $value = $stmt->fetchColumn();
+            if ($value === false || $value === null || $value === '') {
+                return null;
+            }
+            return (string) $value;
+        } catch (PDOException $e) {
+            error_log('Navbar configuration lookup failed: ' . $e->getMessage());
+            return null;
         }
     }
 
