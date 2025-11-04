@@ -10,7 +10,7 @@ $currentDate = date('d/m/Y');
 $currentTime = date('H:i:s');
 
 // Set logged-in username (fallback for when auth/session is unavailable)
-$username = 'System User'; // Default for presentation page
+$username = 'System Admin'; // Default for presentation page
 
 // Define roles and their permissions
 $roles = [
