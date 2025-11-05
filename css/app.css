@@ -493,6 +493,168 @@ body.tool-body {
   color: rgba(203, 213, 225, 0.82);
 }
 
+.dashboard-launch {
+  position: relative;
+}
+
+.dashboard-launch-card {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(var(--spacing-lg), 3vw, var(--spacing-xxl));
+  padding: clamp(var(--spacing-lg), 4vw, var(--spacing-xxl));
+  border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background:
+    radial-gradient(120% 140% at 10% -20%, rgba(59, 130, 246, 0.32), transparent 60%),
+    radial-gradient(80% 90% at 85% 120%, rgba(14, 165, 233, 0.22), transparent 55%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 64, 175, 0.9) 60%, rgba(37, 99, 235, 0.88) 100%);
+  text-decoration: none;
+  color: var(--text-color);
+  box-shadow: 0 28px 54px -32px rgba(15, 23, 42, 0.85);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-launch-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.08), transparent 60%);
+  mix-blend-mode: screen;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.dashboard-launch-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-launch-card__icon-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-launch-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(68px, 9vw, 92px);
+  height: clamp(68px, 9vw, 92px);
+  border-radius: 28px;
+  background: rgba(37, 99, 235, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.35), 0 28px 46px -28px rgba(37, 99, 235, 0.8);
+  color: rgba(226, 232, 240, 0.95);
+  font-size: clamp(2.2rem, 4vw, 2.8rem);
+}
+
+.dashboard-launch-card__content {
+  flex: 1 1 480px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.dashboard-launch-card__tag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.24);
+  color: rgba(224, 231, 255, 0.92);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboard-launch-card__title {
+  font-size: clamp(1.5rem, 3.4vw, 2.2rem);
+  font-weight: 700;
+  margin: 0;
+  color: #f8fafc;
+}
+
+.dashboard-launch-card__lead {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.1rem);
+  color: rgba(226, 232, 240, 0.86);
+}
+
+.dashboard-launch-card__features {
+  margin: var(--spacing-sm) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dashboard-launch-card__features li {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.dashboard-launch-card__features i {
+  color: rgba(129, 230, 217, 0.88);
+  font-size: 1.15rem;
+  margin-top: 0.1rem;
+}
+
+.dashboard-launch-card__cta {
+  flex: 0 0 auto;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0.75rem 1.4rem;
+  border-radius: var(--border-radius-lg);
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: rgba(226, 232, 240, 0.88);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dashboard-launch-card__cta-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.32);
+  color: #bfdbfe;
+  font-size: 1.4rem;
+  transition: transform var(--transition-base);
+}
+
+.dashboard-launch-card:hover {
+  box-shadow: 0 32px 64px -32px rgba(30, 64, 175, 0.85);
+  transform: translateY(-2px);
+}
+
+.dashboard-launch-card:hover .dashboard-launch-card__cta-icon {
+  transform: translateX(6px);
+}
+
+@media (max-width: 992px) {
+  .dashboard-launch-card {
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .dashboard-launch-card__cta {
+    align-self: flex-start;
+  }
+}
+
 @media (max-width: 992px) {
   .dashboard-hero__meta {
     flex-direction: row;

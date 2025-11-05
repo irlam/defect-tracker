@@ -389,7 +389,7 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
             </div>
         <?php endif; ?>
 
-        <header class="tool-header dashboard-hero mb-5">
+        <header class="tool-header dashboard-hero mb-4">
             <div class="dashboard-hero__main">
                 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                     <div>
@@ -413,22 +413,29 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
                     </a>
                 </div>
             </div>
-            <aside class="dashboard-hero__action">
-                <article class="system-tool-card dashboard-quick-card">
-                    <div class="system-tool-card__icon dashboard-quick-card__icon">
-                        <i class='bx bx-plus-circle'></i>
-                    </div>
-                    <div class="system-tool-card__body">
-                        <h3 class="system-tool-card__title dashboard-quick-card__title">Log a New Defect</h3>
-                        <p class="system-tool-card__description dashboard-quick-card__description">Capture issue details, attach evidence, and assign a delivery team in one streamlined flow.</p>
-                        <a class="btn btn-sm btn-primary" href="create_defect.php">
-                            <i class='bx bx-right-arrow-alt'></i>
-                            Start New Defect
-                        </a>
-                    </div>
-                </article>
-            </aside>
         </header>
+
+        <section class="dashboard-launch mb-5">
+            <a class="dashboard-launch-card" href="create_defect.php">
+                <div class="dashboard-launch-card__icon-wrap">
+                    <span class="dashboard-launch-card__icon"><i class='bx bx-plus-circle'></i></span>
+                </div>
+                <div class="dashboard-launch-card__content">
+                    <span class="dashboard-launch-card__tag"><i class='bx bx-bolt-circle'></i>Quick capture</span>
+                    <h2 class="dashboard-launch-card__title">Log a New Defect</h2>
+                    <p class="dashboard-launch-card__lead">Open a defect in seconds with guided fields, evidence uploads, and instant contractor alerts.</p>
+                    <ul class="dashboard-launch-card__features">
+                        <li><i class='bx bx-check-shield'></i>Streamlined workflow with validation at each step</li>
+                        <li><i class='bx bx-upload'></i>Attach photos, plans, and punch-list notes on the fly</li>
+                        <li><i class='bx bx-broadcast'></i>Automatic notifications to the delivery team of choice</li>
+                    </ul>
+                </div>
+                <div class="dashboard-launch-card__cta" aria-hidden="true">
+                    <span class="dashboard-launch-card__cta-label">Start New Defect</span>
+                    <span class="dashboard-launch-card__cta-icon"><i class='bx bx-right-arrow-alt'></i></span>
+                </div>
+            </a>
+        </section>
 
         <?php if (!empty($dashboardMetrics)): ?>
         <section class="mb-5">
