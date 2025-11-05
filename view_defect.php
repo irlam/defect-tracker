@@ -15,11 +15,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+define('INCLUDED', true);
+
 require_once 'config/database.php';
 require_once 'config/constants.php'; // Add constants file
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 require_once 'includes/upload_constants.php'; // Include upload constants
+require_once 'includes/navbar.php';
 
 // Check authentication
 if (!isset($_SESSION['user_id'])) {
@@ -31,6 +34,10 @@ $userId = (int)$_SESSION['user_id'];
 $userRole = $_SESSION['user_role'] ?? '';
 $errors = [];
 $success = false;
+$pageTitle = 'View Defect';
+$currentUsername = $_SESSION['username'] ?? '';
+$navbar = null;
+$debugEnabled = defined('DEBUG') ? (bool) constant('DEBUG') : false;
 
 // Get defect ID from URL
 $defectId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
@@ -42,6 +49,10 @@ if (!$defectId) {
 try {
     $database = new Database();
     $db = $database->getConnection();
+
+    date_default_timezone_set('Europe/London');
+
+    $navbar = new Navbar($db, $userId, $currentUsername);
 
     // Fetch defect details and related information
     $stmt = $db->prepare("
@@ -114,186 +125,592 @@ try {
     header('Location: defects.php');
     exit;
 }
+
+$statusLabel = ucfirst(str_replace('_', ' ', $defect['status'] ?? 'Unknown'));
+$priorityLabel = ucfirst($defect['priority'] ?? 'Unknown');
+$projectLabel = $defect['project_name'] ?? 'Unassigned Project';
+$floorName = $defect['floor_name'] ?? '';
+$floorLevel = $defect['floor_level'] ?? '';
+$floorDisplay = $floorName !== '' ? $floorName : 'Unassigned Floor';
+if ($floorLevel !== '' && $floorLevel !== null) {
+    if ($floorName !== '') {
+        $floorDisplay .= ' / Level ' . (string) $floorLevel;
+    } else {
+        $floorDisplay .= ' Level ' . (string) $floorLevel;
+    }
+}
+
+$reportedBy = $defect['reported_by_user'] ?? 'System';
+$assignedBy = $defect['assigned_by_user'] ?? '—';
+$updatedBy = $defect['updated_by_user'] ?? '—';
+$contractorName = $defect['contractor_name'] ?? 'Unassigned Contractor';
+$contractorTrade = $defect['contractor_trade'] ?? '';
+$contractorDisplay = trim($contractorTrade) !== ''
+    ? sprintf('%s / %s', $contractorName, $contractorTrade)
+    : $contractorName;
+
+$createdAtFormatted = $defect['created_at'] instanceof DateTime ? $defect['created_at']->format('d/m/Y H:i') : '—';
+$updatedAtFormatted = $defect['updated_at'] instanceof DateTime ? $defect['updated_at']->format('d/m/Y H:i') : '—';
+
+$hasPinImage = !empty($defect['pin_image_url']);
+$hasGalleryImages = !empty($images);
+$hasHistory = !empty($history);
+$galleryImageCount = is_array($images) ? count($images) : 0;
+$historyCount = is_array($history) ? count($history) : 0;
+
+$defectReference = '#' . (int) ($defect['id'] ?? 0);
+$defectTitle = $defect['title'] ?? 'Untitled Defect';
+$rawDescription = trim((string)($defect['description'] ?? ''));
+$hasDescription = $rawDescription !== '';
+$defectDescription = $hasDescription ? $rawDescription : 'No description has been provided for this defect yet.';
+
+$projectSummary = $projectLabel;
+if (trim($floorName) !== '') {
+    $projectSummary .= ' / ' . $floorName;
+}
+if ($floorLevel !== '' && $floorLevel !== null) {
+    $projectSummary .= ' / Level ' . (string) $floorLevel;
+}
+
+$statusColorClass = getStatusColor($defect['status']);
+$priorityColorClass = getPriorityColor($defect['priority']);
+$statusColorClass = $statusColorClass ?: 'secondary';
+$priorityColorClass = $priorityColorClass ?: 'secondary';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Defect - DVN Track</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Detailed summary for <?php echo htmlspecialchars($defectReference . ' ' . $defectTitle); ?> at <?php echo htmlspecialchars($projectLabel); ?>">
+    <title><?php echo htmlspecialchars($pageTitle); ?> - Defect Tracker</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+    <link rel="shortcut icon" href="/favicons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+    <link rel="manifest" href="/favicons/site.webmanifest">
     <style>
-        .defect-images img {
-            max-width: 200px;
-            height: auto;
-            cursor: pointer;
-            transition: transform 0.2s;
+        .defect-hero {
+            position: relative;
+            overflow: hidden;
+            padding: clamp(1.75rem, 3.5vw, 2.75rem);
+            border-radius: var(--border-radius-lg);
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.28), rgba(14, 165, 233, 0.18));
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            box-shadow: 0 35px 80px -60px rgba(14, 165, 233, 0.55);
         }
-        .defect-images img:hover {
+
+        .defect-hero::after {
+            content: "";
+            position: absolute;
+            inset: auto -40% -80% 40%;
+            height: 120%;
+            background: radial-gradient(circle at top, rgba(34, 211, 238, 0.35), transparent 65%);
+            opacity: 0.6;
+        }
+
+        .defect-hero__icon {
+            flex: 0 0 auto;
+            width: clamp(58px, 6vw, 70px);
+            height: clamp(58px, 6vw, 70px);
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.85));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.75rem, 2.8vw, 2.25rem);
+            color: var(--white);
+            box-shadow: 0 24px 45px -32px rgba(37, 99, 235, 0.75);
+        }
+
+        .defect-hero__title {
+            font-weight: 600;
+            font-size: clamp(1.75rem, 4vw, 2.55rem);
+            color: var(--white);
+        }
+
+        .defect-badge {
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 0.45rem 0.9rem;
+            font-weight: 600;
+        }
+
+        .defect-badge--outline {
+            background: rgba(34, 211, 238, 0.12);
+            border: 1px solid currentColor;
+        }
+
+        .defect-meta {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--spacing-sm);
+        }
+
+        .defect-meta__item {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            box-shadow: 0 20px 35px -35px rgba(37, 99, 235, 0.75);
+        }
+
+        .defect-meta__label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted-color);
+            margin-bottom: 0.3rem;
+        }
+
+        .defect-meta__value {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .defect-meta__hint {
+            display: block;
+            margin-top: 0.3rem;
+            font-size: 0.75rem;
+            color: var(--text-muted-color);
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(22, 33, 61, 0.92), rgba(15, 23, 42, 0.78));
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-radius: var(--border-radius-lg);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 38px 80px -60px rgba(14, 165, 233, 0.5);
+        }
+
+        .glass-panel .card-header {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(14, 165, 233, 0.08));
+            padding: clamp(1rem, 2vw, 1.4rem);
+        }
+
+        .glass-panel .card-body {
+            padding: clamp(1.25rem, 2vw, 1.75rem);
+        }
+
+        .section-heading {
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted-color);
+        }
+
+        .defect-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .defect-info {
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+        }
+
+        .defect-info__label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted-color);
+            letter-spacing: 0.08em;
+            margin-bottom: 0.35rem;
+        }
+
+        .defect-info__value {
+            font-weight: 600;
+            color: var(--text-color);
+            word-break: break-word;
+        }
+
+        .defect-map {
+            position: relative;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: var(--surface-muted);
+        }
+
+        .defect-map__image {
+            display: block;
+            width: 100%;
+            height: auto;
+            transition: transform var(--transition-base);
+        }
+
+        .defect-map:hover .defect-map__image {
+            transform: scale(1.02);
+        }
+
+        .defect-map__cta {
+            position: absolute;
+            right: var(--spacing-md);
+            bottom: var(--spacing-md);
+            border-radius: 999px;
+            padding: 0.4rem 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--white);
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+            transition: transform var(--transition-fast), background var(--transition-fast);
+        }
+
+        .defect-map__cta:hover,
+        .defect-map__cta:focus {
+            transform: translateY(-2px);
+            background: rgba(37, 99, 235, 0.9);
+            color: var(--white);
+        }
+
+        .defect-media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--spacing-sm);
+        }
+
+        .defect-media-tile {
+            position: relative;
+            border: none;
+            padding: 0;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            cursor: pointer;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            transition: transform var(--transition-base), box-shadow var(--transition-base);
+        }
+
+        .defect-media-tile:focus {
+            outline: 2px solid var(--secondary-color);
+            outline-offset: 3px;
+        }
+
+        .defect-media-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 22px 38px -28px rgba(14, 165, 233, 0.55);
+        }
+
+        .defect-media-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform var(--transition-base);
+        }
+
+        .defect-media-tile:hover img {
             transform: scale(1.05);
         }
-        .pin-image {
-            max-width: 100%;
-            height: auto;
-            cursor: pointer;
-        }
-        .modal-dialog.modal-xl {
-            max-width: 90%;
-        }
-        .badge {
-            font-size: 0.9em;
-        }
-        .history-timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-        .history-timeline::before {
-            content: '';
+
+        .defect-media-tile__badge {
             position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
+            top: 0.65rem;
+            left: 0.65rem;
+            background: rgba(15, 23, 42, 0.75);
+            border-radius: 999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--white);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            backdrop-filter: blur(6px);
+        }
+
+        .defect-timeline {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .defect-timeline::before {
+            content: "";
+            position: absolute;
+            left: 0.4rem;
+            top: 0.3rem;
+            bottom: 0.3rem;
             width: 2px;
-            background: #dee2e6;
+            background: linear-gradient(180deg, rgba(37, 99, 235, 0.6), rgba(14, 165, 233, 0.2));
         }
-        .history-item {
+
+        .defect-timeline__item {
             position: relative;
-            margin-bottom: 1.5rem;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            border-radius: var(--border-radius-md);
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            box-shadow: 0 18px 32px -28px rgba(14, 165, 233, 0.55);
         }
-        .history-item::before {
-            content: '';
+
+        .defect-timeline__item::before {
+            content: "";
             position: absolute;
-            left: -30px;
-            top: 0;
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #0d6efd;
-            border: 2px solid #fff;
+            background: var(--secondary-color);
+            left: -0.95rem;
+            top: 1.2rem;
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.18);
+        }
+
+        .defect-timeline__timestamp {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted-color);
+            margin-bottom: 0.35rem;
+        }
+
+        .defect-timeline__meta {
+            font-size: 0.8rem;
+            color: var(--text-muted-color);
+        }
+
+        .defect-fact-list {
+            display: grid;
+            gap: var(--spacing-sm);
+        }
+
+        .defect-fact {
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .defect-fact dt {
+            margin: 0 0 0.35rem;
+            font-size: 0.8rem;
+            color: var(--text-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .defect-fact dd {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-color);
+            word-break: break-word;
+        }
+
+        .defect-actions .btn {
+            padding: 0.75rem;
+            font-weight: 600;
+            border-radius: var(--border-radius-md);
+        }
+
+        .defect-actions .btn-primary {
+            border: none;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.9));
+        }
+
+        .defect-actions .btn-primary:hover {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 1), rgba(14, 165, 233, 1));
+        }
+
+        .defect-actions .btn-outline-danger {
+            border-width: 1px;
+        }
+
+        .quick-access-card {
+            text-align: center;
+        }
+
+        .quick-access-card img {
+            border-radius: var(--border-radius-md);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .quick-access-card p {
+            margin-bottom: 0;
+            color: var(--text-muted-color);
+        }
+
+        .alert-glow {
+            border: 1px solid rgba(34, 211, 238, 0.45);
+            box-shadow: 0 26px 50px -40px rgba(34, 211, 238, 0.55);
+        }
+
+        @media (max-width: 991.98px) {
+            .defect-hero {
+                padding: var(--spacing-lg);
+            }
+
+            .defect-meta {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
         }
     </style>
 </head>
-<body class="tool-body" data-bs-theme="dark">
-    <?php include 'includes/navbar.php'; ?>
-<br><br><br><br>
-    <div class="container mt-4">
+<body class="tool-body has-app-navbar" data-bs-theme="dark">
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
+
+    <main class="tool-page container-xxl py-4 py-lg-5">
         <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?php 
-                echo htmlspecialchars($_SESSION['success_message']);
-                unset($_SESSION['success_message']);
-                ?>
+            <div class="alert alert-success alert-glow alert-dismissible fade show mb-4" role="alert">
+                <i class="bx bx-check-circle me-2"></i>
+                <?php echo htmlspecialchars($_SESSION['success_message']); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            <?php unset($_SESSION['success_message']); ?>
         <?php endif; ?>
 
-        <div class="row">
-            <!-- Defect Details -->
-            <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Defect #<?php echo htmlspecialchars((string)$defect['id']); ?></h5>
-                        <span class="badge bg-<?php echo getStatusColor($defect['status']); ?>">
-                            <?php echo ucfirst(str_replace('_', ' ', $defect['status'])); ?>
-                        </span>
+        <section class="defect-hero mb-5">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-8">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="defect-hero__icon">
+                            <i class="bx bx-wrench"></i>
+                        </div>
+                        <div class="defect-hero__content">
+                            <div class="defect-hero__badges d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <span class="badge rounded-pill defect-badge bg-<?php echo htmlspecialchars($statusColorClass); ?>">
+                                    <i class="bx bx-bullseye me-1"></i><?php echo htmlspecialchars($statusLabel); ?>
+                                </span>
+                                <span class="badge rounded-pill defect-badge defect-badge--outline border-<?php echo htmlspecialchars($priorityColorClass); ?> text-<?php echo htmlspecialchars($priorityColorClass); ?>">
+                                    <i class="bx bx-bar-chart-alt me-1"></i>Priority <?php echo htmlspecialchars($priorityLabel); ?>
+                                </span>
+                            </div>
+                            <h1 class="defect-hero__title mb-2">
+                                <?php echo htmlspecialchars($defectReference . ' - ' . $defectTitle); ?>
+                            </h1>
+                            <p class="text-muted mb-0">
+                                <i class="bx bx-map-pin me-1"></i>
+                                <?php echo htmlspecialchars($projectSummary); ?>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="defect-meta">
+                        <div class="defect-meta__item">
+                            <span class="defect-meta__label">Reported By</span>
+                            <span class="defect-meta__value"><?php echo htmlspecialchars($reportedBy); ?></span>
+                        </div>
+                        <div class="defect-meta__item">
+                            <span class="defect-meta__label">Created</span>
+                            <span class="defect-meta__value"><?php echo htmlspecialchars($createdAtFormatted); ?></span>
+                        </div>
+                        <div class="defect-meta__item">
+                            <span class="defect-meta__label">Last Updated</span>
+                            <span class="defect-meta__value"><?php echo htmlspecialchars($updatedAtFormatted); ?></span>
+                            <span class="defect-meta__hint">by <?php echo htmlspecialchars($updatedBy); ?></span>
+                        </div>
+                        <div class="defect-meta__item">
+                            <span class="defect-meta__label">Timeline</span>
+                            <span class="defect-meta__value"><?php echo number_format($historyCount); ?> event<?php echo $historyCount === 1 ? '' : 's'; ?></span>
+                            <span class="defect-meta__hint"><?php echo number_format($galleryImageCount); ?> supporting image<?php echo $galleryImageCount === 1 ? '' : 's'; ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row g-4 align-items-start">
+            <div class="col-12 col-xl-8">
+                <div class="card glass-panel shadow-none">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+                        <div>
+                            <h2 class="card-title h5 mb-1">Defect Overview</h2>
+                            <p class="text-muted small mb-0">A snapshot of what needs attention and who is involved.</p>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <h4><?php echo htmlspecialchars($defect['title']); ?></h4>
-                        <p class="text-muted mb-4">
-                            <strong>Project:</strong> <?php echo htmlspecialchars($defect['project_name']); ?><br>
-                            <strong>Floor:</strong> <?php echo htmlspecialchars($defect['floor_name']); ?> 
-                            <?php if ($defect['floor_level']): ?>
-                                (Level <?php echo htmlspecialchars($defect['floor_level']); ?>)
-                            <?php endif; ?>
-                        </p>
+                        <section class="mb-4">
+                            <h3 class="section-heading mb-2">Description</h3>
+                            <p class="mb-0 <?php echo $hasDescription ? '' : 'text-muted'; ?>">
+                                <?php echo nl2br(htmlspecialchars($defectDescription)); ?>
+                            </p>
+                        </section>
 
-                        <h6>Description</h6>
-                        <p class="mb-4"><?php echo nl2br(htmlspecialchars($defect['description'])); ?></p>
-
-                        <!-- Pin Location Image -->
-                        <?php if (!empty($defect['pin_image_url'])): ?>
-                            <h6>Location</h6>
-                            <div class="mb-4">
-                                <img src="<?php echo htmlspecialchars($defect['pin_image_url']); ?>" 
-                                     alt="Pin Location" 
-                                     class="pin-image img-thumbnail"
-                                     onclick="openImageModal(this.src, 'Pin Location')">
+                        <div class="defect-info-grid">
+                            <div class="defect-info">
+                                <span class="defect-info__label">Assigned Contractor</span>
+                                <span class="defect-info__value"><?php echo htmlspecialchars($contractorDisplay); ?></span>
                             </div>
-                        <?php endif; ?>
-
-                        <!-- Defect Images -->
-                        <?php if (!empty($images)): ?>
-                            <h6>Images</h6>
-                            <div class="defect-images mb-4">
-                                <div class="row g-3">
-                                    <?php foreach ($images as $index => $image): ?>
-                                        <div class="col-6 col-md-4 col-lg-3">
-                                            <img src="<?php echo htmlspecialchars($image); ?>" 
-                                                 alt="Defect Image <?php echo $index + 1; ?>"
-                                                 class="img-thumbnail"
-                                                 onclick="openImageModal(this.src, 'Defect Image <?php echo $index + 1; ?>')">
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
+                            <div class="defect-info">
+                                <span class="defect-info__label">Assigned By</span>
+                                <span class="defect-info__value"><?php echo htmlspecialchars($assignedBy); ?></span>
                             </div>
-                        <?php endif; ?>
-
-                        <!-- Additional Details -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Status Details</h6>
-                                <p class="mb-3">
-                                    <strong>Priority:</strong> 
-                                    <span class="badge bg-<?php echo getPriorityColor($defect['priority']); ?>">
-                                        <?php echo ucfirst($defect['priority']); ?>
-                                    </span><br>
-                                    <strong>Assigned To:</strong> 
-                                    <?php echo htmlspecialchars($defect['contractor_name']); ?> 
-                                    (<?php echo htmlspecialchars($defect['contractor_trade']); ?>)
-                                </p>
+                            <div class="defect-info">
+                                <span class="defect-info__label">Reported By</span>
+                                <span class="defect-info__value"><?php echo htmlspecialchars($reportedBy); ?></span>
                             </div>
-                            <div class="col-md-6">
-                                <h6>Timestamps</h6>
-                                <p class="mb-3">
-                                    <strong>Created:</strong> 
-                                    <?php echo $defect['created_at']->format('d/m/Y H:i:s'); ?><br>
-                                    <strong>Last Updated:</strong> 
-                                    <?php echo $defect['updated_at']->format('d/m/Y H:i:s'); ?>
-                                </p>
+                            <div class="defect-info">
+                                <span class="defect-info__label">Last Updated By</span>
+                                <span class="defect-info__value"><?php echo htmlspecialchars($updatedBy); ?></span>
                             </div>
                         </div>
 
-                        <!-- Rejection Details -->
-                        <?php if ($defect['status'] === 'rejected' && !empty($defect['rejection_comment'])): ?>
-                            <div class="alert alert-danger mt-3">
-                                <h6 class="alert-heading">Rejection Details</h6>
-                                <p class="mb-0"><?php echo nl2br(htmlspecialchars($defect['rejection_comment'])); ?></p>
-                            </div>
+                        <?php if ($hasPinImage): ?>
+                            <section class="<?php echo $hasGalleryImages ? 'mb-4' : ''; ?>">
+                                <h3 class="section-heading mb-2">Pin Location</h3>
+                                <div class="defect-map">
+                                    <img src="<?php echo htmlspecialchars($defect['pin_image_url']); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
+                                    <button type="button" class="defect-map__cta" onclick="openImageModal(<?php echo json_encode($defect['pin_image_url']); ?>, 'Pin Location');">
+                                        <i class="bx bx-fullscreen me-1"></i> View full
+                                    </button>
+                                </div>
+                            </section>
+                        <?php endif; ?>
+
+                        <?php if ($hasGalleryImages): ?>
+                            <section>
+                                <h3 class="section-heading mb-2">Supporting Images</h3>
+                                <div class="defect-media-grid">
+                                    <?php foreach ($images as $index => $image): ?>
+                                        <button type="button"
+                                                class="defect-media-tile"
+                                                onclick="openImageModal(<?php echo json_encode($image); ?>, <?php echo json_encode('Defect Image ' . ($index + 1)); ?>);"
+                                                aria-label="Open defect image <?php echo (int)($index + 1); ?> in full screen">
+                                            <img src="<?php echo htmlspecialchars($image); ?>" alt="Defect image <?php echo (int)($index + 1); ?>">
+                                            <span class="defect-media-tile__badge">#<?php echo (int)($index + 1); ?></span>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </section>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- History Timeline -->
-                <?php if (!empty($history)): ?>
-                    <div class="card">
+                <?php if ($hasHistory): ?>
+                    <div class="card glass-panel shadow-none mt-4">
                         <div class="card-header">
-                            <h5 class="mb-0">History</h5>
+                            <h2 class="card-title h5 mb-0">Activity History</h2>
                         </div>
                         <div class="card-body">
-                            <div class="history-timeline">
+                            <div class="defect-timeline">
                                 <?php foreach ($history as $record): ?>
-                                    <div class="history-item">
-                                        <p class="mb-1">
-                                            <strong><?php echo $record['created_at']->format('d/m/Y H:i:s'); ?></strong>
-                                        </p>
-                                        <p class="mb-1">
-                                            <?php echo htmlspecialchars($record['description']); ?>
-                                        </p>
-                                        <small class="text-muted">
-                                            By <?php echo htmlspecialchars($record['updated_by_user']); ?>
-                                        </small>
-                                    </div>
+                                    <article class="defect-timeline__item">
+                                        <span class="defect-timeline__timestamp"><?php echo $record['created_at'] instanceof DateTime ? $record['created_at']->format('d/m/Y H:i') : ''; ?></span>
+                                        <p class="mb-1"><?php echo nl2br(htmlspecialchars($record['description'] ?? '')); ?></p>
+                                        <span class="defect-timeline__meta">by <?php echo htmlspecialchars($record['updated_by_user'] ?? 'System'); ?></span>
+                                    </article>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -301,41 +718,71 @@ try {
                 <?php endif; ?>
             </div>
 
-            <!-- Actions Sidebar -->
-            <div class="col-md-4">
+            <div class="col-12 col-xl-4">
+                <div class="card glass-panel shadow-none mb-4">
+                    <div class="card-header">
+                        <h2 class="card-title h6 mb-0">Quick Facts</h2>
+                    </div>
+                    <div class="card-body">
+                        <dl class="defect-fact-list">
+                            <div class="defect-fact">
+                                <dt><i class="bx bx-hash text-secondary"></i>Defect Reference</dt>
+                                <dd><?php echo htmlspecialchars($defectReference); ?></dd>
+                            </div>
+                            <div class="defect-fact">
+                                <dt><i class="bx bx-briefcase text-secondary"></i>Project</dt>
+                                <dd><?php echo htmlspecialchars($projectLabel); ?></dd>
+                            </div>
+                            <div class="defect-fact">
+                                <dt><i class="bx bx-current-location text-secondary"></i>Location</dt>
+                                <dd><?php echo htmlspecialchars($floorDisplay); ?></dd>
+                            </div>
+                            <div class="defect-fact">
+                                <dt><i class="bx bx-user-check text-secondary"></i>Assigned Contractor</dt>
+                                <dd><?php echo htmlspecialchars($contractorDisplay); ?></dd>
+                            </div>
+                            <div class="defect-fact">
+                                <dt><i class="bx bx-user-voice text-secondary"></i>Assigned By</dt>
+                                <dd><?php echo htmlspecialchars($assignedBy); ?></dd>
+                            </div>
+                            <div class="defect-fact">
+                                <dt><i class="bx bx-user-pin text-secondary"></i>Reported By</dt>
+                                <dd><?php echo htmlspecialchars($reportedBy); ?></dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
                 <?php if ($userRole === 'admin' || $userRole === 'manager'): ?>
-                    <div class="card mb-4">
+                    <div class="card glass-panel shadow-none defect-actions mb-4">
                         <div class="card-header">
-                            <h5 class="mb-0">Actions</h5>
+                            <h2 class="card-title h6 mb-0">Actions</h2>
                         </div>
                         <div class="card-body">
                             <div class="d-grid gap-2">
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editDefectModal">
-                                    <i class="fas fa-edit"></i> Update Status
+                                    <i class="fas fa-edit me-2"></i> Update Status
                                 </button>
-                                <button type="button" class="btn btn-danger" onclick="confirmDelete(<?php echo $defectId; ?>)">
-                                    <i class="fas fa-trash"></i> Delete Defect
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(<?php echo (int)$defectId; ?>);">
+                                    <i class="fas fa-trash me-2"></i> Delete Defect
                                 </button>
                             </div>
                         </div>
                     </div>
                 <?php endif; ?>
 
-                <!-- QR Code -->
-                <div class="card">
+                <div class="card glass-panel shadow-none quick-access-card">
                     <div class="card-header">
-                        <h5 class="mb-0">Quick Access</h5>
+                        <h2 class="card-title h6 mb-0">Quick Access</h2>
                     </div>
-                    <div class="card-body text-center">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<?php 
-                            echo urlencode(SITE_URL . '/view_defect.php?id=' . $defectId);
-                        ?>" alt="QR Code" class="img-fluid mb-2">
-                        <p class="mb-0 small">Scan to view on mobile device</p>
+                    <div class="card-body">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&amp;data=<?php echo urlencode(SITE_URL . '/view_defect.php?id=' . $defectId); ?>" alt="QR code linking to this defect" class="img-fluid mb-3">
+                        <p>Scan to open this record on a mobile device.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- Image Modal -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
@@ -361,7 +808,7 @@ try {
 
     <?php include 'includes/footer.php'; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.16/dist/sweetalert2.min.js"></script>
     <script>
         /**
@@ -372,7 +819,7 @@ try {
          */
 
         // Debug mode and constants
-        const DEBUG = <?php echo defined('DEBUG') && DEBUG ? 'true' : 'false'; ?>;
+        const DEBUG = <?php echo $debugEnabled ? 'true' : 'false'; ?>;
         const CURRENT_USER = '<?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?>';
         const CURRENT_TIMESTAMP = '<?php echo date('Y-m-d H:i:s'); ?>';
         const SITE_URL = '<?php echo SITE_URL; ?>';
@@ -382,10 +829,10 @@ try {
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const modalTitle = document.getElementById('imageModalLabel');
-            
+
             modalImage.src = src;
             modalTitle.textContent = title;
-            
+
             new bootstrap.Modal(modal).show();
         }
 
@@ -409,78 +856,69 @@ try {
 
         // Delete defect
         const editForm = document.getElementById('editDefectForm');
-if (editForm) {
-    editForm.addEventListener('submit', handleFormSubmit);
-}
-
-function handleFormSubmit(e) {
-    Swal.push(e.target); // Focus on the input field
-
-    try {
-        const formData = new FormData(editForm);
-        
-        if (FormData.isNotEmpty(formData)) {
-            // Ensure required fields are filled
-            const closureImageDiv = document.getElementById('closureImageDiv');
-            const rejectionCommentDiv = document.getElementById('rejectionCommentDiv');
-
-            editForm.reset();
-            
-            const statusSelect = document.getElementById('status');
-            if (statusSelect && statusSelect.value) {
-                updateFormFields(statusSelect.value);
-            }
-
-            deleteDefect(formData.get('defect_id').toString());
+        if (editForm) {
+            editForm.addEventListener('submit', handleFormSubmit);
         }
-    } catch (error) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: `Failed to process form submission. Please try again later.`,
-            showConfirmButton: false
-        });
-    }
-}
 
-        // Status update handling
+        function handleFormSubmit(e) {
+            Swal.push(e.target);
+
+            try {
+                const formData = new FormData(editForm);
+
+                if (FormData.isNotEmpty(formData)) {
+                    const closureImageDiv = document.getElementById('closureImageDiv');
+                    const rejectionCommentDiv = document.getElementById('rejectionCommentDiv');
+
+                    editForm.reset();
+
+                    const statusSelect = document.getElementById('status');
+                    if (statusSelect && statusSelect.value) {
+                        updateFormFields(statusSelect.value);
+                    }
+
+                    deleteDefect(formData.get('defect_id').toString());
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `Failed to process form submission. Please try again later.`,
+                    showConfirmButton: false
+                });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const statusSelect = document.getElementById('status');
-            const closureImageDiv = document.getElementById('closureImageDiv');
-            const rejectionCommentDiv = document.getElementById('rejectionCommentDiv');
-            
+
             if (statusSelect) {
                 statusSelect.addEventListener('change', function() {
                     updateFormFields(this.value);
                 });
             }
 
-            // Initialize form fields based on current status
             if (statusSelect && statusSelect.value) {
                 updateFormFields(statusSelect.value);
             }
 
-            // Handle form submission
-            const editForm = document.getElementById('editDefectForm');
-            if (editForm) {
-                editForm.addEventListener('submit', handleFormSubmit);
+            const editFormInstance = document.getElementById('editDefectForm');
+            if (editFormInstance) {
+                editFormInstance.addEventListener('submit', handleFormSubmit);
             }
         });
 
-        // Update form fields based on status
         function updateFormFields(status) {
             const closureImageDiv = document.getElementById('closureImageDiv');
             const rejectionCommentDiv = document.getElementById('rejectionCommentDiv');
             const closureImage = document.getElementById('closureImage');
             const rejectionComment = document.getElementById('rejectionComment');
 
-            // Hide all conditional fields
             closureImageDiv.style.display = 'none';
             rejectionCommentDiv.style.display = 'none';
             closureImage.required = false;
             rejectionComment.required = false;
 
-            // Show fields based on selected status
             if (status === 'closed') {
                 closureImageDiv.style.display = 'block';
                 closureImage.required = true;
@@ -490,7 +928,6 @@ function handleFormSubmit(e) {
             }
         }
 
-        // Delete defect
         function deleteDefect(defectId) {
             const formData = new FormData();
             formData.append('action', 'delete_defect');
