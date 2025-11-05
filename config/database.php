@@ -53,19 +53,43 @@ class Database {
 }
 
 // Global configuration settings - loaded from environment variables
-define('BASE_URL', Environment::get('BASE_URL', 'http://localhost/'));
-define('UPLOAD_PATH', $_SERVER['DOCUMENT_ROOT'] . Environment::get('UPLOAD_PATH', '/uploads/'));
-define('MAX_FILE_SIZE', (int)Environment::get('MAX_FILE_SIZE', 5242880)); // 5MB in bytes
-define('ALLOWED_FILE_TYPES', explode(',', Environment::get('ALLOWED_FILE_TYPES', 'jpg,jpeg,png,pdf')));
-define('EMAIL_FROM', Environment::get('EMAIL_FROM', 'noreply@localhost.com'));
-define('ITEMS_PER_PAGE', (int)Environment::get('ITEMS_PER_PAGE', 10));
+if (!defined('BASE_URL')) {
+    define('BASE_URL', Environment::get('BASE_URL', 'http://localhost/'));
+}
+
+if (!defined('UPLOAD_PATH')) {
+    define('UPLOAD_PATH', $_SERVER['DOCUMENT_ROOT'] . Environment::get('UPLOAD_PATH', '/uploads/'));
+}
+
+if (!defined('MAX_FILE_SIZE')) {
+    define('MAX_FILE_SIZE', (int)Environment::get('MAX_FILE_SIZE', 5242880)); // 5MB in bytes
+}
+
+if (!defined('ALLOWED_FILE_TYPES')) {
+    define('ALLOWED_FILE_TYPES', explode(',', Environment::get('ALLOWED_FILE_TYPES', 'jpg,jpeg,png,pdf')));
+}
+
+if (!defined('EMAIL_FROM')) {
+    define('EMAIL_FROM', Environment::get('EMAIL_FROM', 'noreply@localhost.com'));
+}
+
+if (!defined('ITEMS_PER_PAGE')) {
+    define('ITEMS_PER_PAGE', (int)Environment::get('ITEMS_PER_PAGE', 10));
+}
 
 // Security settings
-define('CSRF_TOKEN_EXPIRES', (int)Environment::get('CSRF_TOKEN_EXPIRES', 3600));
-define('SESSION_TIMEOUT', (int)Environment::get('SESSION_TIMEOUT', 1800));
+if (!defined('CSRF_TOKEN_EXPIRES')) {
+    define('CSRF_TOKEN_EXPIRES', (int)Environment::get('CSRF_TOKEN_EXPIRES', 3600));
+}
+
+if (!defined('SESSION_TIMEOUT')) {
+    define('SESSION_TIMEOUT', (int)Environment::get('SESSION_TIMEOUT', 1800));
+}
 
 // Time zone setting
-date_default_timezone_set('UTC');
+if (!ini_get('date.timezone')) {
+    date_default_timezone_set('UTC');
+}
 
 // Error reporting based on environment
 if (Environment::isDevelopment()) {
