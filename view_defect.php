@@ -356,6 +356,7 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
 
         .print-action .btn {
             border-radius: var(--border-radius-md);
+            font-weight: 600;
         }
 
         .defect-meta {
@@ -721,10 +722,26 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                 color: #000;
             }
 
-            .glass-panel {
-                box-shadow: none;
-                border-color: #ccc;
-                background: #fff;
+            .tool-body,
+            .tool-page,
+            .defect-hero,
+            .glass-panel,
+            .card,
+            .defect-info,
+            .defect-meta__item,
+            .defect-fact,
+            .defect-map,
+            .defect-media-tile,
+            .quick-access-card,
+            .quick-access-card img {
+                background: #fff !important;
+                color: #000 !important;
+                box-shadow: none !important;
+                border-color: #ccc !important;
+            }
+
+            .defect-media-tile img {
+                border-radius: 0;
             }
         }
 
@@ -780,7 +797,7 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                 </div>
                 <div class="col-lg-4">
                     <div class="print-action text-lg-end">
-                        <button type="button" class="btn btn-outline-light btn-sm" onclick="printDefect();">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="printDefect();">
                             <i class="bx bx-printer me-1"></i>Print Summary
                         </button>
                     </div>
