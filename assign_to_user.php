@@ -155,9 +155,7 @@ try {
                     error_log('Assign Single Error: ' . $singleError->getMessage());
                 }
             }
-        }
-
-        if ($action === 'bulk_assign') {
+        } elseif ($action === 'bulk_assign') {
             $bulkAssignedToUserId = isset($_POST['bulk_assigned_to']) ? filter_var($_POST['bulk_assigned_to'], FILTER_VALIDATE_INT) : null;
             $defectIds = isset($_POST['defect_ids']) && is_array($_POST['defect_ids']) ? array_map(static function ($value) {
                 return filter_var($value, FILTER_VALIDATE_INT);
@@ -238,6 +236,83 @@ try {
                     $message = 'Error during bulk assignment: ' . $bulkError->getMessage();
                     $messageType = 'danger';
                     error_log('Bulk Assign Error: ' . $bulkError->getMessage());
+                }
+            }
+        } elseif ($action === 'assign_contractor_single') {
+            $defectId = isset($_POST['defect_id']) ? filter_var($_POST['defect_id'], FILTER_VALIDATE_INT) : null;
+            $assignedContractorId = isset($_POST['assigned_contractor']) ? filter_var($_POST['assigned_contractor'], FILTER_VALIDATE_INT) : null;
+
+            if (!$defectId || !$assignedContractorId) {
+                $message = 'Missing or invalid contractor assignment details.';
+                $messageType = 'warning';
+            } else {
+                $db->beginTransaction();
+
+                try {
+                    $currentContractorStmt = $db->prepare('SELECT contractor_id FROM defects WHERE id = :defect_id FOR UPDATE');
+                    $currentContractorStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                    $currentContractorStmt->execute();
+                    $currentContractor = $currentContractorStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$currentContractor) {
+                        throw new Exception('Defect not found for contractor assignment.');
+                    }
+
+                    $previousContractorId = (int) ($currentContractor['contractor_id'] ?? 0);
+
+                    $contractorStmt = $db->prepare("SELECT id, company_name FROM contractors WHERE id = :contractor_id AND status = 'active'");
+                    $contractorStmt->bindValue(':contractor_id', $assignedContractorId, PDO::PARAM_INT);
+                    $contractorStmt->execute();
+                    $newContractor = $contractorStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$newContractor) {
+                        throw new Exception('Selected contractor not found or inactive.');
+                    }
+
+                    $previousContractorName = 'Unassigned';
+                    if ($previousContractorId > 0) {
+                        $previousContractorStmt = $db->prepare('SELECT company_name FROM contractors WHERE id = :contractor_id');
+                        $previousContractorStmt->bindValue(':contractor_id', $previousContractorId, PDO::PARAM_INT);
+                        $previousContractorStmt->execute();
+                        $previousContractorName = $previousContractorStmt->fetchColumn() ?: 'Unknown';
+                    }
+
+                    $updateContractorStmt = $db->prepare('UPDATE defects SET contractor_id = :contractor_id, updated_at = :updated_at WHERE id = :defect_id');
+                    $updateContractorStmt->bindValue(':contractor_id', $assignedContractorId, PDO::PARAM_INT);
+                    $updateContractorStmt->bindValue(':updated_at', $currentDateTime, PDO::PARAM_STR);
+                    $updateContractorStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                    $updateContractorStmt->execute();
+
+                    $activityStmt = $db->prepare('INSERT INTO activity_logs (defect_id, action, user_id, action_type, details, created_at) VALUES (:defect_id, :action, :user_id, :action_type, :details, :created_at)');
+                    $activityDetails = sprintf(
+                        'Defect #%d contractor reassigned from %s to %s by user ID %d.',
+                        $defectId,
+                        htmlspecialchars((string) $previousContractorName, ENT_QUOTES, 'UTF-8'),
+                        htmlspecialchars((string) ($newContractor['company_name'] ?? 'Unknown'), ENT_QUOTES, 'UTF-8'),
+                        $currentUserId
+                    );
+
+                    $activityStmt->bindValue(':defect_id', $defectId, PDO::PARAM_INT);
+                    $activityStmt->bindValue(':action', 'Defect contractor reassigned', PDO::PARAM_STR);
+                    $activityStmt->bindValue(':user_id', $currentUserId, PDO::PARAM_INT);
+                    $activityStmt->bindValue(':action_type', 'ASSIGN', PDO::PARAM_STR);
+                    $activityStmt->bindValue(':details', $activityDetails, PDO::PARAM_STR);
+                    $activityStmt->bindValue(':created_at', $currentDateTime, PDO::PARAM_STR);
+                    $activityStmt->execute();
+
+                    $db->commit();
+
+                    $message = sprintf(
+                        'Defect #%d successfully assigned to contractor %s.',
+                        $defectId,
+                        htmlspecialchars((string) ($newContractor['company_name'] ?? 'Unknown'), ENT_QUOTES, 'UTF-8')
+                    );
+                    $messageType = 'success';
+                } catch (Exception $contractorError) {
+                    $db->rollBack();
+                    $message = 'Error assigning contractor for defect #' . $defectId . ': ' . $contractorError->getMessage();
+                    $messageType = 'danger';
+                    error_log('Assign Contractor Error: ' . $contractorError->getMessage());
                 }
             }
         }
@@ -916,6 +991,20 @@ $priorityBadgeMap = [
                                             <td><?php echo $assignedUserDisplay; ?></td>
                                             <td class="text-center no-print">
                                                 <div class="d-flex flex-column gap-2">
+                                                    <form method="POST" action="assign_to_user.php?<?php echo htmlspecialchars($formActionQuery, ENT_QUOTES, 'UTF-8'); ?>" class="d-flex gap-2 flex-column flex-lg-row align-items-stretch">
+                                                        <input type="hidden" name="action" value="assign_contractor_single">
+                                                        <input type="hidden" name="defect_id" value="<?php echo $defectId; ?>">
+                                                        <select name="assigned_contractor" class="form-select form-select-sm" required>
+                                                            <option value="">Assign contractor...</option>
+                                                            <?php foreach ($contractors as $contractorOption): ?>
+                                                                <?php $contractorIdOption = (int) ($contractorOption['id'] ?? 0); ?>
+                                                                <option value="<?php echo $contractorIdOption; ?>" <?php echo $contractorIdOption === (int) ($defect['contractor_id'] ?? 0) ? 'selected' : ''; ?>>
+                                                                    <?php echo htmlspecialchars($contractorOption['company_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <button type="submit" class="btn btn-sm btn-secondary"><i class='bx bx-buildings'></i></button>
+                                                    </form>
                                                     <form method="POST" action="assign_to_user.php?<?php echo htmlspecialchars($formActionQuery, ENT_QUOTES, 'UTF-8'); ?>" class="d-flex gap-2 flex-column flex-lg-row align-items-stretch">
                                                         <input type="hidden" name="action" value="assign_single">
                                                         <input type="hidden" name="defect_id" value="<?php echo $defectId; ?>">
