@@ -203,6 +203,15 @@ $createdAtFormatted = $defect['created_at'] instanceof DateTime ? $defect['creat
 $updatedAtFormatted = $defect['updated_at'] instanceof DateTime ? $defect['updated_at']->format('d/m/Y H:i') : '—';
 
 $hasPinImage = !empty($defect['pin_image_url']);
+$floorPlanUrl = buildMediaUrl($defect['floor_plan_path'] ?? null);
+$hasFloorPlan = !empty($floorPlanUrl);
+
+$pinX = $defect['pin_x'] ?? null;
+$pinY = $defect['pin_y'] ?? null;
+$hasPinCoordinates = $hasFloorPlan && is_numeric($pinX) && is_numeric($pinY);
+$pinLeftPercent = $hasPinCoordinates ? max(0, min(100, (float)$pinX * 100)) : null;
+$pinTopPercent = $hasPinCoordinates ? max(0, min(100, (float)$pinY * 100)) : null;
+
 $hasGalleryImages = !empty($images);
 $hasClosureImage = !empty($closureImageUrl);
 $hasHistory = !empty($history);
@@ -434,6 +443,30 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
             transition: transform var(--transition-fast), background var(--transition-fast);
         }
 
+        .floorplan-pin {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--danger-color);
+            border: 2px solid var(--white);
+            box-shadow: 0 8px 18px -8px rgba(248, 113, 113, 0.7);
+            transform: translate(-50%, -50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floorplan-pin::after {
+            content: '';
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid rgba(248, 113, 113, 0.35);
+            opacity: 0.75;
+        }
+
         .defect-map__cta:hover,
         .defect-map__cta:focus {
             transform: translateY(-2px);
@@ -621,6 +654,7 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
             .app-navbar,
             .quick-access-card,
             .defect-map__cta,
+            .floorplan-pin::after,
             .defect-media-tile__badge {
                 display: none !important;
             }
@@ -753,15 +787,29 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                             </div>
                         </div>
 
-                        <?php if ($hasPinImage): ?>
-                            <section class="<?php echo $hasGalleryImages ? 'mb-4' : ''; ?>">
-                                <h3 class="section-heading mb-2">Pin Location</h3>
-                                <div class="defect-map">
-                                    <img src="<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
-                                    <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>', 'Pin Location');">
-                                        <i class="bx bx-fullscreen me-1"></i> View full
-                                    </button>
-                                </div>
+                        <?php if ($hasFloorPlan || $hasPinImage): ?>
+                            <section class="<?php echo ($hasGalleryImages || $hasClosureImage) ? 'mb-4' : ''; ?>">
+                                <h3 class="section-heading mb-2">Location</h3>
+                                <?php if ($hasFloorPlan): ?>
+                                    <div class="defect-map mb-3 floorplan-map">
+                                        <img src="<?php echo htmlspecialchars($floorPlanUrl, ENT_QUOTES); ?>" alt="Floor plan for <?php echo htmlspecialchars($projectSummary); ?>" class="defect-map__image">
+                                        <?php if ($hasPinCoordinates): ?>
+                                            <span class="floorplan-pin" style="left: <?php echo htmlspecialchars(number_format((float)$pinLeftPercent, 2)); ?>%; top: <?php echo htmlspecialchars(number_format((float)$pinTopPercent, 2)); ?>%;" aria-label="Defect pin location"></span>
+                                        <?php endif; ?>
+                                        <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($floorPlanUrl, ENT_QUOTES); ?>', 'Floor Plan');">
+                                            <i class="bx bx-fullscreen me-1"></i> View full
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ($hasPinImage): ?>
+                                    <div class="defect-map">
+                                        <img src="<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
+                                        <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>', 'Pin Location');">
+                                            <i class="bx bx-fullscreen me-1"></i> View full
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
                             </section>
                         <?php endif; ?>
 
