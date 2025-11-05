@@ -467,6 +467,21 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
             opacity: 0.75;
         }
 
+        .floorplan-map {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: clamp(220px, 40vw, 520px);
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.95));
+        }
+
+        .floorplan-map .defect-map__image {
+            height: 100%;
+            width: 100%;
+            object-fit: contain;
+            object-position: center;
+        }
+
         .defect-map__cta:hover,
         .defect-map__cta:focus {
             transform: translateY(-2px);
