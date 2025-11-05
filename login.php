@@ -240,27 +240,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo" loading="lazy">
                     <h1 class="login-title">Construction Defect Tracker</h1>
                     <p class="login-subtitle">Spot, track, and close defects with confidence.</p>
-                    <ul class="login-quick-stats">
-                        <li>
-                            <span class="label">Active projects</span>
-                            <span class="value">24</span>
-                        </li>
-                        <li>
-                            <span class="label">Issues resolved</span>
-                            <span class="value">8.1k</span>
-                        </li>
-                        <li>
-                            <span class="label">Avg. fix time</span>
-                            <span class="value">3.2d</span>
-                        </li>
-                    </ul>
 
                     <div class="install-app-cta">
                         <button type="button" id="installPwaButton" class="btn btn-outline-info install-pwa-button" hidden>
                             <i class='bx bx-download'></i>Install App
                         </button>
-                        <a id="installPwaFallback" class="btn btn-outline-info install-pwa-fallback" href="<?php echo htmlspecialchars(SITE_URL . '/manifest.json'); ?>" download>
-                            <i class='bx bx-download'></i>Download Manifest
+                        <a id="installPwaFallback" class="btn btn-outline-info install-pwa-fallback" href="<?php echo htmlspecialchars(PWA_DOWNLOAD_URL); ?>">
+                            <i class='bx bx-download'></i>Download App
                         </a>
                     </div>
                 </section>
