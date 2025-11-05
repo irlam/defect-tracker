@@ -190,15 +190,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="css/app.css?v=20251102" rel="stylesheet">
+    <style>
+        .install-app-cta {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .install-app-cta .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .install-pwa-button {
+            display: none;
+        }
+
+        .install-pwa-button.show {
+            display: inline-flex;
+        }
+
+        .install-pwa-fallback {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
 </head>
 <body data-bs-theme="dark" class="login-page">
     <div class="login-page__glow login-page__glow--one"></div>
     <div class="login-page__glow login-page__glow--two"></div>
     <?php // --- Main Login Container --- ?>
     <div class="login-container">
-        <div class="login-page__logo-wrapper">
-            <img src="assets/icons/app-logo.svg" alt="Defect Tracker" class="app-brand-logo" loading="lazy">
-        </div>
 
         <?php // Removed the hardcoded time and user display divs that were here. ?>
 
@@ -223,6 +249,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <span class="value">3.2d</span>
                         </li>
                     </ul>
+
+                    <div class="install-app-cta">
+                        <button type="button" id="installPwaButton" class="btn btn-outline-info install-pwa-button" hidden>
+                            <i class='bx bx-download'></i>Install App
+                        </button>
+                        <a id="installPwaFallback" class="btn btn-outline-info install-pwa-fallback" href="manifest.json" download>
+                            <i class='bx bx-download'></i>Download App
+                        </a>
+                    </div>
                 </section>
 
                 <aside class="login-card__aside" aria-label="Demo accounts">
@@ -363,6 +398,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }, 200);
             });
         }
+
+        // Handle PWA install prompt and fallback download link.
+        const installPwaButton = document.getElementById('installPwaButton');
+        const installPwaFallback = document.getElementById('installPwaFallback');
+        let deferredInstallPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            if (installPwaButton) {
+                installPwaButton.hidden = false;
+                installPwaButton.classList.add('show');
+            }
+            if (installPwaFallback) {
+                installPwaFallback.classList.add('d-none');
+            }
+        });
+
+        if (installPwaButton) {
+            installPwaButton.addEventListener('click', async () => {
+                if (!deferredInstallPrompt) {
+                    if (installPwaFallback) {
+                        installPwaFallback.focus();
+                    }
+                    return;
+                }
+
+                installPwaButton.disabled = true;
+                deferredInstallPrompt.prompt();
+                let outcome = null;
+                try {
+                    const choice = await deferredInstallPrompt.userChoice;
+                    outcome = choice ? choice.outcome : null;
+                } finally {
+                    installPwaButton.disabled = false;
+                    installPwaButton.classList.remove('show');
+                    installPwaButton.hidden = true;
+                    if (installPwaFallback) {
+                        if (outcome === 'accepted') {
+                            installPwaFallback.classList.add('d-none');
+                        } else {
+                            installPwaFallback.classList.remove('d-none');
+                        }
+                    }
+                    deferredInstallPrompt = null;
+                }
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            if (installPwaButton) {
+                installPwaButton.hidden = true;
+                installPwaButton.classList.remove('show');
+            }
+            if (installPwaFallback) {
+                installPwaFallback.classList.add('d-none');
+            }
+            if (typeof showToast === 'function') {
+                showToast('App installed');
+            }
+        });
 
 
         /**
