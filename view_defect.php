@@ -55,6 +55,26 @@ if (!function_exists('getPriorityColor')) {
     }
 }
 
+if (!function_exists('buildMediaUrl')) {
+    function buildMediaUrl(?string $path): ?string
+    {
+        if ($path === null) {
+            return null;
+        }
+
+        $trimmed = trim($path);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $trimmed) === 1) {
+            return $trimmed;
+        }
+
+        return SITE_URL . '/' . ltrim($trimmed, '/');
+    }
+}
+
 // Get defect ID from URL
 $defectId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$defectId) {
@@ -107,14 +127,28 @@ try {
     $attachmentPaths = json_decode($defect['attachment_paths'] ?? '[]', true);
     $images = [];
     foreach ($attachmentPaths as $path) {
-        // Ensure the path is properly formatted for display
-        $images[] = SITE_URL . '/' . ltrim($path, '/');
+        $normalized = buildMediaUrl(is_string($path) ? $path : null);
+        if ($normalized && !in_array($normalized, $images, true)) {
+            $images[] = $normalized;
+        }
+    }
+
+    $imageStmt = $db->prepare("SELECT file_path FROM defect_images WHERE defect_id = :defect_id AND file_path IS NOT NULL AND file_path <> '' ORDER BY created_at ASC");
+    $imageStmt->execute([':defect_id' => $defectId]);
+    $rowImages = $imageStmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    foreach ($rowImages as $path) {
+        $normalized = buildMediaUrl($path);
+        if ($normalized && !in_array($normalized, $images, true)) {
+            $images[] = $normalized;
+        }
     }
 
     // Format pin image path
     if (!empty($defect['pin_image_path'])) {
-        $defect['pin_image_url'] = SITE_URL . '/' . ltrim($defect['pin_image_path'], '/');
+        $defect['pin_image_url'] = buildMediaUrl($defect['pin_image_path']);
     }
+
+    $closureImageUrl = buildMediaUrl($defect['closure_image'] ?? null);
 
     // Get defect history
     $historyStmt = $db->prepare("
@@ -170,6 +204,7 @@ $updatedAtFormatted = $defect['updated_at'] instanceof DateTime ? $defect['updat
 
 $hasPinImage = !empty($defect['pin_image_url']);
 $hasGalleryImages = !empty($images);
+$hasClosureImage = !empty($closureImageUrl);
 $hasHistory = !empty($history);
 $galleryImageCount = is_array($images) ? count($images) : 0;
 $historyCount = is_array($history) ? count($history) : 0;
@@ -262,6 +297,14 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
         .defect-badge--outline {
             background: rgba(34, 211, 238, 0.12);
             border: 1px solid currentColor;
+        }
+
+        .print-action {
+            align-self: flex-start;
+        }
+
+        .print-action .btn {
+            border-radius: var(--border-radius-md);
         }
 
         .defect-meta {
@@ -572,6 +615,28 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
             box-shadow: 0 26px 50px -40px rgba(34, 211, 238, 0.55);
         }
 
+        @media print {
+            .print-action,
+            .defect-actions,
+            .app-navbar,
+            .quick-access-card,
+            .defect-map__cta,
+            .defect-media-tile__badge {
+                display: none !important;
+            }
+
+            body {
+                background: #fff;
+                color: #000;
+            }
+
+            .glass-panel {
+                box-shadow: none;
+                border-color: #ccc;
+                background: #fff;
+            }
+        }
+
         @media (max-width: 991.98px) {
             .defect-hero {
                 padding: var(--spacing-lg);
@@ -623,6 +688,11 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                     </div>
                 </div>
                 <div class="col-lg-4">
+                    <div class="print-action text-lg-end">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="printDefect();">
+                            <i class="bx bx-printer me-1"></i>Print Summary
+                        </button>
+                    </div>
                     <div class="defect-meta">
                         <div class="defect-meta__item">
                             <span class="defect-meta__label">Reported By</span>
@@ -689,6 +759,18 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                                 <div class="defect-map">
                                     <img src="<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
                                     <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>', 'Pin Location');">
+                                        <i class="bx bx-fullscreen me-1"></i> View full
+                                    </button>
+                                </div>
+                            </section>
+                        <?php endif; ?>
+
+                        <?php if ($hasClosureImage): ?>
+                            <section class="<?php echo $hasGalleryImages ? 'mb-4' : ''; ?>">
+                                <h3 class="section-heading mb-2">Completion Evidence</h3>
+                                <div class="defect-map">
+                                    <img src="<?php echo htmlspecialchars($closureImageUrl, ENT_QUOTES); ?>" alt="Completion evidence for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
+                                    <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($closureImageUrl, ENT_QUOTES); ?>', 'Completion Evidence');">
                                         <i class="bx bx-fullscreen me-1"></i> View full
                                     </button>
                                 </div>
@@ -848,6 +930,10 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
             modalTitle.textContent = title;
 
             new bootstrap.Modal(modal).show();
+        }
+
+        function printDefect() {
+            window.print();
         }
 
         // Delete confirmation
