@@ -40,28 +40,54 @@ date_default_timezone_set('Europe/London');
 
 // Pagination settings
 $logsPerPage = 10;
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$currentPage = max(1, (int)($_GET['page'] ?? 1));
 $offset = ($currentPage - 1) * $logsPerPage;
 
-    // Build search condition for SQL queries
-    $buildSearchCondition = function($tablePrefix = '') use ($searchKeyword) {
-        if (empty($searchKeyword)) {
-            return '';
-        }
-        
-        $prefix = $tablePrefix ? $tablePrefix . '.' : '';
-        return " AND (
-            u.username LIKE :search 
-            OR {$prefix}action LIKE :search 
-            OR {$prefix}action_type LIKE :search 
-            OR {$prefix}details LIKE :search 
-            OR {$prefix}ip_address LIKE :search
-            OR CONCAT('Defect #', d.id) LIKE :search
-        )";
-    };
-    
-    $userLogsSearchCondition = $buildSearchCondition('ul');
-    $activityLogsSearchCondition = $buildSearchCondition('al');
+// Search keyword
+$searchKeyword = trim((string)($_GET['search'] ?? ''));
+
+// Date range filter (in days) - default to 30
+$rangeOptions = [
+    '7' => '7 Days',
+    '30' => '30 Days',
+    '90' => '90 Days',
+    '180' => '180 Days',
+    '365' => '365 Days',
+    'all' => 'All Time'
+];
+
+$selectedRange = $_GET['range'] ?? '30';
+if (!array_key_exists($selectedRange, $rangeOptions)) {
+    $selectedRange = '30';
+}
+
+$fromDate = null;
+if ($selectedRange !== 'all') {
+    $daysBack = (int)$selectedRange;
+    $fromDate = date('Y-m-d H:i:s', strtotime(sprintf('-%d days', $daysBack)));
+}
+
+// Build search conditions for each log source
+$userLogsSearchCondition = '';
+if ($searchKeyword !== '') {
+    $userLogsSearchCondition = " AND (
+        u.username LIKE :search
+        OR ul.action LIKE :search
+        OR ul.details LIKE :search
+        OR ul.ip_address LIKE :search
+    )";
+}
+
+$activityLogsSearchCondition = '';
+if ($searchKeyword !== '') {
+    $activityLogsSearchCondition = " AND (
+        u.username LIKE :search
+        OR al.action LIKE :search
+        OR al.action_type LIKE :search
+        OR al.details LIKE :search
+        OR CONCAT('Defect #', al.defect_id) LIKE :search
+    )";
+}
 
 try {
     $database = new Database();
@@ -70,8 +96,8 @@ try {
     // Initialize the Navbar class
     $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
 
-    // Calculate the date 30 days ago
-    $thirtyDaysAgo = date('Y-m-d H:i:s', strtotime('-30 days'));
+    $userDateCondition = $fromDate ? ' AND ul.action_at >= :fromDate' : '';
+    $activityDateCondition = $fromDate ? ' AND al.created_at >= :fromDate' : '';
 
     // Build comprehensive query combining user_logs and activity_logs
     // First, get total count for pagination
@@ -80,27 +106,27 @@ try {
             SELECT ul.action_at as log_time
             FROM user_logs ul 
             LEFT JOIN users u ON ul.user_id = u.id 
-            WHERE ul.action_at >= :thirtyDaysAgo $userLogsSearchCondition
+            WHERE 1=1 {$userDateCondition}{$userLogsSearchCondition}
             
             UNION ALL
             
             SELECT al.created_at as log_time
             FROM activity_logs al
             LEFT JOIN users u ON al.user_id = u.id
-            LEFT JOIN defects d ON al.defect_id = d.id
-            WHERE al.created_at >= :thirtyDaysAgo
-            $activityLogsSearchCondition
+            WHERE 1=1 {$activityDateCondition}{$activityLogsSearchCondition}
         ) as combined_logs
     ";
     
     $countStmt = $db->prepare($countQuery);
-    $countStmt->bindParam(':thirtyDaysAgo', $thirtyDaysAgo);
+    if ($fromDate) {
+        $countStmt->bindValue(':fromDate', $fromDate);
+    }
     if (!empty($searchKeyword)) {
         $countStmt->bindValue(':search', '%' . $searchKeyword . '%');
     }
     $countStmt->execute();
-    $totalLogs = $countStmt->fetchColumn();
-    $totalPages = ceil($totalLogs / $logsPerPage);
+    $totalLogs = (int)($countStmt->fetchColumn() ?: 0);
+    $totalPages = $totalLogs > 0 ? (int)ceil($totalLogs / $logsPerPage) : 0;
 
     // Get comprehensive logs combining user_logs and activity_logs
     $query = "
@@ -118,7 +144,7 @@ try {
         FROM user_logs ul
         LEFT JOIN users u ON ul.user_id = u.id
         LEFT JOIN users ua ON ul.action_by = ua.id
-        WHERE ul.action_at >= :thirtyDaysAgo $userLogsSearchCondition
+        WHERE 1=1 {$userDateCondition}{$userLogsSearchCondition}
         
         UNION ALL
         
@@ -135,16 +161,16 @@ try {
             al.defect_id
         FROM activity_logs al
         LEFT JOIN users u ON al.user_id = u.id
-        LEFT JOIN defects d ON al.defect_id = d.id
-        WHERE al.created_at >= :thirtyDaysAgo
-        $activityLogsSearchCondition
+        WHERE 1=1 {$activityDateCondition}{$activityLogsSearchCondition}
         
         ORDER BY log_time DESC
         LIMIT :offset, :logsPerPage
     ";
 
     $stmt = $db->prepare($query);
-    $stmt->bindParam(':thirtyDaysAgo', $thirtyDaysAgo);
+    if ($fromDate) {
+        $stmt->bindValue(':fromDate', $fromDate);
+    }
     if (!empty($searchKeyword)) {
         $stmt->bindValue(':search', '%' . $searchKeyword . '%');
     }
@@ -152,6 +178,14 @@ try {
     $stmt->bindParam(':logsPerPage', $logsPerPage, PDO::PARAM_INT);
     $stmt->execute();
     $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $paginationParams = [];
+    if ($searchKeyword !== '') {
+        $paginationParams['search'] = $searchKeyword;
+    }
+    $paginationParams['range'] = $selectedRange;
+    $paginationQueryString = http_build_query($paginationParams);
+    $paginationQuerySuffix = $paginationQueryString ? '&' . $paginationQueryString : '';
 
 } catch (Exception $e) {
     error_log("User Logs Error: " . $e->getMessage());
@@ -291,10 +325,19 @@ function formatLogDetails($details, $action_by_username) {
                 </div>
                 <div class="card-body">
                     <form class="row g-3" method="GET">
-                        <div class="col-md-10">
+                        <div class="col-lg-6">
                             <input class="form-control" type="search" name="search" placeholder="Search by user, action, IP address, defect ID, or details..." value="<?php echo htmlspecialchars($searchKeyword); ?>">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-sm-6 col-lg-4">
+                            <select class="form-select" name="range" aria-label="Select time range">
+                                <?php foreach ($rangeOptions as $value => $label): ?>
+                                    <option value="<?php echo htmlspecialchars($value); ?>" <?php echo $value === $selectedRange ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($label); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-sm-6 col-lg-2">
                             <button class="btn btn-primary w-100" type="submit">
                                 <i class='bx bx-search'></i> Search
                             </button>
@@ -310,14 +353,17 @@ function formatLogDetails($details, $action_by_username) {
                 <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div>
                         <h2 class="h5 mb-1">Activity Timeline</h2>
-                        <p class="text-muted small mb-0">Showing <?php echo number_format($totalLogs); ?> log entries from the last 30 days</p>
+                        <p class="text-muted small mb-0">
+                            Showing <?php echo number_format($totalLogs); ?> log entries from <?php echo htmlspecialchars($rangeOptions[$selectedRange] ?? $rangeOptions['30']); ?>
+                            <?php if ($searchKeyword !== ''): ?>matching “<?php echo htmlspecialchars($searchKeyword); ?>”<?php endif; ?>
+                        </p>
                     </div>
                 </div>
                 <div class="card-body">
                     <?php if (empty($logs)): ?>
                         <div class="alert alert-info mb-0">
                             <i class='bx bx-info-circle me-2'></i>
-                            No activity logs found in the last 30 days matching your search criteria.
+                            No activity logs found for the selected range<?php echo $searchKeyword !== '' ? ' and search terms' : ''; ?>.
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
@@ -390,7 +436,7 @@ function formatLogDetails($details, $action_by_username) {
                         <nav aria-label="Page navigation" class="mt-4">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item <?php if ($currentPage <= 1) echo 'disabled'; ?>">
-                                    <a class="page-link" href="?page=<?php echo $currentPage - 1; if(!empty($searchKeyword)) echo '&search=' . urlencode($searchKeyword); ?>">
+                                    <a class="page-link" href="?page=<?php echo max(1, $currentPage - 1); ?><?php echo $paginationQuerySuffix; ?>">
                                         <i class='bx bx-chevron-left'></i> Previous
                                     </a>
                                 </li>
@@ -400,7 +446,7 @@ function formatLogDetails($details, $action_by_username) {
                                 
                                 if ($startPage > 1): ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=1<?php if(!empty($searchKeyword)) echo '&search=' . urlencode($searchKeyword); ?>">1</a>
+                                        <a class="page-link" href="?page=1<?php echo $paginationQuerySuffix; ?>">1</a>
                                     </li>
                                     <?php if ($startPage > 2): ?>
                                         <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -409,7 +455,7 @@ function formatLogDetails($details, $action_by_username) {
                                 
                                 <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
                                     <li class="page-item <?php if ($i == $currentPage) echo 'active'; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; if(!empty($searchKeyword)) echo '&search=' . urlencode($searchKeyword); ?>"><?php echo $i; ?></a>
+                                        <a class="page-link" href="?page=<?php echo $i; ?><?php echo $paginationQuerySuffix; ?>"><?php echo $i; ?></a>
                                     </li>
                                 <?php endfor; ?>
                                 
@@ -418,12 +464,12 @@ function formatLogDetails($details, $action_by_username) {
                                         <li class="page-item disabled"><span class="page-link">...</span></li>
                                     <?php endif; ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=<?php echo $totalPages; if(!empty($searchKeyword)) echo '&search=' . urlencode($searchKeyword); ?>"><?php echo $totalPages; ?></a>
+                                        <a class="page-link" href="?page=<?php echo $totalPages; ?><?php echo $paginationQuerySuffix; ?>"><?php echo $totalPages; ?></a>
                                     </li>
                                 <?php endif; ?>
                                 
                                 <li class="page-item <?php if ($currentPage >= $totalPages) echo 'disabled'; ?>">
-                                    <a class="page-link" href="?page=<?php echo $currentPage + 1; if(!empty($searchKeyword)) echo '&search=' . urlencode($searchKeyword); ?>">
+                                    <a class="page-link" href="?page=<?php echo min($totalPages, $currentPage + 1); ?><?php echo $paginationQuerySuffix; ?>">
                                         Next <i class='bx bx-chevron-right'></i>
                                     </a>
                                 </li>
