@@ -199,6 +199,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             gap: 0.75rem;
         }
 
+        img[alt="Defect Tracker"] {
+            display: none !important;
+        }
+
         .install-app-cta .btn {
             display: inline-flex;
             align-items: center;
