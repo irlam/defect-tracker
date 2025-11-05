@@ -1978,7 +1978,7 @@ body.has-app-navbar .app-content-offset {
 
 .login-card__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
   grid-template-rows: auto 1fr;
   grid-template-areas:
     'hero aside'
@@ -2504,15 +2504,17 @@ body.has-app-navbar .app-content-offset {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 1080px) {
   .login-card__layout {
     grid-template-columns: 1fr;
     grid-template-areas:
       'hero'
-      'form'
-      'aside';
+      'form';
     padding: var(--spacing-lg);
+  }
+
+  .login-card__aside {
+    display: none;
   }
 
   .login-card__hero {
@@ -2523,12 +2525,6 @@ body.has-app-navbar .app-content-offset {
 
   .login-card__form {
     padding: var(--spacing-lg) 0 var(--spacing-md);
-    max-width: none;
-    justify-self: stretch;
-  }
-
-  .login-card__aside {
-    padding-top: var(--spacing-md);
     max-width: none;
     justify-self: stretch;
   }

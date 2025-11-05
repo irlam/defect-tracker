@@ -67,7 +67,8 @@ if (isset($_SESSION['username'])) { // Checking 'username' is usually sufficient
 $error = ''; // Variable to store login error messages for display.
 $username = ''; // Variable to pre-fill the username field if login fails.
 
-// Include the database configuration file.
+// Include configuration files.
+require_once 'config/constants.php';
 require_once 'config/database.php'; // Contains the Database class definition.
 
 // --- Login Form Processing (Handles POST requests) ---
@@ -258,61 +259,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" id="installPwaButton" class="btn btn-outline-info install-pwa-button" hidden>
                             <i class='bx bx-download'></i>Install App
                         </button>
-                        <a id="installPwaFallback" class="btn btn-outline-info install-pwa-fallback" href="manifest.json" download>
-                            <i class='bx bx-download'></i>Download App
+                        <a id="installPwaFallback" class="btn btn-outline-info install-pwa-fallback" href="<?php echo htmlspecialchars(SITE_URL . '/manifest.json'); ?>" download>
+                            <i class='bx bx-download'></i>Download Manifest
                         </a>
                     </div>
                 </section>
 
-                <aside class="login-card__aside" aria-label="Demo accounts">
-                    <?php // --- Manager Demo Login Card --- ?>
-                    <article class="login-demo-card is-manager">
+                <aside class="login-card__aside" aria-label="Mobile access">
+                    <article class="login-demo-card">
                         <header class="login-demo-card__header">
-                            <i class='bx bx-user-check'></i>
+                            <i class='bx bx-mobile-alt'></i>
                             <div>
-                                <p class="eyebrow">Demo access</p>
-                                <h5 class="title">Manager</h5>
+                                <p class="eyebrow">Mobile access</p>
+                                <h5 class="title">Install the app</h5>
                             </div>
                         </header>
-                        <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
-                        <div class="demo-credentials">
-                            <?php // Clickable boxes for username/password ?>
-                            <div class="credential-box username-box" onclick="copyToClipboard('manager')" title="Click to copy username">
-                                manager
-                            </div>
-                            <div class="credential-box password-box" onclick="copyToClipboard('manager1')" title="Click to copy password">
-                                manager1
-                            </div>
+                        <p class="login-demo-card__hint">Install on your device for the best experience.</p>
+                        <div class="install-app-cta flex-column align-items-stretch">
+                            <button type="button" id="installPwaButtonAside" class="btn btn-outline-info install-pwa-button" hidden>
+                                <i class='bx bx-download'></i>Install App
+                            </button>
+                            <a id="installPwaFallbackAside" class="btn btn-outline-info install-pwa-fallback" href="<?php echo htmlspecialchars(SITE_URL . '/manifest.json'); ?>" download>
+                                <i class='bx bx-download'></i>Download Manifest
+                            </a>
                         </div>
-                        <?php // Auto-login button for Manager ?>
-                        <button id="managerDemoLogin" class="btn btn-sm demo-button mt-3">
-                            <i class='bx bx-log-in'></i>Auto-Login
-                        </button>
-                    </article>
-
-                    <?php // --- Contractor Demo Login Card --- ?>
-                    <article class="login-demo-card is-contractor">
-                        <header class="login-demo-card__header">
-                            <i class='bx bx-hard-hat'></i>
-                            <div>
-                                <p class="eyebrow">Demo access</p>
-                                <h5 class="title">Contractor</h5>
-                            </div>
-                        </header>
-                        <p class="login-demo-card__hint">Click to copy or launch auto-login.</p>
-                        <div class="demo-credentials">
-                            <?php // Clickable boxes for Contractor username/password ?>
-                            <div class="credential-box username-box" onclick="copyToClipboard('contractor')" title="Click to copy username">
-                                contractor
-                            </div>
-                            <div class="credential-box password-box" onclick="copyToClipboard('contractor1')" title="Click to copy password">
-                                contractor1
-                            </div>
+                        <div class="qr-wrapper text-center mt-3">
+                            <p class="small text-muted mb-2">Scan to open on mobile</p>
+                            <img src="assets/images/login-qr.png" alt="QR code to open login" class="img-fluid w-75 mx-auto" loading="lazy">
                         </div>
-                        <?php // Auto-login button for Contractor ?>
-                        <button id="contractorDemoLogin" class="btn btn-sm demo-button mt-3">
-                            <i class='bx bx-log-in'></i>Auto-Login
-                        </button>
                     </article>
                 </aside>
 
@@ -377,89 +351,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
          * - Simple Toast Notification: Provides visual feedback for the copy action.
          */
 
-        // --- Event Listener for Manager Demo Auto-Login Button ---
-        const managerDemoButton = document.getElementById('managerDemoLogin');
-        if (managerDemoButton) {
-            managerDemoButton.addEventListener('click', function() {
-                document.getElementById('username').value = 'manager'; // Set username
-                document.getElementById('password').value = 'manager1'; // Set password
-                // Optional delay for visual effect before submitting.
-                setTimeout(() => {
-                    document.querySelector('form').submit(); // Submit the main login form.
-                }, 200);
-            });
-        }
-
-        // --- Event Listener for Contractor Demo Auto-Login Button ---
-        const contractorDemoButton = document.getElementById('contractorDemoLogin');
-        if (contractorDemoButton) {
-             contractorDemoButton.addEventListener('click', function() {
-                document.getElementById('username').value = 'contractor'; // Set username
-                document.getElementById('password').value = 'contractor1'; // Set password
-                // Optional delay.
-                setTimeout(() => {
-                    document.querySelector('form').submit(); // Submit the main login form.
-                }, 200);
-            });
-        }
-
         // Handle PWA install prompt and fallback download link.
-        const installPwaButton = document.getElementById('installPwaButton');
-        const installPwaFallback = document.getElementById('installPwaFallback');
+        const installButtons = [
+            document.getElementById('installPwaButton'),
+            document.getElementById('installPwaButtonAside')
+        ].filter(Boolean);
+
+        const fallbackLinks = [
+            document.getElementById('installPwaFallback'),
+            document.getElementById('installPwaFallbackAside')
+        ].filter(Boolean);
+
         let deferredInstallPrompt = null;
 
         window.addEventListener('beforeinstallprompt', (event) => {
             event.preventDefault();
             deferredInstallPrompt = event;
-            if (installPwaButton) {
-                installPwaButton.hidden = false;
-                installPwaButton.classList.add('show');
-            }
-            if (installPwaFallback) {
-                installPwaFallback.classList.add('d-none');
-            }
+            installButtons.forEach((btn) => {
+                btn.hidden = false;
+                btn.classList.add('show');
+                btn.disabled = false;
+            });
+            fallbackLinks.forEach((link) => link.classList.add('d-none'));
         });
 
-        if (installPwaButton) {
-            installPwaButton.addEventListener('click', async () => {
+        installButtons.forEach((btn) => {
+            btn.addEventListener('click', async () => {
                 if (!deferredInstallPrompt) {
-                    if (installPwaFallback) {
-                        installPwaFallback.focus();
+                    fallbackLinks.forEach((link) => link.classList.remove('d-none'));
+                    if (fallbackLinks[0]) {
+                        fallbackLinks[0].focus();
                     }
                     return;
                 }
 
-                installPwaButton.disabled = true;
+                installButtons.forEach((button) => (button.disabled = true));
                 deferredInstallPrompt.prompt();
                 let outcome = null;
                 try {
                     const choice = await deferredInstallPrompt.userChoice;
                     outcome = choice ? choice.outcome : null;
                 } finally {
-                    installPwaButton.disabled = false;
-                    installPwaButton.classList.remove('show');
-                    installPwaButton.hidden = true;
-                    if (installPwaFallback) {
+                    installButtons.forEach((button) => {
+                        button.disabled = false;
+                        button.classList.remove('show');
+                        button.hidden = true;
+                    });
+
+                    fallbackLinks.forEach((link) => {
                         if (outcome === 'accepted') {
-                            installPwaFallback.classList.add('d-none');
+                            link.classList.add('d-none');
                         } else {
-                            installPwaFallback.classList.remove('d-none');
+                            link.classList.remove('d-none');
                         }
-                    }
+                    });
+
                     deferredInstallPrompt = null;
                 }
             });
-        }
+        });
 
         window.addEventListener('appinstalled', () => {
             deferredInstallPrompt = null;
-            if (installPwaButton) {
-                installPwaButton.hidden = true;
-                installPwaButton.classList.remove('show');
-            }
-            if (installPwaFallback) {
-                installPwaFallback.classList.add('d-none');
-            }
+            installButtons.forEach((btn) => {
+                btn.hidden = true;
+                btn.classList.remove('show');
+            });
+            fallbackLinks.forEach((link) => link.classList.add('d-none'));
             if (typeof showToast === 'function') {
                 showToast('App installed');
             }
