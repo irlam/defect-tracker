@@ -39,6 +39,22 @@ $currentUsername = $_SESSION['username'] ?? '';
 $navbar = null;
 $debugEnabled = defined('DEBUG') ? (bool) constant('DEBUG') : false;
 
+if (!function_exists('getPriorityColor')) {
+    function getPriorityColor(string $priority): string
+    {
+        switch (strtolower($priority)) {
+            case 'high':
+                return 'danger';
+            case 'medium':
+                return 'warning';
+            case 'low':
+                return 'success';
+            default:
+                return 'secondary';
+        }
+    }
+}
+
 // Get defect ID from URL
 $defectId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$defectId) {
