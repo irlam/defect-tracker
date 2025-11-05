@@ -1977,52 +1977,34 @@ body.has-app-navbar .app-content-offset {
 }
 
 .login-card__layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    'hero aside'
-    'form aside';
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-lg);
   padding: var(--spacing-xl);
-  align-items: start;
+  align-items: center;
   overflow: hidden;
 }
 
 .login-card__hero {
-  grid-area: hero;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: var(--spacing-md);
-  padding-right: var(--spacing-lg);
-  padding-bottom: var(--spacing-lg);
-  border-right: 1px solid rgba(148, 163, 184, 0.12);
-  align-self: start;
-}
-
-.login-card__aside {
-  grid-area: aside;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  align-self: stretch;
-  max-width: 320px;
-  width: 100%;
-  justify-self: start;
+  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+  border-right: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .login-card__form {
-  grid-area: form;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto var(--spacing-xl);
+  padding-top: var(--spacing-lg);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  padding-right: var(--spacing-lg);
-  padding-top: var(--spacing-md);
-  max-width: 420px;
-  width: 100%;
-  justify-self: start;
   border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
@@ -2506,27 +2488,12 @@ body.has-app-navbar .app-content-offset {
 }
 @media (max-width: 1080px) {
   .login-card__layout {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'hero'
-      'form';
     padding: var(--spacing-lg);
   }
 
-  .login-card__aside {
-    display: none;
-  }
-
-  .login-card__hero {
-    border-right: none;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-    padding: 0 0 var(--spacing-lg);
-  }
-
   .login-card__form {
-    padding: var(--spacing-lg) 0 var(--spacing-md);
-    max-width: none;
-    justify-self: stretch;
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
   }
 }
 
@@ -2536,7 +2503,7 @@ body.has-app-navbar .app-content-offset {
   }
 
   .login-card__form {
-    padding: var(--spacing-md) 0;
+    padding-top: var(--spacing-sm);
   }
 
   .login-quick-stats {

@@ -265,31 +265,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </section>
 
-                <aside class="login-card__aside" aria-label="Mobile access">
-                    <article class="login-demo-card">
-                        <header class="login-demo-card__header">
-                            <i class='bx bx-mobile-alt'></i>
-                            <div>
-                                <p class="eyebrow">Mobile access</p>
-                                <h5 class="title">Install the app</h5>
-                            </div>
-                        </header>
-                        <p class="login-demo-card__hint">Install on your device for the best experience.</p>
-                        <div class="install-app-cta flex-column align-items-stretch">
-                            <button type="button" id="installPwaButtonAside" class="btn btn-outline-info install-pwa-button" hidden>
-                                <i class='bx bx-download'></i>Install App
-                            </button>
-                            <a id="installPwaFallbackAside" class="btn btn-outline-info install-pwa-fallback" href="<?php echo htmlspecialchars(SITE_URL . '/manifest.json'); ?>" download>
-                                <i class='bx bx-download'></i>Download Manifest
-                            </a>
-                        </div>
-                        <div class="qr-wrapper text-center mt-3">
-                            <p class="small text-muted mb-2">Scan to open on mobile</p>
-                            <img src="assets/images/login-qr.png" alt="QR code to open login" class="img-fluid w-75 mx-auto" loading="lazy">
-                        </div>
-                    </article>
-                </aside>
-
                 <div class="login-card__form">
                     <header class="login-form-header">
                         <h2>Sign in</h2>
@@ -353,13 +328,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Handle PWA install prompt and fallback download link.
         const installButtons = [
-            document.getElementById('installPwaButton'),
-            document.getElementById('installPwaButtonAside')
+            document.getElementById('installPwaButton')
         ].filter(Boolean);
 
         const fallbackLinks = [
-            document.getElementById('installPwaFallback'),
-            document.getElementById('installPwaFallbackAside')
+            document.getElementById('installPwaFallback')
         ].filter(Boolean);
 
         let deferredInstallPrompt = null;
