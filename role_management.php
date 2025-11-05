@@ -354,85 +354,12 @@ try {
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-            <?php if (isset($success_message)): ?>
-                <div class="alert alert-success"><?php echo $success_message; ?></div>
-            <?php endif; ?>
-
-            <?php if (isset($error_message)): ?>
-                <div class="alert alert-danger"><?php echo $error_message; ?></div>
-            <?php endif; ?>
-
-            <!-- Create New Role -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Create New Role</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST">
-                        <input type="hidden" name="action" value="create_role">
-                        <div class="mb-3">
-                            <label class="form-label">Role Name</label>
-                            <input type="text" name="role_name" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea name="role_description" class="form-control" rows="2"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Create Role</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Existing Roles -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Existing Roles</h5>
-                </div>
-                <div class="card-body">
-                    <?php foreach ($roles as $role): ?>
-                        <div class="border-bottom pb-4 mb-4">
-                            <h6><?php echo htmlspecialchars($role['name']); ?></h6>
-                            <p class="text-muted small"><?php echo htmlspecialchars($role['description']); ?></p>
-                            
-                            <form method="POST" class="mb-3">
-                                <input type="hidden" name="action" value="update_role_permissions">
-                                <input type="hidden" name="role_id" value="<?php echo $role['id']; ?>">
-                                
-                                <div class="row g-3 mb-3">
-                                    <?php foreach ($permissions as $permission): ?>
-                                        <div class="col-md-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" 
-                                                       name="permissions[]" 
-                                                       value="<?php echo $permission['id']; ?>"
-                                                       <?php echo in_array($permission['id'], $rolePermissions[$role['id']]) ? 'checked' : ''; ?>>
-                                                <label class="form-check-label">
-                                                    <?php echo htmlspecialchars($permission['name']); ?>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                
-                                <div class="btn-group">
-                                    <button type="submit" class="btn btn-primary btn-sm">Update Permissions</button>
-                                    <button type="submit" class="btn btn-danger btn-sm" 
-                                            formaction="?action=delete_role"
-                                            onclick="return confirm('Are you sure you want to delete this role?');">
-                                        Delete Role
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.app-navbar .dropdown-toggle').forEach(function (toggleEl) {
+                window.bootstrap && new window.bootstrap.Dropdown(toggleEl);
+            });
+        });
+    </script>
 </body>
 </html>
