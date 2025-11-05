@@ -141,8 +141,8 @@ if ($floorLevel !== '' && $floorLevel !== null) {
 }
 
 $reportedBy = $defect['reported_by_user'] ?? 'System';
-$assignedBy = $defect['assigned_by_user'] ?? '—';
-$updatedBy = $defect['updated_by_user'] ?? '—';
+$assignedBy = $defect['assigned_by_user'] ?? 'N/A';
+$updatedBy = $defect['updated_by_user'] ?? 'N/A';
 $contractorName = $defect['contractor_name'] ?? 'Unassigned Contractor';
 $contractorTrade = $defect['contractor_trade'] ?? '';
 $contractorDisplay = trim($contractorTrade) !== ''
@@ -671,8 +671,8 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                             <section class="<?php echo $hasGalleryImages ? 'mb-4' : ''; ?>">
                                 <h3 class="section-heading mb-2">Pin Location</h3>
                                 <div class="defect-map">
-                                    <img src="<?php echo htmlspecialchars($defect['pin_image_url']); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
-                                    <button type="button" class="defect-map__cta" onclick="openImageModal(<?php echo json_encode($defect['pin_image_url']); ?>, 'Pin Location');">
+                                    <img src="<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
+                                    <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>', 'Pin Location');">
                                         <i class="bx bx-fullscreen me-1"></i> View full
                                     </button>
                                 </div>
@@ -684,9 +684,9 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                                 <h3 class="section-heading mb-2">Supporting Images</h3>
                                 <div class="defect-media-grid">
                                     <?php foreach ($images as $index => $image): ?>
-                                        <button type="button"
-                                                class="defect-media-tile"
-                                                onclick="openImageModal(<?php echo json_encode($image); ?>, <?php echo json_encode('Defect Image ' . ($index + 1)); ?>);"
+                    <button type="button"
+                        class="defect-media-tile"
+                        onclick="openImageModal('<?php echo htmlspecialchars($image, ENT_QUOTES); ?>', 'Defect Image <?php echo (int)($index + 1); ?>');"
                                                 aria-label="Open defect image <?php echo (int)($index + 1); ?> in full screen">
                                             <img src="<?php echo htmlspecialchars($image); ?>" alt="Defect image <?php echo (int)($index + 1); ?>">
                                             <span class="defect-media-tile__badge">#<?php echo (int)($index + 1); ?></span>
@@ -805,8 +805,6 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
             <!-- ... (Edit modal content) ... -->
         </div>
     <?php endif; ?>
-
-    <?php include 'includes/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.16/dist/sweetalert2.min.js"></script>
