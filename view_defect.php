@@ -71,7 +71,26 @@ if (!function_exists('buildMediaUrl')) {
             return $trimmed;
         }
 
-        return SITE_URL . '/' . ltrim($trimmed, '/');
+        $normalized = ltrim($trimmed, '/');
+        $normalized = str_replace(['../', './'], '', $normalized);
+
+        return SITE_URL . '/' . $normalized;
+    }
+}
+
+if (!function_exists('isDisplayableImage')) {
+    function isDisplayableImage(?string $url): bool
+    {
+        if (!$url) {
+            return false;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!$path) {
+            return false;
+        }
+
+        return (bool) preg_match('/\.(?:png|jpe?g|gif|webp|bmp)$/i', $path);
     }
 }
 
@@ -204,7 +223,30 @@ $updatedAtFormatted = $defect['updated_at'] instanceof DateTime ? $defect['updat
 
 $hasPinImage = !empty($defect['pin_image_url']);
 $floorPlanUrl = buildMediaUrl($defect['floor_plan_path'] ?? null);
+if (!isDisplayableImage($floorPlanUrl)) {
+    $floorPlanUrl = null;
+}
+
+if (!$floorPlanUrl && !empty($images)) {
+    foreach ($images as $candidateImage) {
+        if (!isDisplayableImage($candidateImage)) {
+            continue;
+        }
+
+        $candidateName = strtolower(basename(parse_url($candidateImage, PHP_URL_PATH) ?? ''));
+        if (strpos($candidateName, 'floor') !== false || strpos($candidateName, 'plan') !== false || strpos($candidateName, 'pin') !== false) {
+            $floorPlanUrl = $candidateImage;
+            break;
+        }
+    }
+}
+
+if (!$floorPlanUrl && $hasPinImage) {
+    $floorPlanUrl = $defect['pin_image_url'];
+}
+
 $hasFloorPlan = !empty($floorPlanUrl);
+$showSeparatePinImage = $hasPinImage && (!$hasFloorPlan || $defect['pin_image_url'] !== $floorPlanUrl);
 
 $pinX = $defect['pin_x'] ?? null;
 $pinY = $defect['pin_y'] ?? null;
@@ -817,7 +859,7 @@ $priorityColorClass = $priorityColorClass ?: 'secondary';
                                     </div>
                                 <?php endif; ?>
 
-                                <?php if ($hasPinImage): ?>
+                                <?php if ($showSeparatePinImage): ?>
                                     <div class="defect-map">
                                         <img src="<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>" alt="Pin location for <?php echo htmlspecialchars($defectReference); ?>" class="defect-map__image">
                                         <button type="button" class="defect-map__cta" onclick="openImageModal('<?php echo htmlspecialchars($defect['pin_image_url'], ENT_QUOTES); ?>', 'Pin Location');">
