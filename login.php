@@ -218,11 +218,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: inline-flex;
         }
 
-        .install-pwa-fallback {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
     </style>
 </head>
 <body data-bs-theme="dark" class="login-page">
@@ -245,9 +240,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" id="installPwaButton" class="btn btn-outline-info install-pwa-button" hidden>
                             <i class='bx bx-download'></i>Install App
                         </button>
-                        <a id="installPwaFallback" class="btn btn-outline-info install-pwa-fallback" href="<?php echo htmlspecialchars(PWA_DOWNLOAD_URL); ?>">
-                            <i class='bx bx-download'></i>Download App
-                        </a>
+                        <p id="installPwaInstructions" class="text-muted small mb-0">
+                            Add Defect Tracker to your home screen from the browser menu.
+                        </p>
                     </div>
                 </section>
 
@@ -316,10 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const installButtons = [
             document.getElementById('installPwaButton')
         ].filter(Boolean);
-
-        const fallbackLinks = [
-            document.getElementById('installPwaFallback')
-        ].filter(Boolean);
+        const installInstructions = document.getElementById('installPwaInstructions');
 
         let deferredInstallPrompt = null;
 
@@ -331,15 +323,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 btn.classList.add('show');
                 btn.disabled = false;
             });
-            fallbackLinks.forEach((link) => link.classList.add('d-none'));
+            if (installInstructions) {
+                installInstructions.hidden = true;
+            }
         });
 
         installButtons.forEach((btn) => {
             btn.addEventListener('click', async () => {
                 if (!deferredInstallPrompt) {
-                    fallbackLinks.forEach((link) => link.classList.remove('d-none'));
-                    if (fallbackLinks[0]) {
-                        fallbackLinks[0].focus();
+                    if (typeof showToast === 'function') {
+                        showToast('Install prompt unavailable. Use your browser menu to add to home screen.');
+                    }
+                    if (installInstructions) {
+                        installInstructions.hidden = false;
                     }
                     return;
                 }
@@ -357,13 +353,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         button.hidden = true;
                     });
 
-                    fallbackLinks.forEach((link) => {
-                        if (outcome === 'accepted') {
-                            link.classList.add('d-none');
-                        } else {
-                            link.classList.remove('d-none');
-                        }
-                    });
+                    if (installInstructions) {
+                        installInstructions.hidden = outcome === 'accepted';
+                    }
 
                     deferredInstallPrompt = null;
                 }
@@ -376,7 +368,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 btn.hidden = true;
                 btn.classList.remove('show');
             });
-            fallbackLinks.forEach((link) => link.classList.add('d-none'));
             if (typeof showToast === 'function') {
                 showToast('App installed');
             }

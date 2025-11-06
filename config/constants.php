@@ -43,10 +43,6 @@ if (!defined('DEFAULT_TIMEZONE')) {
     define('DEFAULT_TIMEZONE', 'Europe/London');
 }
 
-if (!defined('PWA_DOWNLOAD_URL')) {
-    define('PWA_DOWNLOAD_URL', Environment::get('PWA_DOWNLOAD_URL', SITE_URL . '/downloads/defect-tracker-pwa.apk'));
-}
-
 // Company configuration
 if (!defined('COMPANY_CONTRACTOR_ID')) {
     define('COMPANY_CONTRACTOR_ID', 1); // ID of the company record in contractors table
