@@ -342,6 +342,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (installInstructions) {
                 installInstructions.hidden = true;
             }
+            console.info('PWA install prompt intercepted; waiting for user interaction.');
         });
 
         installButtons.forEach((btn) => {
@@ -386,6 +387,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
             if (typeof showToast === 'function') {
                 showToast('App installed');
+            }
+            if (installInstructions) {
+                installInstructions.hidden = true;
             }
         });
 
