@@ -812,15 +812,18 @@ body.tool-body {
 .login-page {
   position: relative;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: clamp(var(--spacing-lg), 4vw, var(--spacing-xxl)) clamp(var(--spacing-md), 5vw, var(--spacing-xxl));
   background:
     radial-gradient(140% 120% at 15% -20%, rgba(37, 99, 235, 0.35), transparent 65%),
     radial-gradient(120% 130% at 85% 120%, rgba(34, 211, 238, 0.28), transparent 55%),
     linear-gradient(165deg, #060e1c 0%, #081329 48%, #040b1a 100%);
-  overflow-x: hidden;
-  overflow-y: auto;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
 }
 
 .login-page__glow {
@@ -2011,10 +2014,10 @@ body.has-app-navbar .app-content-offset {
   border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .login-page {
-    display: block;
-    padding: var(--spacing-lg) var(--spacing-md);
+    padding: var(--spacing-xl) var(--spacing-md) var(--spacing-lg);
+    overflow: auto;
   }
 
   .login-container {
