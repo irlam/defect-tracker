@@ -196,9 +196,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .install-app-cta {
             margin-top: 1.5rem;
             display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap;
             gap: 0.75rem;
+            text-align: center;
+        }
+
+        #installPwaInstructions {
+            color: var(--text-muted-color);
         }
 
         img[alt="Defect Tracker"] {

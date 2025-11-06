@@ -815,11 +815,11 @@ body.tool-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(var(--spacing-md), 4vw, var(--spacing-xxl));
+  padding: clamp(var(--spacing-lg), 4vw, var(--spacing-xxl)) clamp(var(--spacing-md), 5vw, var(--spacing-xxl));
   background:
-    radial-gradient(140% 120% at 0% -10%, rgba(37, 99, 235, 0.25), transparent 60%),
-    radial-gradient(120% 130% at 100% 120%, rgba(34, 211, 238, 0.18), transparent 55%),
-    var(--background-color);
+    radial-gradient(140% 120% at 15% -20%, rgba(37, 99, 235, 0.35), transparent 65%),
+    radial-gradient(120% 130% at 85% 120%, rgba(34, 211, 238, 0.28), transparent 55%),
+    linear-gradient(165deg, #060e1c 0%, #081329 48%, #040b1a 100%);
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -866,8 +866,12 @@ body.tool-body {
 .login-container {
   position: relative;
   z-index: 2;
-  max-width: 980px;
-  width: 100%;
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-inline: auto;
 }
 
 .login-page__logo-wrapper {
@@ -1967,6 +1971,8 @@ body.has-app-navbar .app-content-offset {
   box-shadow: 0 24px 60px rgba(2, 6, 23, 0.65);
   overflow: hidden;
   backdrop-filter: blur(18px);
+  width: 100%;
+  margin: 0 auto;
 }
 
 .app-brand-logo {
@@ -1979,9 +1985,10 @@ body.has-app-navbar .app-content-offset {
 .login-card__layout {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-xl);
+  gap: clamp(var(--spacing-lg), 4vw, var(--spacing-xl));
+  padding: clamp(var(--spacing-lg), 5vw, var(--spacing-xl));
   align-items: center;
+  text-align: center;
   overflow: hidden;
 }
 
@@ -1990,22 +1997,38 @@ body.has-app-navbar .app-content-offset {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: var(--spacing-md);
-  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
-  border-right: none;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  padding: clamp(var(--spacing-lg), 5vw, var(--spacing-xl)) clamp(var(--spacing-md), 4vw, var(--spacing-lg)) var(--spacing-lg);
+  border: none;
 }
 
 .login-card__form {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto var(--spacing-xl);
-  padding-top: var(--spacing-lg);
+  width: min(420px, 100%);
+  margin: 0 auto;
+  padding: var(--spacing-lg) 0 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
   border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+@media (max-width: 576px) {
+  .login-container {
+    width: 100%;
+  }
+
+  .login-card__layout {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .login-card__hero {
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+  }
+
+  .login-card__form {
+    width: 100%;
+    padding-top: var(--spacing-md);
+  }
 }
 
 .login-badge {
