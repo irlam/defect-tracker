@@ -56,6 +56,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Ensure browsers treat this response as HTML instead of offering it for download.
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
+
 // --- Redirect if Already Logged In ---
 // If the user's session already contains login information, redirect them to the dashboard.
 if (isset($_SESSION['username'])) { // Checking 'username' is usually sufficient.
