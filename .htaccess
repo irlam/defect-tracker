@@ -1,0 +1,12 @@
+# Ensure PHP files are executed by the server instead of being downloaded
+<IfModule mod_mime.c>
+    AddHandler application/x-httpd-php .php .phtml
+</IfModule>
+
+<IfModule mod_php.c>
+    php_flag engine on
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+</IfModule>
