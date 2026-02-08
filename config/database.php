@@ -21,6 +21,7 @@ class Database {
         // Load database configuration from environment variables
         $rawHost = Environment::get('DB_HOST', '10.35.233.124');
 
+
         $this->host = $rawHost;
         $this->port = (int)Environment::get('DB_PORT', 3306);
 
@@ -34,6 +35,16 @@ class Database {
         } elseif (preg_match('/^([^:]+):(\d+)$/', $rawHost, $matches) === 1) {
             $this->host = $matches[1];
             $this->port = (int)$matches[2];
+
+        // Support both DB_HOST=host:port and DB_HOST=host + DB_PORT=port formats.
+        if (strpos($rawHost, ':') !== false) {
+            [$parsedHost, $parsedPort] = explode(':', $rawHost, 2);
+            $this->host = $parsedHost;
+            $this->port = (int)$parsedPort;
+        } else {
+            $this->host = $rawHost;
+            $this->port = (int)Environment::get('DB_PORT', 3306);
+ main
         }
 
         $this->db_name = Environment::get('DB_NAME', 'k87747_defecttracker');
