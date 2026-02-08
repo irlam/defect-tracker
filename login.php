@@ -14,8 +14,6 @@
  *     it redirects them immediately to the main application dashboard (`dashboard.php`).
  * 2.  **Login Form Display:** Renders an HTML login form asking for username and password.
  *     - Includes visual elements like the application logo and styling using Bootstrap.
- *     - Provides demo login banners (currently for Manager and Contractor roles) with credentials and
- *       an auto-login button for demonstration purposes.
  * 3.  **Form Submission Handling (POST Request):**
  *     - Retrieves and trims the submitted username and password.
  *     - Performs basic validation to ensure both fields are provided.
@@ -319,13 +317,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </script>
 
-    <?php // --- Inline JavaScript for Demo Logins and Copy-to-Clipboard --- ?>
+    <?php // --- Inline JavaScript for PWA install prompt and toast notices --- ?>
     <script>
         /**
          * Inline JavaScript for Login Page Functionality:
-         * - Demo Account Auto-Login: Fills credentials and submits the form for demo accounts.
-         * - Copy to Clipboard: Allows users to copy demo credentials by clicking on them.
-         * - Simple Toast Notification: Provides visual feedback for the copy action.
+         * - PWA install prompt handling for supported browsers.
+         * - Simple toast notification helper.
          */
 
         // Handle PWA install prompt and fallback download link.
@@ -398,53 +395,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         });
 
-
-        /**
-         * Copies the provided text to the user's clipboard.
-         * Uses the modern Clipboard API with a fallback for older browsers.
-         * Shows a toast notification on success or failure.
-         * @param {string} text - The text to copy.
-         */
-        function copyToClipboard(text) {
-            // Try using the modern Navigator Clipboard API first (requires HTTPS or localhost).
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast(`Copied: ${text}`); // Show success toast.
-                }).catch(err => {
-                    console.error('Clipboard API copy failed:', err);
-                    showToast('Copy failed. Please try again.'); // Show error toast.
-                });
-            } else {
-                // --- Fallback using document.execCommand('copy') ---
-                // Create a temporary textarea element to hold the text.
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                // Make the textarea invisible and position it off-screen.
-                textArea.style.position = 'fixed';
-                textArea.style.left = '-9999px';
-                textArea.style.top = '-9999px';
-                textArea.style.opacity = '0';
-                document.body.appendChild(textArea);
-                textArea.focus(); // Focus the element.
-                textArea.select(); // Select its content.
-
-                try {
-                    // Attempt to execute the 'copy' command.
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        showToast(`Copied: ${text}`); // Show success toast.
-                    } else {
-                        throw new Error('execCommand failed'); // Force catch block if command failed.
-                    }
-                } catch (err) {
-                    console.error('Fallback copy failed:', err);
-                    showToast('Copy failed. Please copy manually.'); // Show error toast.
-                } finally {
-                    // Always remove the temporary textarea element.
-                    document.body.removeChild(textArea);
-                }
-            }
-        }
 
         /**
          * Displays a simple, temporary toast notification at the bottom center of the screen.
