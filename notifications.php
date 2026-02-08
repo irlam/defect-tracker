@@ -4,7 +4,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/navbar.php';
 
-if (!isset($_SESSION['user_id'], $_SESSION['username'])) {
+$auth = new Auth($db);
+
+if (!$auth->validateSession() || !isset($_SESSION['user_id'], $_SESSION['username'])) {
     header('Location: login.php');
     exit;
 }
