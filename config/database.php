@@ -11,6 +11,7 @@ if (!class_exists('Environment')) {
 class Database {
     // Database configuration - loaded from environment variables
     private $host;
+    private $port;
     private $db_name;
     private $username;
     private $password;
@@ -18,9 +19,28 @@ class Database {
     
     public function __construct() {
         // Load database configuration from environment variables
-        $this->host = Environment::get('DB_HOST', '10.35.233.124:3306');
+        $rawHost = Environment::get('DB_HOST', '10.35.233.124');
+
+        $this->host = $rawHost;
+        $this->port = (int)Environment::get('DB_PORT', 3306);
+
+        // Support DB_HOST in these forms:
+        // - hostname
+        // - hostname:3306
+        // - [2001:db8::1]:3306 (IPv6 with explicit port)
+        if (preg_match('/^\[(.+)\]:(\d+)$/', $rawHost, $matches) === 1) {
+            $this->host = $matches[1];
+            $this->port = (int)$matches[2];
+        } elseif (preg_match('/^([^:]+):(\d+)$/', $rawHost, $matches) === 1) {
+            $this->host = $matches[1];
+            $this->port = (int)$matches[2];
+        }
+
         $this->db_name = Environment::get('DB_NAME', 'k87747_defecttracker');
-        $this->username = Environment::get('DB_USERNAME', 'k87747_defecttracker');
+        $this->username = Environment::get(
+            'DB_USERNAME',
+            Environment::get('DB_USER', 'k87747_defecttracker')
+        );
         $this->password = Environment::get('DB_PASSWORD', 'Subaru5554346');
     }
 
@@ -28,7 +48,7 @@ class Database {
     public function getConnection() {
         try {
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4",
+                "mysql:host=" . $this->host . ";port=" . $this->port . ";dbname=" . $this->db_name . ";charset=utf8mb4",
                 $this->username,
                 $this->password,
                 [
