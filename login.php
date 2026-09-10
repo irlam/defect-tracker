@@ -45,12 +45,20 @@
 // Error Reporting: Display all errors and log them during development.
 // IMPORTANT: Set display_errors to 0 in production.
 error_reporting(E_ALL);
-ini_set('display_errors', 1); // Show errors on screen (for development)
+ini_set('display_errors', 0); // Keep diagnostics out of responses and HTTP headers.
 ini_set('log_errors', 1); // Log errors to a file
 ini_set('error_log', __DIR__ . '/logs/error.log'); // Path to error log file
 
 // Session Management: Start session if not already active. Needed for login state.
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.use_strict_mode', '1');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 
@@ -94,6 +102,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Initialize database connection.
         $database = new Database();
         $db = $database->getConnection(); // Get PDO connection object.
+        if (!$db) {
+            throw new Exception('Sign-in is temporarily unavailable. Please try again later.');
+        }
 
         // Prepare SQL query to fetch user details based on username.
         // Select necessary fields for session and password verification.
@@ -123,7 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // --- Password Correct - Login Successful ---
 
                 // Regenerate session ID to prevent session fixation attacks.
-                session_regenerate_id(true);
+                if (!session_regenerate_id(true)) {
+                    throw new Exception('Unable to start a secure session. Please try again.');
+                }
 
                 // Store essential user information in the session.
                 $_SESSION['user_id'] = $user['id'];
@@ -168,7 +181,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (Exception $e) {
         // --- Handle All Exceptions (Validation, DB errors, Login failures) ---
-        $error = $e->getMessage(); // Store the error message for display on the form.
+        $error = $e instanceof PDOException
+            ? 'Sign-in is temporarily unavailable. Please try again later.'
+            : $e->getMessage();
         // Log the detailed error message (including stack trace if needed) for debugging.
         // Avoid logging the raw password.
         $logMessage = "Login Error for username '{$username}': " . $e->getMessage();
@@ -279,7 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="input-group">
                                 <span class="input-group-text"><i class='bx bx-user'></i></span>
                                 <input type="text" class="form-control" id="username" name="username"
-                                       value="<?php echo htmlspecialchars($username); // Pre-fill username on failed login ?>" required>
+                                       value="<?php echo htmlspecialchars($username); // Pre-fill username on failed login ?>" autocomplete="username" required>
                             </div>
                         </div>
                         <?php // Password Input ?>
@@ -287,7 +302,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label for="password" class="form-label">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class='bx bx-lock-alt'></i></span>
-                                <input type="password" class="form-control" id="password" name="password" required>
+                                <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required>
                             </div>
                             <?php // Optional: Add "Forgot Password?" link here ?>
                             <!-- <div class="text-end mt-1"><small><a href="/forgot-password.php">Forgot Password?</a></small></div> -->

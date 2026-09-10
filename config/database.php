@@ -22,7 +22,7 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->exec("set names utf8");
         } catch(PDOException $e) {
-            echo "Connection error: " . $e->getMessage();
+            error_log("Database connection failed: " . $e->getMessage());
         }
         return $this->conn;
     }
@@ -31,7 +31,9 @@ class Database {
 // Global configuration settings
 define('BASE_URL', 'https://mcgoff.defecttracker.uk/'); // Change this to your domain
 define('UPLOAD_PATH', $_SERVER['DOCUMENT_ROOT'] . '/uploads/');
-define('MAX_FILE_SIZE', 5242880); // 5MB in bytes
+if (!defined('MAX_FILE_SIZE')) {
+    define('MAX_FILE_SIZE', 5242880); // Preserve the legacy 5MB fallback.
+}
 define('ALLOWED_FILE_TYPES', ['jpg', 'jpeg', 'png', 'pdf']);
 define('EMAIL_FROM', 'noreply@your-domain.com');
 define('ITEMS_PER_PAGE', 10);

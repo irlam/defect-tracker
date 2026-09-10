@@ -9,4 +9,11 @@
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule (^|/)\.git(?:/|$) - [F,L,NC]
 </IfModule>
+
+# Application includes can still read these files from disk.
+# Mirror these rules in nginx when it serves static files directly.
+<FilesMatch "(?i)(^\.env(?:\..*)?$|\.(?:sql|sqlite3?|log|bak)$)">
+    Require all denied
+</FilesMatch>

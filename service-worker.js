@@ -1,9 +1,8 @@
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.0.1';
 const CACHE_NAME = `defect-tracker-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_ASSETS = [
-  '/',
   '/css/app.css',
   '/offline.html',
   '/favicons/favicon-96x96.png'
@@ -29,7 +28,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName.startsWith('defect-tracker-') && cacheName !== CACHE_NAME) {
             console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -41,6 +40,9 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Mutations and authenticated data must never be served from a shared cache.
+  if (event.request.method !== 'GET') return;
+
   // Handle navigation requests
   if (event.request.mode === 'navigate') {
     event.respondWith(
@@ -51,7 +53,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Handle other requests with cache-first strategy
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin || url.search || !STATIC_ASSETS.includes(url.pathname)) {
+    return;
+  }
+
+  // Only explicitly public static assets use the cache-first strategy.
   event.respondWith(
     caches.match(event.request).then(response => {
       if (response) {
