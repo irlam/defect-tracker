@@ -596,6 +596,7 @@ class Navbar {
                     ['label' => 'System', 'id' => 'systemDropdownAdmin', 'dropdown' => [
                         ['label' => 'Admin Console', 'url' => '/admin.php'],
                         ['label' => 'System Settings', 'url' => '/admin/system_settings.php'],
+                        ['label' => 'Email Settings', 'url' => '/admin/email_settings.php'],
                         ['label' => 'Site Presentation', 'url' => '/Site-presentation/index.php'],
                         ['label' => 'Maintenance Planner', 'url' => '/maintenance/maintenance.php'],
                         ['label' => 'Backup Manager', 'url' => '/backup_manager.php'],

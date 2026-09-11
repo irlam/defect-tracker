@@ -38,3 +38,4 @@ uploads/*
 # Config files with sensitive data
 config/database.local.php
 config/local.php
+/config/notification-test.local.php

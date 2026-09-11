@@ -4,11 +4,15 @@
  * Handles creating and managing notifications for the defect tracking system
  */
 
+require_once __DIR__ . '/TestNotificationRouter.php';
+
 class NotificationHelper {
     private $db;
+    private $testRouter;
 
     public function __construct($db) {
         $this->db = $db;
+        $this->testRouter = new TestNotificationRouter($db);
     }
 
     /**
@@ -21,6 +25,7 @@ class NotificationHelper {
      * @return bool Success status
      */
     public function createNotification($userId, $type, $message, $linkUrl = null) {
+        if ($this->testRouter->active()) return false;
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO notifications (user_id, type, message, link_url, created_at, updated_at)
@@ -42,6 +47,7 @@ class NotificationHelper {
      * @param int|null $contractorId Contractor ID if applicable
      */
     public function notifyDefectCreated($defectId, $createdBy, $assignedTo = null, $contractorId = null) {
+        if ($this->testRouter->route($defectId, 'created') !== null) return;
         try {
             // Get defect details
             $defectStmt = $this->db->prepare("
@@ -108,6 +114,7 @@ class NotificationHelper {
      * @param int $assignedBy User ID who did the assignment
      */
     public function notifyDefectAssigned($defectId, $assignedTo, $assignedBy) {
+        if ($this->testRouter->route($defectId, 'assigned') !== null) return;
         try {
             // Get defect details
             $defectStmt = $this->db->prepare("
@@ -137,6 +144,7 @@ class NotificationHelper {
      * @param int|null $assignedTo User the defect is assigned to
      */
     public function notifyDefectStatusChanged($defectId, $newStatus, $changedBy, $assignedTo = null) {
+        if ($this->testRouter->route($defectId, 'status_changed') !== null) return;
         try {
             // Get defect details
             $defectStmt = $this->db->prepare("
@@ -205,6 +213,7 @@ class NotificationHelper {
      * @param string $commentText The comment text
      */
     public function notifyCommentAdded($defectId, $commentedBy, $commentText) {
+        if ($this->testRouter->route($defectId, 'comment_added') !== null) return;
         try {
             // Get defect details and participants
             $stmt = $this->db->prepare("

@@ -30,6 +30,10 @@ function sendNotification($title, $body, $targetType = 'all', $userId = null, $c
         $database = new Database();
         $db = $database->getConnection();
         
+        require_once __DIR__ . '/../classes/TestNotificationRouter.php';
+        $testResult = (new TestNotificationRouter($db))->route($defectId, 'push');
+        if ($testResult !== null) return $testResult;
+
         // Get recipients (users and/or contractors) with their FCM tokens and platform info
         $recipients = getNotificationRecipients($db, $targetType, $userId, $contractorId);
         
