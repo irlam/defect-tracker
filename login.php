@@ -243,6 +243,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: inline-flex;
         }
 
+        /* Keep the form beside the introduction on laptops and desktops. */
+        .login-page { overflow-x: hidden; overflow-y: auto; }
+        @media (min-width: 769px) {
+            .login-page { padding: 24px; }
+            .login-container { width: min(960px, 100%); }
+            .login-card__layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                align-items: center;
+                gap: 32px;
+                padding: 32px;
+            }
+            .login-card__hero { padding: 16px 0; gap: 12px; }
+            .login-card__form {
+                width: 100%;
+                min-width: 0;
+                margin: 0;
+                padding: 0 0 0 32px;
+                border-top: 0;
+                border-left: 1px solid rgba(148, 163, 184, 0.18);
+            }
+            .login-card__hero .install-app-cta { margin-top: 12px; }
+            .login-title { font-size: 1.5rem; }
+            .login-subtitle { margin-bottom: 0; }
+        }
+        @media (min-width: 769px) and (max-height: 650px) {
+            .login-page { padding: 12px 24px; }
+            .login-card__layout { padding: 20px 28px; }
+            .login-card__hero { gap: 8px; }
+        }
     </style>
 </head>
 <body data-bs-theme="dark" class="login-page">
