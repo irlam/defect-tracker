@@ -26,6 +26,11 @@ $pageTitle = 'Projects Management';
 $success_message = '';
 $error_message = '';
 $currentUser = $_SESSION['user_id'];
+$canManageProjects = in_array($_SESSION['user_type'] ?? '', ['admin', 'manager'], true);
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 date_default_timezone_set('Europe/London');
 $currentDateTime = date('Y-m-d H:i:s');
@@ -44,6 +49,16 @@ try {
 
     // Handle form submissions
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!$canManageProjects) {
+            http_response_code(403);
+            throw new RuntimeException('You do not have permission to manage projects.');
+        }
+
+        if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], (string) $_POST['csrf_token'])) {
+            http_response_code(403);
+            throw new RuntimeException('Invalid request. Reload the page and try again.');
+        }
+
         if (isset($_POST['action'])) {
             switch ($_POST['action']) {
                 case 'create_project':
@@ -591,6 +606,7 @@ try {
                     <div class="modal-dialog modal-lg modal-dialog-centered">
                         <div class="modal-content">
                             <form method="POST" class="needs-validation" novalidate>
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
                                 <input type="hidden" name="action" value="update_project">
                                 <input type="hidden" name="project_id" value="<?php echo $project['id']; ?>">
                                 <div class="modal-header">
@@ -657,6 +673,7 @@ try {
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <form method="POST" class="needs-validation" novalidate>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="create_project">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class='bx bx-briefcase-alt-2 me-2'></i>Create New Project</h5>
@@ -708,6 +725,7 @@ try {
 </div>
 
 <form id="deleteProjectForm" method="POST" class="d-none">
+    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="action" value="delete_project">
     <input type="hidden" name="project_id" id="deleteProjectId">
 </form>
@@ -732,7 +750,7 @@ try {
 
         function applyFilters() {
             const activeFilter = document.querySelector('.projects-filter__button.is-active')?.dataset.filter ?? 'all';
-            const searchTerm = searchInput.value.trim().toLowerCase();
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
             projectItems.forEach((item) => {
                 const matchesStatus = activeFilter === 'all' || item.dataset.projectStatus === activeFilter;
@@ -749,9 +767,9 @@ try {
             });
         });
 
-        searchInput.addEventListener('input', () => {
-            applyFilters();
-        });
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
 
         window.confirmDeleteProject = (projectId) => {
             if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {

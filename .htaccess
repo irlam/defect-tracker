@@ -12,8 +12,20 @@
     RewriteRule (^|/)\.git(?:/|$) - [F,L,NC]
 </IfModule>
 
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
 # Application includes can still read these files from disk.
 # Mirror these rules in nginx when it serves static files directly.
 <FilesMatch "(?i)(^\.env(?:\..*)?$|\.(?:sql|sqlite3?|log|bak)$)">
     Require all denied
 </FilesMatch>
+
+# This historical planning file must never be web-accessible.
+<Files "_ai-prompt.txt">
+    Require all denied
+</Files>

@@ -19,6 +19,11 @@ if (!isset($_SESSION['username'])) {
 	exit();
 }
 
+if (!in_array($_SESSION['user_type'] ?? '', ['admin', 'manager'], true)) {
+	header('Location: dashboard.php?error=unauthorized');
+	exit();
+}
+
 define('INCLUDED', true);
 
 require_once 'includes/functions.php';

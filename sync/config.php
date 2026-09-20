@@ -1,10 +1,12 @@
 <?php
 // Configuration for sync functionality
+require_once __DIR__ . '/../config/env.php';
+
 return [
-    'db_host' => '10.35.233.124:3306',
-    'db_name' => 'k87747_defecttracker',
-    'db_user' => 'k87747_defecttracker',
-    'db_pass' => 'Subaru5554346',
+    'db_host' => Environment::get('DB_HOST', 'localhost'),
+    'db_name' => Environment::get('DB_NAME', ''),
+    'db_user' => Environment::get('DB_USERNAME', ''),
+    'db_pass' => Environment::get('DB_PASSWORD', ''),
     'sync_table' => 'sync_queue',
     'sync_interval' => 60,  // seconds between sync attempts
     'sync_batch_size' => 10, // number of items to process in one batch

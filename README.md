@@ -151,13 +151,11 @@ The McGoff Defect Tracker is a complete construction management solution that en
 
 5. **Access the Application**
    - Navigate to your domain in a web browser
-   - Default login: `irlam` / `subaru555` (change immediately!)
+   - Create the initial administrator with a unique password during deployment.
 
-### Default Admin Credentials
-**⚠️ CHANGE THESE IMMEDIATELY AFTER INSTALLATION**
-- Username: `irlam`
-- Password: `subaru555`
-- Role: Administrator
+Never commit default or production credentials. Store database and service
+secrets only in the untracked `.env` file (or the hosting platform's secret
+manager), and rotate any credential that has previously appeared in Git history.
 
 ## 📋 Usage Guide
 

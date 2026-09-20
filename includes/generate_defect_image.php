@@ -44,8 +44,6 @@ class DefectImageGenerator {
             throw $e;
         }
     }
-}
-
     /**
      * Generate the pin image for the defect
      * 
@@ -135,7 +133,6 @@ class DefectImageGenerator {
             error_log("Database error in getFloorPlanPath: " . $e->getMessage());
             throw $e;
         }
-    }
     }
 
     /**

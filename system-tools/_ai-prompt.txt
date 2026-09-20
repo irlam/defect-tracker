@@ -1,7 +1,7 @@
 help create a web-based construction defect tracker that can be hosted on webhosting via Cpanel using PHP with MySQL for the backend with the ability to add defects as a "pin" to a floor plan which is uploaded via a admin panel. Add authentication, detailed defect views, Email notifications for defect assignments to different contractors. Filtering and searching defects, Improved user interface using Bootstrap or any other CSS framework, image upload, location input, look at the below website examples and start to create code to make something similar, I will also eventually require both iOS and android apps after the back end is complete.
 you will be choosing the preferred coding language which is the most optimized for hosting on a webserver and simple to use for this task.
 at the top of each php file produced please start the php with the file name and what it does for refrence, also comment within the code structure.
-in the database structure (MySQL) create an admin user with username irlam and password subaru555
+in the database structure (MySQL) create an administrator using deployment-provided credentials
 https://www.snagmaster.co.uk/
 https://www.snagr.co.uk/en/industries/construction-infrastructure
 https://www.planradar.com/product/defect-management/
@@ -44,9 +44,7 @@ break it down into small steps to help create all the above, only provide one pi
 
 First, here's the database structure (MySQL):
 
-User: dvntrack_defect-manager
-Database: dvntrack_defect-manager
-password: ^cHMcJseC$%S
+Use deployment-provided database credentials from the untracked environment file.
 
 =======================================
 

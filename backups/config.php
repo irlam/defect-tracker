@@ -9,9 +9,11 @@
  * Author: irlam
  */
 
-// Authentication
-define('USERNAME', 'irlam');
-define('PASSWORD', 'Subaru5554346'); // Change this to a secure password
+require_once __DIR__ . '/../config/env.php';
+
+// Legacy standalone authentication (the current backup UI uses the main session).
+define('USERNAME', Environment::get('BACKUP_USERNAME', ''));
+define('PASSWORD', Environment::get('BACKUP_PASSWORD', ''));
 
 // Backup Settings
 define('BACKUP_DIR', __DIR__ . '/backups');
@@ -28,10 +30,10 @@ define('EXCLUDE_PATHS', serialize(array(
 )));
 
 // Database Settings
-define('DB_HOST', '10.35.233.124:3306');  // Your database host
-define('DB_USER', 'k87747_defecttracker'); // Change to your actual database username
-define('DB_PASS', 'Subaru5554346'); // Change to your actual database password
-define('DB_NAME', 'k87747_defecttracker'); // Change to your actual database name
+define('DB_HOST', Environment::get('DB_HOST', 'localhost'));
+define('DB_USER', Environment::get('DB_USERNAME', ''));
+define('DB_PASS', Environment::get('DB_PASSWORD', ''));
+define('DB_NAME', Environment::get('DB_NAME', ''));
 
 // MySQL Dump Path (from diagnostics)
 define('MYSQLDUMP_PATH', '/usr/bin/mysqldump');

@@ -5,7 +5,7 @@
 
 // Error reporting and logging setup
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/error.log');
 
@@ -20,15 +20,13 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
     exit();
 }
 
-require_once 'includes/navbar.php';
+if (($_SESSION['user_type'] ?? '') !== 'admin') {
+    header('Location: dashboard.php?error=unauthorized');
+    exit();
+}
 
-// Include database configuration
-$config = [
-    'db_host' => '10.35.233.124:3306',
-    'db_name' => 'k87747_defecttracker',
-    'db_user' => 'k87747_defecttracker',
-    'db_pass' => 'Subaru5554346'
-];
+require_once 'includes/navbar.php';
+require_once 'config/database.php';
 
 $user_id = $_SESSION['user_id'] ?? 0;
 $username = $_SESSION['username'] ?? '';
@@ -38,17 +36,15 @@ $sessionUserType = $_SESSION['user_type'] ?? 'viewer';
 $navbar = null;
 
 try {
-    $db = new PDO(
-        "mysql:host={$config['db_host']};dbname={$config['db_name']}",
-        $config['db_user'],
-        $config['db_pass'],
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+    $db = (new Database())->getConnection();
+    if (!$db) {
+        throw new RuntimeException('Database connection unavailable');
+    }
 
     if ($user_id > 0 && $username !== '') {
         $navbar = new Navbar($db, (int) $user_id, $username);
     }
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     error_log("Database Connection Error: " . $e->getMessage());
     die("Connection failed: Database error");
 }

@@ -2,25 +2,33 @@
 // config/database.php
 // Configuration file for database connection and global settings
 
+require_once __DIR__ . '/env.php';
 
 class Database {
-    // Database configuration
-    private $host = "10.35.233.124:3306";
-    private $db_name = "k87747_defecttracker";
-    private $username = "k87747_defecttracker";  // Change this to your MySQL username
-    private $password = "Subaru5554346";      // Change this to your MySQL password
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     private $conn = null;
+
+    public function __construct() {
+        $this->host = Environment::get('DB_HOST', 'localhost');
+        $this->db_name = Environment::get('DB_NAME', '');
+        $this->username = Environment::get('DB_USERNAME', '');
+        $this->password = Environment::get('DB_PASSWORD', '');
+    }
 
     // Get database connection
     public function getConnection() {
         try {
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
+                "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4",
                 $this->username,
                 $this->password
             );
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->conn->exec("set names utf8");
+            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            $this->conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         } catch(PDOException $e) {
             error_log("Database connection failed: " . $e->getMessage());
         }

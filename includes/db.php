@@ -3,25 +3,12 @@
 // Current Date and Time (UTC): 2025-01-16 19:44:58
 // Current User: irlam
 
-try {
-    $host = 'localhost';
-    $dbname = 'dvntrack_defect-manager';
-    $username = 'dvntrack_defect-manager';
-    $password = '^cHMcJseC$%S';
-    
-    $db = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $username,
-        $password,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
-} catch(PDOException $e) {
-    error_log("Database Connection Error: " . $e->getMessage());
-    die("Connection failed: " . $e->getMessage());
+require_once __DIR__ . '/../config/database.php';
+
+$db = (new Database())->getConnection();
+if (!$db) {
+    http_response_code(503);
+    die('Database connection unavailable.');
 }
 
 // Helper function to log system messages

@@ -1,7 +1,15 @@
 
 <?php
-// change the name from admin etc to see the hashed password that you can insert into the sql under the users password.
-$password = 'Subaru5554346';
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-echo "Hashed Password: " . $hashedPassword;
-?>
+// CLI-only helper: php hashed-password.php 'a-strong-new-password'
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
+$password = $argv[1] ?? '';
+if ($password === '') {
+    fwrite(STDERR, "Usage: php hashed-password.php 'a-strong-new-password'\n");
+    exit(1);
+}
+
+echo password_hash($password, PASSWORD_DEFAULT) . PHP_EOL;
