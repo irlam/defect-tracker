@@ -467,20 +467,14 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
          * Current User's Login: irlam
          */
         document.addEventListener('DOMContentLoaded', function() {
-    // Check if PDF.js is properly loaded
-    if (typeof pdfjsLib === 'undefined') {
-        console.error('PDF.js is not loaded properly');
-        showAlert('PDF preview functionality is not available. Please refresh the page.', 'warning');
-        return;
-    }
+            if (typeof pdfjsLib === 'undefined') {
+                console.error('PDF.js is not loaded properly');
+                showAlert('PDF preview functionality is not available. Please refresh the page.', 'warning');
+                return;
+            }
 
-    console.log('PDF.js version:', pdfjsLib.version);
-    
-    // Initialize DataTable and PDF previews
-    initializePDFPreviews();
-    // ... rest of your initialization code ...
-});
-        document.addEventListener('DOMContentLoaded', function() {
+            console.log('PDF.js version:', pdfjsLib.version);
+
             // Initialize DataTable with improved configuration
             const table = $('#floorPlansTable').DataTable({
                 order: [[5, 'desc']], // Sort by Created At by default
@@ -499,9 +493,6 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
                 }
             });
 
-            // Initialize PDF previews for initial load
-            initializePDFPreviews();
-
             // Mobile sidebar toggle
             document.getElementById('mobileSidebarToggle')?.addEventListener('click', function() {
                 document.querySelector('.sidebar').classList.toggle('show');
@@ -519,6 +510,10 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
     console.log(`Found ${previewContainers.length} preview containers`);
 
     for (const container of previewContainers) {
+        if (container.dataset.previewState === 'loading' || container.dataset.previewState === 'loaded') {
+            continue;
+        }
+
         const fileType = container.dataset.fileType;
         const filePath = container.dataset.filePath;
         const fileExists = container.dataset.exists === 'true';
@@ -531,6 +526,7 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
 
         if (fileType === 'application/pdf' && fileExists) {
             try {
+                container.dataset.previewState = 'loading';
                 console.log(`Starting PDF preview for: ${filePath}`);
                 const canvas = container.querySelector('canvas.pdf-preview');
                 const loadingDiv = container.querySelector('.preview-loading');
@@ -618,8 +614,10 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
 
                 // Add success indicator
                 container.classList.add('preview-success');
+                container.dataset.previewState = 'loaded';
 
             } catch (error) {
+                container.dataset.previewState = 'error';
                 console.error('Error loading PDF preview:', error);
                 const loadingDiv = container.querySelector('.preview-loading');
                 if (loadingDiv) {

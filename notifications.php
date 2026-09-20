@@ -415,13 +415,10 @@ document.addEventListener('DOMContentLoaded', function() {
             updateNotificationBadge(data.count);
         });
 
-        eventSource.addEventListener('error', function(event) {
-            console.error('SSE Error:', event);
-            // Reconnect after a delay
-            setTimeout(() => {
-                location.reload();
-            }, 5000);
-        });
+        eventSource.onerror = function() {
+            // EventSource reconnects automatically using the server-provided retry interval.
+            console.warn('Notification stream disconnected; reconnecting automatically.');
+        };
     } else {
         console.warn('EventSource not supported by this browser');
     }

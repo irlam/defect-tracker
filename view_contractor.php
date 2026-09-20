@@ -5,7 +5,7 @@
 
 // Error reporting and logging setup
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/error.log');
 
@@ -21,9 +21,13 @@ if (!isset($_SESSION['username'])) {
 
 require_once 'includes/functions.php';
 require_once 'config/database.php';
+require_once 'includes/navbar.php';
 
 $pageTitle = 'View Contractor';
 $currentUser = $_SESSION['username'];
+$navbar = null;
+$contractor = ['company_name' => 'Contractor'];
+$recentDefects = [];
 
 // Validate contractor ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
@@ -36,6 +40,11 @@ $contractorId = (int)$_GET['id'];
 try {
     $database = new Database();
     $db = $database->getConnection();
+    if (!$db) {
+        throw new RuntimeException('Database connection unavailable');
+    }
+
+    $navbar = new Navbar($db, (int) ($_SESSION['user_id'] ?? 0), $currentUser);
 
     // Get contractor details with statistics
     $query = "SELECT 
@@ -75,7 +84,7 @@ try {
     $defectsStmt->execute();
     $recentDefects = $defectsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
     error_log("View Contractor Error: " . $e->getMessage());
     $error_message = "An error occurred while loading contractor details: " . $e->getMessage();
 }
@@ -89,6 +98,7 @@ try {
     <title><?php echo $pageTitle; ?> - <?php echo htmlspecialchars($contractor['company_name']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="/css/app.css" rel="stylesheet">
     <style>
         :root {
             --sidebar-width: 250px;
@@ -103,7 +113,8 @@ try {
         }
 
         .main-content {
-            margin-left: var(--sidebar-width);
+            margin: 0 auto;
+            max-width: 1440px;
             padding: 2rem;
             min-height: 100vh;
         }
@@ -125,7 +136,8 @@ try {
     </style>
 </head>
 <body class="tool-body" data-bs-theme="dark">
-    <?php require_once 'includes/sidebar.php'; ?>
+    <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
+    <div class="app-content-offset"></div>
 
     <main class="main-content">
         <!-- Page Header -->
@@ -140,10 +152,10 @@ try {
                     </ol>
                 </nav>
             </div>
-            <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+            <?php if (($_SESSION['user_type'] ?? '') === 'admin'): ?>
             <div>
-                <a href="edit_contractor.php?id=<?php echo $contractorId; ?>" class="btn btn-primary">
-                    <i class='bx bx-edit'></i> Edit Contractor
+                <a href="contractors.php" class="btn btn-primary">
+                    <i class='bx bx-edit'></i> Manage Contractors
                 </a>
             </div>
             <?php endif; ?>

@@ -155,8 +155,11 @@ try {
     }
 
     if (!empty($searchTerm)) {
-        $whereClauses[] = '(d.title LIKE :search OR d.description LIKE :search OR c.company_name LIKE :search)';
-        $params[':search'] = "%{$searchTerm}%";
+        $whereClauses[] = '(d.title LIKE :search_title OR d.description LIKE :search_description OR c.company_name LIKE :search_contractor)';
+        $searchPattern = "%{$searchTerm}%";
+        $params[':search_title'] = $searchPattern;
+        $params[':search_description'] = $searchPattern;
+        $params[':search_contractor'] = $searchPattern;
     }
 
     $whereSql = implode(' AND ', $whereClauses);
