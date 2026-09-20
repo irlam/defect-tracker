@@ -5,7 +5,7 @@
  */
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/create_defect.log'); // Specific log file
 
@@ -23,6 +23,7 @@ require_once 'config/database.php';
 require_once 'includes/functions.php';
 require_once 'includes/DefectImageProcessor.php';
 require_once 'includes/navbar.php';
+require_once 'includes/defect_workflow.php';
 require_once 'classes/NotificationHelper.php';
 // require_once 'includes/PdfConverter.php';
 
@@ -60,7 +61,7 @@ $contractorStmt = $db->query($contractorQuery);
 $contractors = $contractorStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get active floor plans
-$floorPlanQuery = "SELECT id, floor_name, image_path, file_path FROM floor_plans WHERE status = 'active'";
+$floorPlanQuery = "SELECT id, project_id, floor_name, image_path, file_path FROM floor_plans WHERE status = 'active'";
 $floorPlanStmt = $db->query($floorPlanQuery);
 $floorPlans = $floorPlanStmt->fetchAll(PDO::FETCH_ASSOC);
 $selectedFloorPlan = null;
@@ -101,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pinX = filter_input(INPUT_POST, 'pin_x', FILTER_VALIDATE_FLOAT);
     $pinY = filter_input(INPUT_POST, 'pin_y', FILTER_VALIDATE_FLOAT);
 
-    if ($pinX === false || $pinY === false) {
+    if ($pinX === false || $pinY === false || $pinX < 0 || $pinX > 1 || $pinY < 0 || $pinY > 1) {
         logEntry("Invalid pin coordinates. pinX: " . $pinX . ", pinY: " . $pinY . " POST data: " . print_r($_POST, true));
         $_SESSION['error_message'] = "Invalid pin coordinates.";
         header("Location: create_defect.php");
@@ -113,6 +114,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $projectId = filter_input(INPUT_POST, 'project_id', FILTER_VALIDATE_INT);
     $contractorId = filter_input(INPUT_POST, 'contractor_id', FILTER_VALIDATE_INT);
     $priority = filter_input(INPUT_POST, 'priority', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+    $allowedPriorities = ['low', 'medium', 'high', 'critical'];
+    if (!$title || !$description || !$projectId || !$contractorId || !in_array($priority, $allowedPriorities, true)) {
+        $_SESSION['error_message'] = 'Complete all required defect details before submitting.';
+        header('Location: create_defect.php');
+        exit();
+    }
+
+    if ((int) $selectedFloorPlan['project_id'] !== (int) $projectId) {
+        $_SESSION['error_message'] = 'The selected floor plan does not belong to the selected project.';
+        header('Location: create_defect.php');
+        exit();
+    }
     // Replace the current due date handling line
 // FROM: $dueDate = filter_input(INPUT_POST, 'due_date', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 // TO:
@@ -167,21 +181,30 @@ if ($dueDate === null) {
     $defectStmt->bindParam(':created_by', $currentUserId);
 
     try {
+        $db->beginTransaction();
         $defectStmt->execute();
-    } catch (PDOException $e) {
+
+        // Put the defect straight into the task queue of active users linked
+        // to the selected contractor. User assignments live here; assigned_to
+        // remains the legacy contractor ID for backwards compatibility.
+        $defectId = (int) $db->lastInsertId();
+        defectWorkflowAssignContractorUsers($db, $defectId, (int) $contractorId, $currentUserId);
+        $db->commit();
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
         logEntry("Database error inserting defect: " . $e->getMessage() . " Query: " . $defectQuery);
-        $_SESSION['error_message'] = "Database error creating defect.";
+        $_SESSION['error_message'] = "The defect could not be created. Please try again.";
         header("Location: defects.php");
         exit();
     }
 
-    // Get the generated defect ID
-    $defectId = $db->lastInsertId();
     logEntry("Defect created with ID: " . $defectId);
 
     // Trigger notification for defect creation
     $notificationHelper = new NotificationHelper($db);
-    $notificationHelper->notifyDefectCreated($defectId, $currentUserId);
+    $notificationHelper->notifyDefectCreated((int) $defectId, $currentUserId, null, (int) $contractorId);
 
     // Store the recent description
     storeRecentDescription($currentUserId, $description, $db);
@@ -869,6 +892,20 @@ $timestampDisplay = date('d M Y, H:i');
         }
 
         @media (max-width: 768px) {
+            .create-defect .form-control,
+            .create-defect .form-select-button,
+            .create-defect .dropdown-item,
+            .create-defect button,
+            .create-defect .btn {
+                min-height: 48px;
+            }
+
+            .create-defect .dropdown-item {
+                display: flex;
+                align-items: center;
+                white-space: normal;
+            }
+
             .create-defect__hero {
                 padding: 1.75rem;
             }
@@ -973,7 +1010,7 @@ $timestampDisplay = date('d M Y, H:i');
                                                     <li><a class="dropdown-item" href="#" data-contractor-id="<?php echo htmlspecialchars($contractor['id']); ?>" data-contractor-name="<?php echo htmlspecialchars($contractor['company_name']); ?>"><?php echo htmlspecialchars($contractor['company_name']); ?></a></li>
                                                 <?php endforeach; ?>
                                             </ul>
-                                            <input type="hidden" id="contractor_id" name="contractor_id">
+                                            <input type="hidden" id="contractor_id" name="contractor_id" required>
                                         </div>
                                     </div>
                                     <div class="col-12 col-lg-6">
@@ -1042,7 +1079,7 @@ $timestampDisplay = date('d M Y, H:i');
                                             </button>
                                             <ul class="dropdown-menu w-100" aria-labelledby="floorPlanDropdown">
                                                 <?php foreach ($floorPlans as $floorPlan): ?>
-                                                    <li><a class="dropdown-item" href="#" data-floor-plan-id="<?php echo htmlspecialchars($floorPlan['id']); ?>" data-floor-plan-name="<?php echo htmlspecialchars($floorPlan['floor_name']); ?>" data-image-path="<?php echo htmlspecialchars($floorPlan['image_path']); ?>" data-file-path="<?php echo htmlspecialchars($floorPlan['file_path']); ?>"><?php echo htmlspecialchars($floorPlan['floor_name']); ?></a></li>
+                                                    <li><a class="dropdown-item" href="#" data-project-id="<?php echo htmlspecialchars($floorPlan['project_id']); ?>" data-floor-plan-id="<?php echo htmlspecialchars($floorPlan['id']); ?>" data-floor-plan-name="<?php echo htmlspecialchars($floorPlan['floor_name']); ?>" data-image-path="<?php echo htmlspecialchars($floorPlan['image_path']); ?>" data-file-path="<?php echo htmlspecialchars($floorPlan['file_path']); ?>"><?php echo htmlspecialchars($floorPlan['floor_name']); ?></a></li>
                                                 <?php endforeach; ?>
                                             </ul>
                                             <input type="hidden" id="floor_plan_id" name="floor_plan_id" required>
@@ -1205,6 +1242,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         selectedText = this.dataset.projectName;
                         selectedTextElement = document.getElementById('projectSelectedText');
                         document.getElementById('project_id').value = selectedValue;
+
+                        // Keep the location choice consistent with the project.
+                        document.querySelectorAll('#floorPlanDropdown + .dropdown-menu li').forEach(listItem => {
+                            const floorPlanItem = listItem.querySelector('.dropdown-item');
+                            listItem.hidden = floorPlanItem.dataset.projectId !== selectedValue;
+                        });
+                        document.getElementById('floor_plan_id').value = '';
+                        document.getElementById('floorPlanSelectedText').textContent = 'Select Floor Plan';
+                        document.getElementById('floorPlanContainer').style.display = 'none';
+                        document.getElementById('pin_x').value = '';
+                        document.getElementById('pin_y').value = '';
                     } else if (dropdownId === 'contractorDropdown') {
                         selectedValue = this.dataset.contractorId;
                         selectedText = this.dataset.contractorName;
@@ -1246,13 +1294,47 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Fix form submission if needed
+    // Validate custom dropdowns and pin placement before the native form
+    // submission. Allowing the browser to submit normally is important on
+    // unreliable site connections where scripted fetch flows are brittle.
     const createDefectForm = document.getElementById('createDefectForm');
     if (createDefectForm && !createDefectForm.hasAttribute('data-event-bound')) {
         createDefectForm.setAttribute('data-event-bound', 'true');
         createDefectForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
+            if (this.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
+
+            const requiredSelections = [
+                ['project_id', 'Select a project.'],
+                ['contractor_id', 'Select a contractor.'],
+                ['priority', 'Select a priority.'],
+                ['floor_plan_id', 'Select a floor plan.'],
+                ['pin_x', 'Tap the floor plan to place the defect pin.'],
+                ['pin_y', 'Tap the floor plan to place the defect pin.']
+            ];
+            const missingSelection = requiredSelections.find(([id]) => {
+                const field = document.getElementById(id);
+                return !field || field.value === '';
+            });
+
+            if (!this.checkValidity() || missingSelection) {
+                event.preventDefault();
+                this.classList.add('was-validated');
+                if (missingSelection) {
+                    window.alert(missingSelection[1]);
+                }
+                return;
+            }
+
+            this.dataset.submitting = 'true';
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.setAttribute('aria-busy', 'true');
+            }
+
             // Show loading modal
             if (window.bootstrap && bootstrap.Modal) {
                 const loadingModal = document.getElementById('loadingModal');
@@ -1262,8 +1344,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Submit the form directly instead of using fetch
-           // this.submit();
         });
     }
     
@@ -1550,4 +1630,4 @@ descriptionLinks.forEach(link => {
 </script>
 <script src="js/floor_plan_integration.js"></script>	
 </body>
-</html>	
+</html>

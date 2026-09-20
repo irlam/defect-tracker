@@ -6,7 +6,7 @@ declare(strict_types=1);
  */
 
 error_reporting(E_ALL);
-ini_set('display_errors', '1');
+ini_set('display_errors', '0');
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -17,6 +17,8 @@ require_once 'config/constants.php';
 require_once 'includes/auth.php';
 require_once 'includes/functions.php';
 require_once 'includes/upload_constants.php';
+require_once 'includes/navbar.php';
+require_once 'includes/defect_workflow.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
@@ -24,8 +26,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId   = (int) $_SESSION['user_id'];
-$userRole = $_SESSION['user_role'] ?? '';
 $errors   = [];
+$navbar = null;
+$workflowCsrfToken = defectWorkflowCsrfToken();
 
 $defectId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$defectId) {
@@ -36,6 +39,13 @@ if (!$defectId) {
 try {
     $database = new Database();
     $db = $database->getConnection();
+    if (!$db instanceof PDO) {
+        throw new RuntimeException('Database connection unavailable.');
+    }
+    if (!defectWorkflowCanAccessTask($db, $defectId, $userId)) {
+        throw new RuntimeException('This defect is not assigned to you.');
+    }
+    $navbar = new Navbar($db, $userId, (string) ($_SESSION['username'] ?? ''));
 
     $stmt = $db->prepare("
         SELECT
@@ -43,7 +53,7 @@ try {
             p.name AS project_name,
             fp.floor_name,
             fp.level AS floor_level,
-            fp.file_path AS floor_plan_path,
+            COALESCE(NULLIF(fp.image_path, ''), fp.file_path) AS floor_plan_path,
             c.company_name AS contractor_name,
             c.trade AS contractor_trade,
             u1.username AS reported_by_user,
@@ -52,7 +62,7 @@ try {
         FROM defects d
         LEFT JOIN projects p ON d.project_id = p.id
         LEFT JOIN floor_plans fp ON d.floor_plan_id = fp.id
-        LEFT JOIN contractors c ON d.assigned_to = c.id
+        LEFT JOIN contractors c ON d.contractor_id = c.id
         LEFT JOIN users u1 ON d.reported_by = u1.id
         LEFT JOIN users u2 ON d.created_by = u2.id
         LEFT JOIN users u3 ON d.updated_by = u3.id
@@ -133,6 +143,8 @@ try {
     <title>View Defect - DVN Track</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="/css/app.css" rel="stylesheet">
     <style>
         .defect-images img {
             max-width: 200px;
@@ -190,7 +202,7 @@ try {
             padding: 1rem;
             border: 1px dashed #ccc;
             border-radius: 5px;
-            background-color: #f8f9fa;
+            background: rgba(15, 23, 42, 0.72);
         }
         #imageModal .modal-body {
             overflow: hidden;
@@ -202,6 +214,26 @@ try {
         #imageModal img {
             transition: transform 0.3s ease;
             transform-origin: center center;
+        }
+        .mobile-action-bar .btn,
+        .upload-form .form-control,
+        .upload-form .btn {
+            min-height: 48px;
+        }
+        @media (max-width: 575.98px) {
+            .container { padding-inline: 0.75rem; }
+            .card-body { padding: 1rem; }
+            .defect-images img { width: 100%; max-width: none; }
+            .mobile-action-bar {
+                position: sticky;
+                bottom: 0;
+                z-index: 20;
+                padding: 0.75rem;
+                margin: 0 -0.75rem;
+                background: rgba(15, 23, 42, 0.96);
+                border-top: 1px solid rgba(148, 163, 184, 0.24);
+                backdrop-filter: blur(12px);
+            }
         }
     </style>
     <script>
@@ -230,8 +262,8 @@ try {
         });
     </script>
 </head>
-<body class="tool-body" data-bs-theme="dark">
-<?php include 'includes/navbar.php'; ?>
+<body class="tool-body has-app-navbar" data-bs-theme="dark">
+<?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
 
 <div class="container mt-4">
     <?php if (isset($_SESSION['success_message'])): ?>
@@ -240,6 +272,20 @@ try {
             echo htmlspecialchars((string)$_SESSION['success_message']);
             unset($_SESSION['success_message']);
             ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars((string) $_SESSION['error_message']); unset($_SESSION['error_message']); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['warning_message'])): ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars((string) $_SESSION['warning_message']); unset($_SESSION['warning_message']); ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
@@ -324,21 +370,42 @@ try {
                         </div>
                     <?php endif; ?>
 
+                    <?php if (in_array($defect['status'], ['open', 'rejected'], true)): ?>
+                    <div class="mobile-action-bar mb-3">
+                        <form action="start_defect.php" method="POST">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($workflowCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="defect_id" value="<?php echo (int) $defectId; ?>">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-play me-1"></i> Start Work
+                            </button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if ($defect['status'] === 'pending'): ?>
+                        <div class="alert alert-info">
+                            <i class="fas fa-hourglass-half me-1"></i> Completion evidence is awaiting manager review.
+                        </div>
+                    <?php endif; ?>
+
                     <!-- Form to Add Completed Images -->
+                    <?php if (in_array($defect['status'], ['open', 'in_progress', 'rejected'], true)): ?>
                     <div class="upload-form">
-                        <h6>Add Completed Images</h6>
+                        <h6>Submit Completion Evidence</h6>
                         <form action="upload_completed_images.php" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($workflowCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="defect_id" value="<?php echo htmlspecialchars((string)$defectId); ?>">
                             <div class="mb-3">
                                 <label for="completed_images" class="form-label">Select Images (you can use camera or choose files):</label>
                                 <input type="file" class="form-control" id="completed_images" name="completed_images[]" accept="image/*" capture="environment" multiple required>
-                                <div class="form-text">Each uploaded file will have 'complete_' prepended to its filename.</div>
+                                <div class="form-text">Take clear before/after evidence. JPG, PNG, GIF and WebP are supported.</div>
                             </div>
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-upload"></i> Upload Completed Images
+                                <i class="fas fa-upload"></i> Submit for Review
                             </button>
                         </form>
                     </div>
+                    <?php endif; ?>
 
                     <!-- Additional Details -->
                     <div class="row mt-4">

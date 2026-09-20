@@ -21,6 +21,7 @@ require_once 'includes/functions.php';
 require_once 'config/database.php';
 require_once 'config/constants.php';
 require_once 'includes/navbar.php';
+require_once 'includes/defect_workflow.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
     header('Location: ' . BASE_URL . 'login.php');
@@ -36,6 +37,7 @@ $displayName = ucwords(str_replace(['.', '_'], [' ', ' '], $currentUser));
 $currentUserRoleSummary = ucwords(str_replace(['_', '-'], [' ', ' '], $_SESSION['user_type'] ?? 'user'));
 $currentTimestamp = date('d/m/Y H:i');
 $currentDateTimeIso = date('c');
+$workflowCsrfToken = defectWorkflowCsrfToken();
 
 $canEdit = false;
 $canDelete = false;
@@ -140,7 +142,7 @@ try {
     }
 
     if ($contractorFilter !== 'all') {
-        $whereClauses[] = 'd.assigned_to = :contractor_id';
+        $whereClauses[] = 'd.contractor_id = :contractor_id';
         $params[':contractor_id'] = $contractorFilter;
     }
 
@@ -178,7 +180,7 @@ try {
                 reo_user.username AS reopened_by_user,
                 acc_user.username AS accepted_by_user
               FROM defects d
-              LEFT JOIN contractors c ON d.assigned_to = c.id
+              LEFT JOIN contractors c ON d.contractor_id = c.id
               LEFT JOIN projects p ON d.project_id = p.id
               LEFT JOIN users u ON d.created_by = u.id
               LEFT JOIN defect_images di ON d.id = di.defect_id
@@ -196,7 +198,7 @@ try {
 
     $countQuery = "SELECT COUNT(DISTINCT d.id) AS total
                    FROM defects d
-                   LEFT JOIN contractors c ON d.assigned_to = c.id
+                   LEFT JOIN contractors c ON d.contractor_id = c.id
                    LEFT JOIN projects p ON d.project_id = p.id
                    LEFT JOIN users u ON d.created_by = u.id
                    LEFT JOIN defect_images di ON d.id = di.defect_id
@@ -216,14 +218,14 @@ try {
                         COUNT(DISTINCT d.id) AS total_defects,
                         SUM(CASE WHEN d.status IN ('open', 'pending', 'in_progress') THEN 1 ELSE 0 END) AS active_defects,
                         SUM(CASE WHEN d.priority = 'critical' THEN 1 ELSE 0 END) AS critical_defects,
-                        SUM(CASE WHEN d.due_date IS NOT NULL AND d.due_date < CURRENT_DATE() AND d.status NOT IN ('closed', 'accepted', 'resolved', 'verified') THEN 1 ELSE 0 END) AS overdue_defects,
+                        SUM(CASE WHEN d.due_date IS NOT NULL AND d.due_date < CURRENT_DATE() AND d.status IN ('open', 'in_progress', 'rejected') THEN 1 ELSE 0 END) AS overdue_defects,
                         SUM(CASE WHEN d.status = 'rejected' THEN 1 ELSE 0 END) AS rejected_defects,
-                        SUM(CASE WHEN d.status IN ('closed', 'accepted', 'resolved', 'verified') THEN 1 ELSE 0 END) AS closed_defects,
+                        SUM(CASE WHEN d.status IN ('accepted', 'completed', 'verified') THEN 1 ELSE 0 END) AS closed_defects,
                         COUNT(DISTINCT d.project_id) AS project_count,
-                        COUNT(DISTINCT d.assigned_to) AS contractor_count,
+                        COUNT(DISTINCT d.contractor_id) AS contractor_count,
                         MAX(d.updated_at) AS last_update
                      FROM defects d
-                     LEFT JOIN contractors c ON d.assigned_to = c.id
+                     LEFT JOIN contractors c ON d.contractor_id = c.id
                      LEFT JOIN projects p ON d.project_id = p.id
                      WHERE {$whereSql}";
 
@@ -385,7 +387,7 @@ $defectMetrics = [
         'icon' => 'bx-check-circle',
         'class' => 'report-metric-card--closed report-metric-card--wide',
         'value' => $closedDefects,
-        'description' => 'Accepted or resolved',
+        'description' => 'Accepted or verified',
         'description_icon' => 'bx-badge-check',
     ],
 ];
@@ -763,9 +765,10 @@ $priorityBadgeMap = [
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <?php if ($canEdit && in_array($defect['status'], ['open', 'pending', 'rejected', 'accepted'], true)): ?>
+                            <?php if ($canEdit && in_array($defect['status'], ['pending', 'completed', 'verified', 'rejected', 'accepted'], true)): ?>
                                 <div class="mb-4">
                                     <div class="row g-2">
+                                        <?php if (in_array($defect['status'], ['pending', 'completed', 'verified'], true)): ?>
                                         <div class="col-12 col-md-4">
                                             <button type="button" class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#acceptDefectModal<?php echo (int) $defect['id']; ?>">
                                                 <i class='bx bx-check-circle me-1'></i> Accept
@@ -776,11 +779,14 @@ $priorityBadgeMap = [
                                                 <i class='bx bx-x-circle me-1'></i> Reject
                                             </button>
                                         </div>
+                                        <?php endif; ?>
+                                        <?php if (in_array($defect['status'], ['rejected', 'accepted'], true)): ?>
                                         <div class="col-12 col-md-4">
                                             <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#reopenDefectModal<?php echo (int) $defect['id']; ?>">
                                                 <i class='bx bx-refresh me-1'></i> Reopen
                                             </button>
                                         </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -907,13 +913,14 @@ $priorityBadgeMap = [
                 </div>
             </div>
 
-            <?php if ($canEdit && ($defect['status'] ?? '') !== 'accepted'): ?>
+            <?php if ($canEdit && in_array($defect['status'] ?? '', ['pending', 'completed', 'verified'], true)): ?>
                 <div class="modal fade" id="acceptDefectModal<?php echo (int) $defect['id']; ?>" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <form method="POST" action="<?php echo BASE_URL; ?>accept_defect.php" class="needs-validation" novalidate>
                                 <input type="hidden" name="defect_id" value="<?php echo (int) $defect['id']; ?>">
                                 <input type="hidden" name="action" value="accept_defect">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($workflowCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="modal-header bg-success text-white">
                                     <h5 class="modal-title">Accept Defect #<?php echo (int) $defect['id']; ?></h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -935,13 +942,14 @@ $priorityBadgeMap = [
                 </div>
             <?php endif; ?>
 
-            <?php if ($canEdit && ($defect['status'] ?? '') !== 'rejected'): ?>
+            <?php if ($canEdit && in_array($defect['status'] ?? '', ['pending', 'completed', 'verified'], true)): ?>
                 <div class="modal fade" id="rejectDefectModal<?php echo (int) $defect['id']; ?>" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <form method="POST" action="<?php echo BASE_URL; ?>reject_defect.php" class="needs-validation" novalidate>
                                 <input type="hidden" name="defect_id" value="<?php echo (int) $defect['id']; ?>">
                                 <input type="hidden" name="action" value="reject_defect">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($workflowCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="modal-header bg-danger text-white">
                                     <h5 class="modal-title">Reject Defect #<?php echo (int) $defect['id']; ?></h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -970,6 +978,7 @@ $priorityBadgeMap = [
                             <form method="POST" action="<?php echo BASE_URL; ?>reopen_defect.php" class="needs-validation" novalidate>
                                 <input type="hidden" name="defect_id" value="<?php echo (int) $defect['id']; ?>">
                                 <input type="hidden" name="action" value="reopen_defect">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($workflowCsrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                 <div class="modal-header bg-info text-white">
                                     <h5 class="modal-title">Reopen Defect #<?php echo (int) $defect['id']; ?></h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>

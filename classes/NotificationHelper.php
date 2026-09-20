@@ -139,7 +139,7 @@ class NotificationHelper {
      * Notify when a defect status changes
      *
      * @param int $defectId Defect ID
-     * @param string $newStatus New status (accepted, rejected, reopened)
+     * @param string $newStatus New lifecycle status
      * @param int $changedBy User who changed the status
      * @param int|null $assignedTo User the defect is assigned to
      */
@@ -148,9 +148,8 @@ class NotificationHelper {
         try {
             // Get defect details
             $defectStmt = $this->db->prepare("
-                SELECT d.title, u.username as changed_by_username
+                SELECT d.title, d.reported_by, d.contractor_id
                 FROM defects d
-                JOIN users u ON d.reported_by = u.id
                 WHERE d.id = ?
             ");
             $defectStmt->execute([$defectId]);
@@ -159,12 +158,16 @@ class NotificationHelper {
             if (!$defect) return;
 
             $statusMessages = [
+                'in_progress' => 'Work started on defect: ',
+                'pending' => 'Defect submitted for review: ',
                 'accepted' => 'Defect accepted: ',
                 'rejected' => 'Defect rejected: ',
                 'reopened' => 'Defect reopened: '
             ];
 
             $types = [
+                'in_progress' => 'defect_in_progress',
+                'pending' => 'defect_pending_review',
                 'accepted' => 'defect_accepted',
                 'rejected' => 'defect_rejected',
                 'reopened' => 'defect_reopened'
@@ -175,29 +178,35 @@ class NotificationHelper {
             $message = $statusMessages[$newStatus] . $defect['title'];
             $linkUrl = "view_defect.php?id={$defectId}";
 
-            // Notify the defect reporter
-            $reporterStmt = $this->db->prepare("SELECT reported_by FROM defects WHERE id = ?");
-            $reporterStmt->execute([$defectId]);
-            $reporterId = $reporterStmt->fetchColumn();
-
-            if ($reporterId && $reporterId != $changedBy) {
-                $this->createNotification($reporterId, $types[$newStatus], $message, $linkUrl);
+            $recipients = [(int) $defect['reported_by']];
+            if ($assignedTo) {
+                $recipients[] = (int) $assignedTo;
             }
 
-            // Notify assigned user if different from reporter and changer
-            if ($assignedTo && $assignedTo != $changedBy && $assignedTo != $reporterId) {
-                $this->createNotification($assignedTo, $types[$newStatus], $message, $linkUrl);
-            }
-
-            // Notify managers and admins
-            $managersStmt = $this->db->prepare("
-                SELECT id FROM users WHERE user_type IN ('admin', 'manager') AND id != ?
+            $participantStmt = $this->db->prepare("
+                SELECT DISTINCT u.id
+                FROM users u
+                LEFT JOIN defect_assignments da
+                  ON da.user_id = u.id
+                 AND da.defect_id = :defect_id
+                 AND da.status = 'active'
+                WHERE u.status = 'active'
+                  AND (
+                    da.id IS NOT NULL
+                    OR (u.contractor_id IS NOT NULL AND u.contractor_id = :contractor_id)
+                    OR u.user_type IN ('admin', 'manager')
+                  )
             ");
-            $managersStmt->execute([$changedBy]);
-            $managers = $managersStmt->fetchAll(PDO::FETCH_COLUMN);
+            $participantStmt->execute([
+                ':defect_id' => $defectId,
+                ':contractor_id' => $defect['contractor_id'],
+            ]);
+            $recipients = array_unique(array_merge($recipients, array_map('intval', $participantStmt->fetchAll(PDO::FETCH_COLUMN) ?: [])));
 
-            foreach ($managers as $managerId) {
-                $this->createNotification($managerId, $types[$newStatus], $message, $linkUrl);
+            foreach ($recipients as $recipientId) {
+                if ($recipientId > 0 && $recipientId !== (int) $changedBy) {
+                    $this->createNotification($recipientId, $types[$newStatus], $message, $linkUrl);
+                }
             }
 
         } catch (Exception $e) {

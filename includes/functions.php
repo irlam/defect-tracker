@@ -219,9 +219,12 @@ function getStatusColor($status) {
     $classes = [
         'open' => 'warning',
         'in_progress' => 'info',
+        'pending' => 'primary',
+        'completed' => 'success',
+        'verified' => 'success',
+        'accepted' => 'success',
         'closed' => 'success',
         'rejected' => 'danger',
-        'pending' => 'secondary'
     ];
     return $classes[$status] ?? 'secondary';
 }

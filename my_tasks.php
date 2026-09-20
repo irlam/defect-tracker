@@ -68,9 +68,9 @@ try {
             p.name AS project_name,
             c.company_name AS contractor_name
         FROM defects d
-        LEFT JOIN defect_assignments da ON d.id = da.defect_id
+        JOIN defect_assignments da ON d.id = da.defect_id
         LEFT JOIN projects p ON d.project_id = p.id
-        LEFT JOIN contractors c ON d.assigned_to = c.id
+        LEFT JOIN contractors c ON d.contractor_id = c.id
         WHERE da.user_id = :user_id
           AND da.status = 'active'
         ORDER BY 
@@ -95,13 +95,13 @@ try {
 
     $statsQuery = "
         SELECT 
-            COALESCE(COUNT(*), 0) AS total,
-            COALESCE(SUM(CASE WHEN d.status = 'open' THEN 1 ELSE 0 END), 0) AS open_tasks,
-            COALESCE(SUM(CASE WHEN d.status = 'in_progress' THEN 1 ELSE 0 END), 0) AS in_progress,
-            COALESCE(SUM(CASE WHEN d.status = 'closed' THEN 1 ELSE 0 END), 0) AS completed,
-            COALESCE(SUM(CASE WHEN d.due_date < CURRENT_DATE AND d.status != 'closed' THEN 1 ELSE 0 END), 0) AS overdue
+            COUNT(DISTINCT d.id) AS total,
+            COUNT(DISTINCT CASE WHEN d.status = 'open' THEN d.id END) AS open_tasks,
+            COUNT(DISTINCT CASE WHEN d.status = 'in_progress' THEN d.id END) AS in_progress,
+            COUNT(DISTINCT CASE WHEN d.status IN ('accepted', 'completed', 'verified') THEN d.id END) AS completed,
+            COUNT(DISTINCT CASE WHEN d.due_date < CURRENT_DATE AND d.status IN ('open', 'in_progress', 'rejected') THEN d.id END) AS overdue
         FROM defects d
-        LEFT JOIN defect_assignments da ON d.id = da.defect_id
+        JOIN defect_assignments da ON d.id = da.defect_id
         WHERE da.user_id = :user_id
           AND da.status = 'active'
     ";
@@ -223,7 +223,7 @@ function computeExpectedResolutionDate($createdAt, $priority, $dueDate = null) {
 }
 
 function isOverdue($dueDate, $priority, $createdAt, $status) {
-    if (strtolower($status) === 'closed') {
+    if (in_array(strtolower($status), ['pending', 'accepted', 'completed', 'verified'], true)) {
         return false;
     }
 
@@ -258,6 +258,10 @@ function formatTaskDate($date, $format = 'd M Y') {
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
+    <style>
+        .mobile-task-card { border: 1px solid rgba(148, 163, 184, 0.2); }
+        .mobile-task-card .btn { min-height: 48px; }
+    </style>
 </head>
 <body class="tool-body has-app-navbar" data-bs-theme="dark">
     <?php if ($navbar instanceof Navbar) { $navbar->render(); } ?>
@@ -340,7 +344,7 @@ function formatTaskDate($date, $format = 'd M Y') {
                                 <span><i class='bx bx-envelope-open me-1'></i><?php echo number_format((int) ($taskStats['open_tasks'] ?? 0)); ?> open</span>
                                 <span><i class='bx bx-sync me-1'></i><?php echo number_format((int) ($taskStats['in_progress'] ?? 0)); ?> in progress</span>
                                 <span><i class='bx bx-error-circle me-1'></i><?php echo number_format($overdueCount); ?> overdue</span>
-                                <span><i class='bx bx-check-double me-1'></i><?php echo number_format($completedTasks); ?> closed overall</span>
+                                <span><i class='bx bx-check-double me-1'></i><?php echo number_format($completedTasks); ?> completed overall</span>
                             </div>
                         </div>
                     </div>
@@ -370,7 +374,34 @@ function formatTaskDate($date, $format = 'd M Y') {
                             </div>
                         </div>
                     <?php else: ?>
-                        <div class="table-responsive">
+                        <div class="d-grid gap-3 d-lg-none">
+                            <?php foreach ($tasks as $task): ?>
+                                <?php
+                                $mobilePriorityKey = strtolower($task['priority'] ?? '');
+                                $mobileStatusKey = strtolower($task['status'] ?? '');
+                                $mobilePriorityClass = $priorityBadgeMap[$mobilePriorityKey] ?? 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis';
+                                $mobileStatusClass = $statusBadgeMap[$mobileStatusKey] ?? 'badge rounded-pill bg-secondary-subtle text-secondary-emphasis';
+                                $mobileExpected = computeExpectedResolutionDate($task['created_at'], $task['priority'], $task['due_date'])->format('d M Y');
+                                ?>
+                                <article class="card mobile-task-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                            <h3 class="h6 mb-0"><?php echo htmlspecialchars($task['title'] ?: 'Untitled', ENT_QUOTES, 'UTF-8'); ?></h3>
+                                            <span class="<?php echo htmlspecialchars($mobileStatusClass, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $mobileStatusKey)), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                        <p class="small text-muted mb-2"><?php echo htmlspecialchars($task['project_name'] ?: 'No project', ENT_QUOTES, 'UTF-8'); ?> · <?php echo htmlspecialchars($task['contractor_name'] ?: 'No contractor', ENT_QUOTES, 'UTF-8'); ?></p>
+                                        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                                            <span class="<?php echo htmlspecialchars($mobilePriorityClass, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(ucfirst($mobilePriorityKey ?: 'n/a'), ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <span class="small"><i class='bx bx-calendar me-1'></i><?php echo htmlspecialchars($mobileExpected, ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                        <a href="view_defect_mytasks.php?id=<?php echo (int) $task['id']; ?>" class="btn btn-primary w-100">
+                                            Open Task <i class='bx bx-right-arrow-alt ms-1'></i>
+                                        </a>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="table-responsive d-none d-lg-block">
                             <table class="table table-dark table-hover align-middle mb-0">
                                 <thead>
                                     <tr>
