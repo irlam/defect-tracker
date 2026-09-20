@@ -329,11 +329,17 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
                                         <?php foreach ($floor_plans as $plan): ?>
                                             <tr>
                                                 <td class="preview-cell">
-    <div class="preview-container <?php echo !$plan['file_exists'] ? 'file-not-found' : ''; ?>" 
+    <div class="preview-container <?php echo !$plan['file_exists'] ? 'file-not-found' : ''; ?>"
          data-file-type="<?php echo htmlspecialchars($plan['file_type']); ?>"
          data-file-path="<?php echo htmlspecialchars($plan['file_path']); ?>"
          data-exists="<?php echo $plan['file_exists'] ? 'true' : 'false'; ?>">
-        <?php if ($plan['file_type'] === 'application/pdf'): ?>
+        <?php if (!empty($plan['image_path'])): ?>
+            <img src="/<?php echo htmlspecialchars(ltrim((string) $plan['image_path'], '/')); ?>"
+                 class="floor-plan-image"
+                 alt="<?php echo htmlspecialchars($plan['floor_name']); ?>"
+                 loading="lazy"
+                 onerror="this.onerror=null;this.src='<?php echo htmlspecialchars($defaultImage); ?>';">
+        <?php elseif ($plan['file_type'] === 'application/pdf'): ?>
             <?php if ($plan['file_exists']): ?>
                 <canvas class="pdf-preview" width="150" height="150"></canvas>
                 <div class="preview-loading">
@@ -355,7 +361,6 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
         <?php endif; ?>
     </div>
 </td>
-                                                </td>
                                                 <td><?php echo htmlspecialchars($plan['floor_name']); ?></td>
                                                 <td><?php echo htmlspecialchars($plan['project_name']); ?></td>
                                                 <td><?php echo htmlspecialchars($plan['level']); ?></td>
