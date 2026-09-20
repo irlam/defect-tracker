@@ -519,6 +519,13 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
             continue;
         }
 
+        // Uploaded PDFs normally have a generated PNG preview. Those images are
+        // already rendered by the browser and do not need the PDF.js fallback.
+        if (container.querySelector('img.floor-plan-image')) {
+            container.dataset.previewState = 'loaded';
+            continue;
+        }
+
         const fileType = container.dataset.fileType;
         const filePath = container.dataset.filePath;
         const fileExists = container.dataset.exists === 'true';

@@ -29,6 +29,7 @@ $floorPlans = source('floor_plans.php');
 check(substr_count($floorPlans, 'initializePDFPreviews();') === 1, 'PDF previews must have one initialization path.');
 check(str_contains($floorPlans, "previewState === 'loading'"), 'PDF preview re-entry guard is missing.');
 check(str_contains($floorPlans, '!empty($plan[\'image_path\'])'), 'Generated floor-plan images are not used for fast previews.');
+check(str_contains($floorPlans, "querySelector('img.floor-plan-image')"), 'Image previews are not excluded from the PDF.js fallback.');
 
 $contractor = source('view_contractor.php');
 check(!str_contains($contractor, "includes/sidebar.php"), 'Contractor page still loads the removed sidebar.');
