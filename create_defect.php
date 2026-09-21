@@ -109,11 +109,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    // Store user text as entered and escape it only when rendering. Encoding
+    // before persistence causes characters such as en dashes to be displayed
+    // later as literal HTML entities after the normal output escaping runs.
+    $title = trim((string) ($_POST['title'] ?? ''));
+    $description = trim((string) ($_POST['description'] ?? ''));
     $projectId = filter_input(INPUT_POST, 'project_id', FILTER_VALIDATE_INT);
     $contractorId = filter_input(INPUT_POST, 'contractor_id', FILTER_VALIDATE_INT);
-    $priority = filter_input(INPUT_POST, 'priority', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $priority = strtolower(trim((string) ($_POST['priority'] ?? '')));
 
     $allowedPriorities = ['low', 'medium', 'high', 'critical'];
     if (!$title || !$description || !$projectId || !$contractorId || !in_array($priority, $allowedPriorities, true)) {

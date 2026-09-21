@@ -47,6 +47,8 @@ lifecycleCheck(str_contains($create, 'defectWorkflowAssignContractorUsers'), 'Ne
 lifecycleCheck(str_contains($create, '$db->beginTransaction();'), 'Defect creation and task routing are not transactional.');
 lifecycleCheck(!str_contains($create, "createDefectForm.addEventListener('submit', function(event) {\n            event.preventDefault();"), 'Create-defect submission is still unconditionally cancelled.');
 lifecycleCheck(str_contains($create, 'min-height: 48px'), 'Create-defect mobile touch targets are not protected.');
+lifecycleCheck(!str_contains($create, "filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS)"), 'Defect titles are HTML-encoded before storage.');
+lifecycleCheck(!str_contains($create, "filter_input(INPUT_POST, 'description', FILTER_SANITIZE_FULL_SPECIAL_CHARS)"), 'Defect descriptions are HTML-encoded before storage.');
 
 $task = lifecycleSource('view_defect_mytasks.php');
 lifecycleCheck(str_contains($task, 'defectWorkflowCanAccessTask'), 'Task detail access is not restricted to assignees.');
@@ -63,6 +65,22 @@ $review = lifecycleSource('includes/handle_defect_review.php');
 lifecycleCheck(str_contains($review, 'defectWorkflowIsReviewer'), 'Review actions do not enforce manager access.');
 lifecycleCheck(str_contains($review, 'defectWorkflowHasValidCsrf'), 'Review actions do not validate CSRF tokens.');
 lifecycleCheck(str_contains($review, 'defectWorkflowAssertTransition'), 'Review actions do not enforce lifecycle state.');
+lifecycleCheck(str_contains($review, "':accepted_by' => \$userId"), 'Acceptance does not bind its reviewer parameter.');
+lifecycleCheck(str_contains($review, "':rejected_by' => \$userId"), 'Rejection does not bind its reviewer parameter.');
+lifecycleCheck(str_contains($review, "':reopened_by' => \$userId"), 'Reopening does not bind its reviewer parameter.');
+
+preg_match_all('/\$db->prepare\("(.*?)"\);/s', $review, $reviewStatements);
+foreach ($reviewStatements[1] as $statement) {
+    if (!str_contains($statement, 'UPDATE defects')) {
+        continue;
+    }
+
+    preg_match_all('/:([a-z_]+)/', $statement, $placeholders);
+    lifecycleCheck(
+        count($placeholders[1]) === count(array_unique($placeholders[1])),
+        'A manager review query reuses a named PDO placeholder.'
+    );
+}
 
 $tasks = lifecycleSource('my_tasks.php');
 lifecycleCheck(str_contains($tasks, 'd.contractor_id'), 'Task list still uses the legacy contractor relationship.');

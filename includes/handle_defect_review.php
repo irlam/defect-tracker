@@ -54,29 +54,35 @@ try {
         $stmt = $db->prepare("
             UPDATE defects
             SET status = 'accepted', acceptance_comment = :comment,
-                accepted_by = :user_id, accepted_at = NOW(),
-                updated_by = :user_id, updated_at = NOW()
+                accepted_by = :accepted_by, accepted_at = NOW(),
+                updated_by = :updated_by, updated_at = NOW()
             WHERE id = :defect_id
         ");
+        $actorParams = [':accepted_by' => $userId, ':updated_by' => $userId];
     } elseif ($workflowAction === 'reject') {
         $stmt = $db->prepare("
             UPDATE defects
             SET status = 'rejected', rejection_comment = :comment,
-                rejected_by = :user_id, rejection_status = 'rejected',
-                updated_by = :user_id, updated_at = NOW()
+                rejected_by = :rejected_by, rejection_status = 'rejected',
+                updated_by = :updated_by, updated_at = NOW()
             WHERE id = :defect_id
         ");
+        $actorParams = [':rejected_by' => $userId, ':updated_by' => $userId];
     } else {
         $stmt = $db->prepare("
             UPDATE defects
             SET status = 'open', reopened_reason = :comment,
-                reopened_by = :user_id, reopened_at = NOW(),
-                rejection_status = 'reopened', updated_by = :user_id,
+                reopened_by = :reopened_by, reopened_at = NOW(),
+                rejection_status = 'reopened', updated_by = :updated_by,
                 updated_at = NOW()
             WHERE id = :defect_id
         ");
+        $actorParams = [':reopened_by' => $userId, ':updated_by' => $userId];
     }
-    $stmt->execute([':comment' => $comment, ':user_id' => $userId, ':defect_id' => $defectId]);
+    $stmt->execute(array_merge(
+        [':comment' => $comment, ':defect_id' => $defectId],
+        $actorParams
+    ));
 
     $label = ucwords(str_replace('_', ' ', $targetStatus));
     defectWorkflowLogHistory($db, $defectId, $userId, "Manager review changed status to {$label}: {$comment}");
