@@ -79,15 +79,28 @@ $navbar = null;
  */
 function checkUserPermissions(PDO $db, int $userId): array
 {
-    $query = "SELECT r.name AS role_name
+    $query = "SELECT u.user_type, u.role AS legacy_role,
+                     direct_role.name AS direct_role_name,
+                     assigned_role.name AS assigned_role_name
               FROM users u
-              JOIN user_roles ur ON u.id = ur.user_id
-              JOIN roles r ON ur.role_id = r.id
+              LEFT JOIN roles direct_role ON u.role_id = direct_role.id
+              LEFT JOIN user_roles ur ON u.id = ur.user_id
+              LEFT JOIN roles assigned_role ON ur.role_id = assigned_role.id
               WHERE u.id = :user_id";
 
     $stmt = $db->prepare($query);
     $stmt->execute([':user_id' => $userId]);
-    $roles = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    $roleRows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    $roles = [];
+    foreach ($roleRows as $roleRow) {
+        foreach (['user_type', 'legacy_role', 'direct_role_name', 'assigned_role_name'] as $roleField) {
+            $role = strtolower(trim((string) ($roleRow[$roleField] ?? '')));
+            if ($role !== '') {
+                $roles[] = $role;
+            }
+        }
+    }
+    $roles = array_values(array_unique($roles));
 
     return [
         'canEdit' => in_array('admin', $roles, true) || in_array('manager', $roles, true),
@@ -246,13 +259,14 @@ try {
         $lastUpdateDisplay = date('d M Y, H:i', strtotime($metrics['last_update'])) . ' UK';
     }
 
-    $statusQuery = "SELECT DISTINCT status FROM defects WHERE deleted_at IS NULL ORDER BY status";
-    $priorityQuery = "SELECT DISTINCT priority FROM defects WHERE deleted_at IS NULL ORDER BY priority";
     $contractorQuery = "SELECT id, company_name FROM contractors WHERE status = 'active' ORDER BY company_name";
     $projectQuery = "SELECT id, name FROM projects WHERE status = 'active' ORDER BY name";
 
-    $statuses = $db->query($statusQuery)->fetchAll(PDO::FETCH_COLUMN) ?: [];
-    $priorities = $db->query($priorityQuery)->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    // Keep every supported lifecycle state available even before the first
+    // defect reaches it. This prevents Pending Review from disappearing from
+    // the manager filters on a quiet project.
+    $statuses = ['open', 'in_progress', 'pending', 'completed', 'verified', 'rejected', 'accepted'];
+    $priorities = ['low', 'medium', 'high', 'critical'];
     $contractors = $db->query($contractorQuery)->fetchAll(PDO::FETCH_ASSOC) ?: [];
     $projects = $db->query($projectQuery)->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (Exception $e) {

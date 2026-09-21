@@ -72,5 +72,7 @@ lifecycleCheck(str_contains($tasks, "d.status IN ('accepted', 'completed', 'veri
 $defects = lifecycleSource('defects.php');
 lifecycleCheck(substr_count($defects, 'name="csrf_token"') >= 3, 'Manager lifecycle forms are missing CSRF tokens.');
 lifecycleCheck(str_contains($defects, "d.status IN ('accepted', 'completed', 'verified')"), 'Defect metrics use invalid lifecycle states.');
+lifecycleCheck(str_contains($defects, 'u.user_type'), 'Manager controls do not honor the authenticated user type.');
+lifecycleCheck(str_contains($defects, "'in_progress', 'pending', 'completed', 'verified'"), 'Lifecycle status filters are incomplete.');
 
 echo "PASS: defect lifecycle transitions, authorization hooks, uploads, and mobile flows are covered.\n";

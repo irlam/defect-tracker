@@ -1000,7 +1000,7 @@ $timestampDisplay = date('d M Y, H:i');
                                         </div>
                                     </div>
                                     <div class="col-12 col-lg-6">
-                                        <label class="form-label">Assigned Contractor</label>
+                                        <label class="form-label required">Assigned Contractor</label>
                                         <div class="dropdown">
                                             <button class="btn btn-outline-secondary dropdown-toggle w-100 form-select-button blue" type="button" id="contractorDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <span id="contractorSelectedText">Select Contractor</span>
