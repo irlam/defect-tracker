@@ -241,7 +241,9 @@ class Navbar {
         echo "<!-- DEBUG: Navbar User Type = '" . htmlspecialchars($this->userRole ?? 'NULL', ENT_QUOTES, 'UTF-8') . "' -->";
 
         if (!defined('APP_THEME_LOADED')) {
-            echo '<link rel="stylesheet" href="/css/app.css">';
+            $themeFile = dirname(__DIR__) . '/css/app.css';
+            $themeVersion = is_file($themeFile) ? (string) filemtime($themeFile) : '1';
+            echo '<link rel="stylesheet" href="/css/app.css?v=' . rawurlencode($themeVersion) . '">';
             define('APP_THEME_LOADED', true);
         }
 

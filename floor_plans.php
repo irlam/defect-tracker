@@ -279,7 +279,7 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
 </head>
-<body data-bs-theme="dark">
+<body class="tool-body" data-bs-theme="dark">
     <?php echo $navbar->render(); ?>
 
     <div class="content-wrapper">
@@ -288,7 +288,7 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
                 <div class="col-12">
                     <div id="alertContainer"></div>
                     
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="floor-plans-header mb-4">
     <div>
         <h1 class="h3 mb-0">Floor Plans</h1>
     </div>
@@ -307,7 +307,7 @@ error_log("[" . date('Y-m-d H:i:s') . "] Default image path: " . $defaultImage);
                         </div>
                     <?php endif; ?>
 
-                    <div class="card">
+                    <div class="card floor-plans-card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Manage Floor Plans</h5>
                         </div>
