@@ -1,41 +1,45 @@
-# Environment variables
+# Runtime environment / secrets
 .env
+.env.*
+!.env.example
+config/database.local.php
+config/local.php
+/config/notification-test.local.php
+.defecttracker-mail.json
 
-# PHP
+# Dependencies / tooling
 vendor/
-
-# Logs
-logs/*.log
-*.log
-
-# Temporary files
-tmp/
-temp/
-
-# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Cache files
+# Runtime logs / caches
+logs/*
+!logs/.gitkeep
+*.log
+tmp/
+temp/
 cache/
 *.cache
 
-# Backup files
+# Backups and database data
+backups/*.sql
+backups/*.sql.gz
+backups/*.zip
+backups/*.bak*
+database/*.sql
+!database/schema.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Editor backups
 *.bak
+*.bak.*
 *~
 
-# Upload directories (keep structure but not files)
+# User uploads
 uploads/*
 !uploads/.htaccess
-!uploads/defects/.htaccess
-
-# Config files with sensitive data
-config/database.local.php
-config/local.php
-/config/notification-test.local.php
+!uploads/.gitkeep
