@@ -1,55 +1,33 @@
-# Website Cleanup Tool
+# Project reset / clean-template tool
 
-## Quick Start
+The reset tool removes project-specific and user-generated data while preserving administrator accounts, roles/permissions, system configuration and the database structure.
 
-This repository now includes a cleanup tool to remove all user-generated data while preserving the admin account and system configuration.
+## Before running
+1. Create a full backup and verify that it can be restored.
+2. Run the reset first on a staging copy.
+3. Confirm the site has at least one administrator account.
 
-### Purpose
+## Run
+Web: /admin/cleanup_interface.php (administrator only)
 
-- Create a fresh, clean backup template
-- Reset the website to initial state
-- Remove legacy/redundant data before deployment
+CLI:
+    php admin/cleanup.php
 
-### Access
+The CLI requires the confirmation word RESET unless the wrapper was explicitly invoked with --yes.
 
-**Web Interface (Recommended):**
-- Navigate to: `/admin/cleanup_interface.php`
-- Requires admin login
-- Step-by-step guided process
+## Removed
+- projects, defects, assignments, defect history/comments/images
+- floor-plan database records
+- non-admin users and their role/session data
+- contractors not linked to a retained administrator
+- notifications, sync queues and runtime/audit logs
+- nested files below upload/floor-plan runtime directories
 
-**Command Line:**
-```bash
-cd admin
-php cleanup.php
-```
+## Preserved
+- every administrator account (no username is hard-coded)
+- role and permission definitions
+- system configuration and schema
+- executable report/PDF templates
+- .htaccess/.gitkeep protection files
 
-### What Gets Preserved
-
-✓ Admin account (username: `irlam`)  
-✓ System configuration  
-✓ Database structure  
-✓ Roles and permissions  
-
-### What Gets Deleted
-
-✗ All defects and related data  
-✗ All projects  
-✗ All floor plans  
-✗ All non-admin users  
-✗ All logs and notifications  
-✗ All uploaded files  
-
-### Important Notes
-
-1. **ALWAYS create a full backup first** using the Backup Manager
-2. This operation is **permanent and cannot be undone**
-3. Test on a development environment first
-4. After cleanup, create a fresh backup to use as a template
-
-### Documentation
-
-See `/admin/CLEANUP_GUIDE.md` for detailed instructions, troubleshooting, and best practices.
-
----
-
-For the main project documentation, see the original README.md
+After reset, create a new verified clean backup before cloning the installation for another project.
