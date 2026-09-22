@@ -37,3 +37,32 @@ jobs:
         run: php tests/site-mail.php
       - name: Service worker regression
         run: node tests/service-worker-cache.cjs
+
+  live-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check live login page
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 20             https://mcgoff.defecttracker.uk/login.php -o /tmp/login.html
+          if grep -Eiq 'Fatal error|Parse error|Warning:|Uncaught (Error|Exception)' /tmp/login.html; then
+            echo "Live login page contains a PHP/runtime error."
+            exit 1
+          fi
+          if ! grep -Eiq '<form|login|sign in' /tmp/login.html; then
+            echo "Live login page does not look like the expected login screen."
+            exit 1
+          fi
+      - name: Check live application/database health
+        run: |
+          set -euo pipefail
+          body="$(curl --fail --silent --show-error --location --max-time 20             https://mcgoff.defecttracker.uk/health.php)"
+          echo "$body"
+          php -r '
+            $d = json_decode(stream_get_contents(STDIN), true);
+            if (!is_array($d) || ($d["status"] ?? "") !== "ok" || ($d["database"] ?? "") !== "ok") {
+                fwrite(STDERR, "Live health check failed.\n");
+                exit(1);
+            }
+          ' <<< "$body"
