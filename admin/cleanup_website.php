@@ -1,336 +1,141 @@
 <?php
 /**
- * Website Cleanup Script
- * 
- * This script cleans all user-generated data from the website while preserving:
- * - Admin user account (irlam)
- * - System configuration and settings
- * - Database structure
- * 
- * After running this script, the website will be in a fresh state ready for new projects.
- * This is useful for creating a clean backup template.
- * 
- * IMPORTANT: This script will DELETE all:
- * - Defects and related data
- * - Projects
- * - Contractors (except those tied to admin)
- * - User-generated files (uploads, floor plans)
- * - Non-admin users
- * - Logs and notifications
- * 
- * Created: 2025-11-04
- * Author: GitHub Copilot
+ * Destructive project reset utility.
+ * Removes project/user-generated data while preserving administrator accounts,
+ * roles/permissions, system configuration and the database structure.
  */
-
-// Only allow execution from command line or admin session
 if (php_sapi_name() !== 'cli') {
-    // Running from web - check for session
     if (!isset($_SESSION['executing_cleanup'])) {
         require_once __DIR__ . '/../config/database.php';
         require_once __DIR__ . '/../includes/session.php';
-        
-        // Check if user is logged in and is admin
-        if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-            die('Unauthorized access. Admin privileges required.');
+        if (($_SESSION['user_type'] ?? '') !== 'admin') {
+            http_response_code(403);
+            exit('Unauthorized access.');
         }
     }
 } else {
-    // Running from CLI - load config
     require_once __DIR__ . '/../config/database.php';
 }
 
-/**
- * Validate table name to prevent SQL injection
- */
-function validateTableName($table) {
-    // Only allow alphanumeric characters and underscores
-    return preg_match('/^[a-zA-Z0-9_]+$/', $table);
+function validateTableName(string $table): bool {
+    return (bool) preg_match('/^[a-zA-Z0-9_]+$/', $table);
 }
 
-/**
- * Clean all user-generated data from the database
- */
-function cleanDatabase($db) {
+function cleanDatabase(PDO $db): array {
     $results = [];
-    
+    $deleteAll = [
+        'defect_images','defect_comments','defect_history','defect_assignments','acceptance_history',
+        'comments','notifications','notification_log','sync_conflicts','sync_devices','sync_logs','sync_queue',
+        'activity_logs','system_logs','action_log','audit_logs','export_logs','maintenance_log',
+        'floor_plans','defects','projects'
+    ];
+
     try {
-        // Start transaction
         $db->beginTransaction();
-        
-        // 1. Clean defect-related tables
-        $tables_to_truncate = [
-            'defects',
-            'defect_images',
-            'defect_comments',
-            'defect_history',
-            'defect_assignments',
-            'activity_logs',
-            'acceptance_history'
-        ];
-        
-        foreach ($tables_to_truncate as $table) {
+        $db->exec('SET FOREIGN_KEY_CHECKS=0');
+
+        foreach ($deleteAll as $table) {
+            if (!validateTableName($table)) throw new RuntimeException("Invalid table name: {$table}");
             try {
-                // Validate table name for security
-                if (!validateTableName($table)) {
-                    $results[] = "⚠ Skipped invalid table name: $table";
+                $count = $db->exec("DELETE FROM `{$table}`");
+                $results[] = "✓ {$table}: " . (int)$count . ' rows removed';
+            } catch (PDOException $e) {
+                if ($e->getCode() === '42S02') {
+                    $results[] = "• {$table}: table not present";
                     continue;
                 }
-                $stmt = $db->prepare("TRUNCATE TABLE `$table`");
-                $stmt->execute();
-                $results[] = "✓ Cleaned table: $table";
-            } catch (PDOException $e) {
-                // Table might not exist or might be a view
-                $results[] = "⚠ Could not truncate $table: " . $e->getMessage();
+                throw $e;
             }
         }
-        
-        // 2. Clean projects
-        $stmt = $db->prepare("TRUNCATE TABLE `projects`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: projects";
-        
-        // 3. Clean floor plans
-        $stmt = $db->prepare("TRUNCATE TABLE `floor_plans`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: floor_plans";
-        
-        // 4. Clean categories (optional - these might be system data)
-        // Uncomment if you want to clean categories as well
-        // $stmt = $db->prepare("TRUNCATE TABLE `categories`");
-        // $stmt->execute();
-        // $results[] = "✓ Cleaned table: categories";
-        
-        // 5. Clean contractors except those tied to admin user
-        // Optimized query using LEFT JOIN instead of subquery
-        $stmt = $db->prepare("
-            DELETE c FROM `contractors` c 
-            LEFT JOIN `users` u ON c.id = u.contractor_id AND u.user_type = 'admin' 
-            WHERE u.contractor_id IS NULL
-        ");
-        $stmt->execute();
-        $deletedContractors = $stmt->rowCount();
-        $results[] = "✓ Deleted $deletedContractors contractors (preserved admin-linked contractors)";
-        
-        // 6. Clean users except admin
-        // Keep only the admin user (irlam with ID 22)
-        $stmt = $db->prepare("DELETE FROM `users` WHERE user_type != 'admin' OR username != 'irlam'");
-        $stmt->execute();
-        $deletedUsers = $stmt->rowCount();
-        $results[] = "✓ Deleted $deletedUsers non-admin users";
-        
-        // 7. Clean user-related tables
-        $stmt = $db->prepare("DELETE FROM `user_logs` WHERE user_id NOT IN (SELECT id FROM users)");
-        $stmt->execute();
-        $results[] = "✓ Cleaned orphaned user logs";
-        
-        $stmt = $db->prepare("DELETE FROM `user_sessions` WHERE user_id NOT IN (SELECT id FROM users)");
-        $stmt->execute();
-        $results[] = "✓ Cleaned orphaned user sessions";
-        
-        $stmt = $db->prepare("DELETE FROM `user_permissions` WHERE user_id NOT IN (SELECT id FROM users)");
-        $stmt->execute();
-        $results[] = "✓ Cleaned orphaned user permissions";
-        
-        $stmt = $db->prepare("DELETE FROM `user_roles` WHERE user_id NOT IN (SELECT id FROM users)");
-        $stmt->execute();
-        $results[] = "✓ Cleaned orphaned user roles";
-        
-        $stmt = $db->prepare("DELETE FROM `user_recent_descriptions` WHERE user_id NOT IN (SELECT id FROM users)");
-        $stmt->execute();
-        $results[] = "✓ Cleaned orphaned user recent descriptions";
-        
-        // 8. Clean notifications
-        $stmt = $db->prepare("TRUNCATE TABLE `notifications`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: notifications";
-        
-        $stmt = $db->prepare("TRUNCATE TABLE `notification_log`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: notification_log";
-        
-        // 9. Clean logs (keep system logs structure but remove old entries)
-        $stmt = $db->prepare("TRUNCATE TABLE `system_logs`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: system_logs";
-        
-        $stmt = $db->prepare("TRUNCATE TABLE `action_log`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: action_log";
-        
-        $stmt = $db->prepare("TRUNCATE TABLE `audit_logs`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: audit_logs";
-        
-        $stmt = $db->prepare("TRUNCATE TABLE `export_logs`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: export_logs";
-        
-        $stmt = $db->prepare("TRUNCATE TABLE `maintenance_log`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: maintenance_log";
-        
-        // 10. Clean comments
-        $stmt = $db->prepare("TRUNCATE TABLE `comments`");
-        $stmt->execute();
-        $results[] = "✓ Cleaned table: comments";
-        
-        // 11. Clean sync-related tables
-        $sync_tables = [
-            'sync_conflicts',
-            'sync_devices',
-            'sync_logs',
-            'sync_queue'
-        ];
-        
-        foreach ($sync_tables as $table) {
+
+        $adminIds = $db->query("SELECT id FROM users WHERE user_type = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
+        if (!$adminIds) throw new RuntimeException('Cleanup stopped: no administrator account exists to preserve.');
+        $placeholders = implode(',', array_fill(0, count($adminIds), '?'));
+
+        foreach (['user_logs','user_sessions','user_permissions','user_roles','user_recent_descriptions'] as $table) {
             try {
-                // Validate table name for security
-                if (!validateTableName($table)) {
-                    $results[] = "⚠ Skipped invalid table name: $table";
-                    continue;
-                }
-                $stmt = $db->prepare("TRUNCATE TABLE `$table`");
-                $stmt->execute();
-                $results[] = "✓ Cleaned table: $table";
+                $stmt = $db->prepare("DELETE FROM `{$table}` WHERE user_id NOT IN ({$placeholders})");
+                $stmt->execute($adminIds);
             } catch (PDOException $e) {
-                $results[] = "⚠ Could not truncate $table: " . $e->getMessage();
+                if ($e->getCode() !== '42S02') throw $e;
             }
         }
-        
-        // Commit transaction
+
+        try {
+            $stmt = $db->prepare("DELETE FROM contractors WHERE id NOT IN (SELECT contractor_id FROM users WHERE id IN ({$placeholders}) AND contractor_id IS NOT NULL)");
+            $stmt->execute($adminIds);
+        } catch (PDOException $e) {
+            if ($e->getCode() !== '42S02') throw $e;
+        }
+
+        $stmt = $db->prepare("DELETE FROM users WHERE id NOT IN ({$placeholders})");
+        $stmt->execute($adminIds);
+
+        $db->exec('SET FOREIGN_KEY_CHECKS=1');
         $db->commit();
-        $results[] = "\n✓ Database cleanup completed successfully!";
-        
-        return [
-            'success' => true,
-            'results' => $results
-        ];
-        
-    } catch (Exception $e) {
-        // Rollback on error
-        $db->rollBack();
-        $results[] = "\n✗ Error during cleanup: " . $e->getMessage();
-        return [
-            'success' => false,
-            'results' => $results
-        ];
+        $results[] = '✓ Database cleanup committed successfully.';
+        return ['success'=>true,'results'=>$results];
+    } catch (Throwable $e) {
+        try { $db->exec('SET FOREIGN_KEY_CHECKS=1'); } catch (Throwable $ignored) {}
+        if ($db->inTransaction()) $db->rollBack();
+        $results[] = '✗ Cleanup failed: ' . $e->getMessage();
+        return ['success'=>false,'results'=>$results];
     }
 }
 
-/**
- * Clean uploaded files and floor plans
- */
-function cleanUploadedFiles() {
+function removeRuntimeFiles(string $directory, array &$results): void {
+    if (!is_dir($directory)) return;
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST
+    );
+    $deleted = 0;
+    foreach ($iterator as $item) {
+        $name = $item->getFilename();
+        if (in_array($name, ['.gitkeep','.htaccess'], true)) continue;
+        if ($item->isFile() || $item->isLink()) {
+            if (@unlink($item->getPathname())) $deleted++;
+        } elseif ($item->isDir()) {
+            @rmdir($item->getPathname());
+        }
+    }
+    $results[] = '✓ ' . basename($directory) . ": {$deleted} files removed";
+}
+
+function cleanUploadedFiles(): array {
     $results = [];
-    $baseDir = __DIR__ . '/..';
-    
-    // Directories to clean
-    $directories = [
-        $baseDir . '/uploads',
-        $baseDir . '/assets/floor_plans',
-        $baseDir . '/pdf_exports'
-    ];
-    
-    foreach ($directories as $dir) {
-        if (!is_dir($dir)) {
-            $results[] = "⚠ Directory does not exist: $dir";
-            continue;
-        }
-        
-        $files = glob($dir . '/*');
-        $count = 0;
-        
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                // Skip .gitkeep and .htaccess files
-                if (basename($file) === '.gitkeep' || basename($file) === '.htaccess') {
-                    continue;
-                }
-                
-                if (unlink($file)) {
-                    $count++;
-                }
-            }
-        }
-        
-        $results[] = "✓ Deleted $count files from " . basename($dir);
+    $base = dirname(__DIR__);
+    foreach ([$base.'/uploads', $base.'/assets/floor_plans'] as $directory) {
+        removeRuntimeFiles($directory, $results);
     }
-    
-    return [
-        'success' => true,
-        'results' => $results
-    ];
+    foreach (glob($base.'/pdf_exports/*.{pdf,tmp}', GLOB_BRACE) ?: [] as $file) {
+        if (is_file($file)) @unlink($file);
+    }
+    $results[] = '✓ Generated PDF output removed.';
+    return ['success'=>true,'results'=>$results];
 }
 
-/**
- * Main execution
- */
-function executeCleanup() {
-    echo "\n" . str_repeat('=', 70) . "\n";
-    echo "  WEBSITE CLEANUP SCRIPT\n";
-    echo str_repeat('=', 70) . "\n\n";
-    
-    echo "WARNING: This will delete ALL user-generated data!\n";
-    echo "Only the admin account (irlam) and system configuration will be preserved.\n\n";
-    
-    // If running from CLI, ask for confirmation (unless --yes flag is set)
+function executeCleanup(): void {
+    echo "\n" . str_repeat('=',70) . "\nPROJECT DATA CLEANUP\n" . str_repeat('=',70) . "\n";
+    echo "WARNING: all project/user-generated data will be permanently removed.\n";
+    echo "Administrator accounts and system configuration are preserved.\n\n";
+
     if (php_sapi_name() === 'cli' && !defined('CLEANUP_SKIP_CONFIRMATION')) {
-        echo "Are you sure you want to continue? (yes/no): ";
-        $handle = fopen("php://stdin", "r");
-        $line = trim(fgets($handle));
-        fclose($handle);
-        
-        if (strtolower($line) !== 'yes') {
-            echo "\nCleanup cancelled.\n";
-            return;
-        }
+        echo "Type RESET to continue: ";
+        $answer = trim((string) fgets(STDIN));
+        if ($answer !== 'RESET') { echo "Cleanup cancelled.\n"; return; }
     }
-    
-    echo "\nStarting cleanup...\n\n";
-    
-    // Initialize database connection
-    try {
-        $database = new Database();
-        $db = $database->getConnection();
-    } catch (Exception $e) {
-        echo "✗ Database connection failed: " . $e->getMessage() . "\n";
-        return;
-    }
-    
-    // Step 1: Clean database
-    echo "Step 1: Cleaning database...\n";
-    echo str_repeat('-', 70) . "\n";
+
+    $db = (new Database())->getConnection();
+    if (!$db) { echo "✗ Database connection failed.\n"; return; }
+
     $dbResult = cleanDatabase($db);
-    foreach ($dbResult['results'] as $result) {
-        echo $result . "\n";
-    }
-    
-    if (!$dbResult['success']) {
-        echo "\n✗ Database cleanup failed. Aborting.\n";
-        return;
-    }
-    
-    // Step 2: Clean uploaded files
-    echo "\n\nStep 2: Cleaning uploaded files...\n";
-    echo str_repeat('-', 70) . "\n";
-    $filesResult = cleanUploadedFiles();
-    foreach ($filesResult['results'] as $result) {
-        echo $result . "\n";
-    }
-    
-    // Summary
-    echo "\n" . str_repeat('=', 70) . "\n";
-    echo "  CLEANUP COMPLETE\n";
-    echo str_repeat('=', 70) . "\n";
-    echo "\nThe website is now in a fresh state.\n";
-    echo "Admin login preserved: username 'irlam'\n";
-    echo "\nYou can now create a backup using the backup manager.\n";
-    echo "This backup will serve as a clean starting point for new projects.\n\n";
+    foreach ($dbResult['results'] as $line) echo $line . "\n";
+    if (!$dbResult['success']) return;
+
+    $fileResult = cleanUploadedFiles();
+    foreach ($fileResult['results'] as $line) echo $line . "\n";
+    echo "\nCleanup complete. Create and verify a fresh backup before cloning this installation.\n";
 }
 
-// Execute if running from command line or as admin
-if (php_sapi_name() === 'cli' || (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin')) {
-    executeCleanup();
-} else {
-    echo "This script must be run from command line or by an admin user.";
-}
+if (php_sapi_name() === 'cli' || (($_SESSION['user_type'] ?? '') === 'admin')) executeCleanup();
