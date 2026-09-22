@@ -1,0 +1,240 @@
+<?php
+// Error reporting and logging setup
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../logs/error.log');
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Check if user is logged in
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
+    // Redirect non-authorized users to login page
+    header('Location: ../login.php');
+    exit;
+}
+
+// Use absolute path for includes to prevent "Class not found" errors
+$root_path = $_SERVER['DOCUMENT_ROOT'];
+require_once $root_path . '/config/database.php';
+require_once $root_path . '/includes/navbar.php';
+require_once 'notification_sender.php';
+
+// Process form submission
+$message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title = $_POST['title'] ?? '';
+    $body = $_POST['message'] ?? '';
+    $targetType = $_POST['target_type'] ?? 'all';
+    $defectId = !empty($_POST['defect_id']) ? $_POST['defect_id'] : null;
+    $userId = ($targetType === 'user') ? ($_POST['user_id'] ?? null) : null;
+    $contractorId = ($targetType === 'contractor') ? ($_POST['contractor_id'] ?? null) : null;
+    
+    if (empty($title) || empty($body)) {
+        $message = '<div class="alert alert-danger">Title and message are required!</div>';
+    } else {
+        $result = sendNotification($title, $body, $targetType, $userId, $contractorId, $defectId);
+        if ($result['success']) {
+            $successMsg = 'Notification sent successfully to ' . $result['recipients'] . ' recipient(s)';
+            if ($result['failed'] > 0) {
+                $successMsg .= ' (' . $result['failed'] . ' failed)';
+            }
+            $message = '<div class="alert alert-success">' . $successMsg . '</div>';
+            
+            // Show any errors if present
+            if (!empty($result['errors'])) {
+                $message .= '<div class="alert alert-warning">Some deliveries failed: ' . implode(', ', array_slice($result['errors'], 0, 3)) . '</div>';
+            }
+        } else {
+            $message = '<div class="alert alert-danger">Error: ' . $result['error'] . '</div>';
+        }
+    }
+}
+
+// Database connection
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    // Get users for dropdown - showing all users regardless of FCM token
+    $users = [];
+    $stmt = $db->prepare("SELECT id, username, first_name, last_name, contractor_id FROM users ORDER BY username");
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get contractors for dropdown
+    $contractors = [];
+    $stmt = $db->prepare("SELECT id, company_name, trade FROM contractors ORDER BY company_name");
+    $stmt->execute();
+    $contractors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get defects for dropdown
+    $defects = [];
+    $stmt = $db->prepare("SELECT id, title FROM defects ORDER BY id DESC LIMIT 100");
+    $stmt->execute();
+    $defects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $message = '<div class="alert alert-danger">Database error: ' . $e->getMessage() . '</div>';
+}
+
+// Current date for display - use correct timezone
+date_default_timezone_set('Europe/London'); // Or your preferred timezone
+$currentDate = date('d-m-Y H:i:s');
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notifications - DefectTracker</title>
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <!-- Essential CSS Dependencies (using CDN only) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Include any custom CSS with absolute path -->
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<?php
+$navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
+$navbar->render();
+?>
+    <br><br><br><br>
+    <div class="container">
+        <header>
+            <h1>Push Notifications</h1>
+            <p class="current-time">Current time: <?php echo $currentDate; ?></p>
+            <p class="user-info">Logged in as: <?php echo htmlspecialchars($_SESSION['username']); ?></p>
+        </header>
+        
+        <div class="alert alert-info">
+            <h4><i class="fa fa-info-circle"></i> About Push Notifications</h4>
+            <p>Send instant notifications to users and contractors via PWA, iOS, and Android applications. 
+            Notifications appear on devices in real-time with delivery confirmation tracking.</p>
+            <p><strong>Enhanced Features:</strong></p>
+            <ul>
+                <li><strong>Multi-Target Support:</strong> Send to all users, all contractors, specific users, or specific contractor companies</li>
+                <li><strong>Platform Support:</strong> Works across PWA (web browsers), iOS native app, and Android native app</li>
+                <li><strong>Delivery Confirmation:</strong> Track delivery status with success/failure counts and error details</li>
+                <li><strong>Defect Linking:</strong> Link notifications to specific defects for easy reference and navigation</li>
+                <li><strong>Comprehensive Logging:</strong> View complete notification history with filtering options</li>
+            </ul>
+            <p>All sent notifications are logged with delivery status. <a href="notification_history.php" class="alert-link">View Notification History →</a></p>
+        </div>
+        
+        <?php echo $message; ?>
+        
+        <form method="post" action="">
+            <div class="form-group mb-3">
+                <label for="title">Notification Title:</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="message">Notification Message:</label>
+                <textarea id="message" name="message" class="form-control" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label>Send to:</label>
+                <div class="radio-group">
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="all" checked onchange="toggleRecipientSelect()"> 
+                        All Users & Contractors
+                    </label>
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="all_users" onchange="toggleRecipientSelect()"> 
+                        All Users Only
+                    </label>
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="all_contractors" onchange="toggleRecipientSelect()"> 
+                        All Contractors Only
+                    </label>
+                    <label class="me-3">
+                        <input type="radio" name="target_type" value="user" onchange="toggleRecipientSelect()"> 
+                        Specific User
+                    </label>
+                    <label>
+                        <input type="radio" name="target_type" value="contractor" onchange="toggleRecipientSelect()"> 
+                        Specific Contractor
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group mb-3" id="userSelectContainer" style="display: none;">
+                <label for="user_id">Select User:</label>
+                <select id="user_id" name="user_id" class="form-control">
+                    <?php foreach ($users as $user): ?>
+                    <option value="<?php echo htmlspecialchars($user['id']); ?>">
+                        <?php echo htmlspecialchars(($user['first_name'] . ' ' . $user['last_name']) . ' (' . $user['username'] . ')'); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group mb-3" id="contractorSelectContainer" style="display: none;">
+                <label for="contractor_id">Select Contractor:</label>
+                <select id="contractor_id" name="contractor_id" class="form-control">
+                    <?php foreach ($contractors as $contractor): ?>
+                    <option value="<?php echo htmlspecialchars($contractor['id']); ?>">
+                        <?php echo htmlspecialchars($contractor['company_name'] . ' - ' . $contractor['trade']); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group mb-4">
+                <label for="defect_id">Link to Defect (Optional):</label>
+                <select id="defect_id" name="defect_id" class="form-control">
+                    <option value="">-- None --</option>
+                    <?php foreach ($defects as $defect): ?>
+                    <option value="<?php echo htmlspecialchars($defect['id']); ?>">
+                        #<?php echo htmlspecialchars($defect['id'] . ' - ' . $defect['title']); ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-actions mb-4">
+                <button type="submit" class="btn btn-primary">Send Notification</button>
+                <a href="/dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </form>
+        
+        <footer class="mt-5 text-center">
+            <p>DefectTracker Push Notifications System &copy; <?php echo date('Y'); ?></p>
+        </footer>
+    </div>
+    
+    <script>
+        function toggleRecipientSelect() {
+            const targetType = document.querySelector('input[name="target_type"]:checked').value;
+            const userSelectContainer = document.getElementById('userSelectContainer');
+            const contractorSelectContainer = document.getElementById('contractorSelectContainer');
+            
+            // Hide all containers first
+            userSelectContainer.style.display = 'none';
+            contractorSelectContainer.style.display = 'none';
+            
+            // Show appropriate container based on target type
+            if (targetType === 'user') {
+                userSelectContainer.style.display = 'block';
+            } else if (targetType === 'contractor') {
+                contractorSelectContainer.style.display = 'block';
+            }
+        }
+    </script>
+    
+    <!-- Include Bootstrap JS to ensure the dropdown menu works -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

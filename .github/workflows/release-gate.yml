@@ -1,0 +1,39 @@
+name: release-gate
+
+on:
+  push:
+    branches: [ main, project-ready-v3 ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, fileinfo, gd, curl
+      - name: PHP syntax
+        run: |
+          find . -type f -name '*.php' \
+            -not -path './vendor/*' \
+            -not -path './includes/PhpSpreadsheet/*' \
+            -not -path './tcpdf/*' \
+            -print0 | xargs -0 -n1 php -l
+      - name: Configuration regression
+        run: |
+          php tests/configuration-regression.php constants-first
+          php tests/configuration-regression.php database-first
+      - name: Functional regressions
+        run: php tests/functional-regressions.php
+      - name: Defect lifecycle regressions
+        run: php tests/defect-lifecycle-regression.php
+      - name: Mail safety regression
+        run: php tests/site-mail.php
+      - name: Service worker regression
+        run: node tests/service-worker-cache.cjs

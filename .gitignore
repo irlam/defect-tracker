@@ -1,0 +1,45 @@
+# Runtime environment / secrets
+.env
+.env.*
+!.env.example
+config/database.local.php
+config/local.php
+/config/notification-test.local.php
+.defecttracker-mail.json
+
+# Dependencies / tooling
+vendor/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Runtime logs / caches
+logs/*
+!logs/.gitkeep
+*.log
+tmp/
+temp/
+cache/
+*.cache
+
+# Backups and database data
+backups/*.sql
+backups/*.sql.gz
+backups/*.zip
+backups/*.bak*
+database/*.sql
+!database/schema.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Editor backups
+*.bak
+*.bak.*
+*~
+
+# User uploads
+uploads/*
+!uploads/.htaccess
+!uploads/.gitkeep

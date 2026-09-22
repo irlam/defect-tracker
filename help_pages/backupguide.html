@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Backup System Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #336699;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        .note {
+            background-color: #f8f9fa;
+            border-left: 4px solid #336699;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        code {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            padding: 2px 4px;
+        }
+        ol li, ul li {
+            margin-bottom: 8px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        footer {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Website Backup System Guide</h1>
+    </div>
+
+    <div class="container">
+        <h2>Table of Contents</h2>
+        <ol>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#manual-backup">Creating a Manual Backup</a></li>
+            <li><a href="#scheduled-backup">Setting Up Scheduled Backups</a></li>
+            <li><a href="#backup-contents">What's Included in a Backup</a></li>
+            <li><a href="#restore">Restoring from a Backup</a></li>
+            <li><a href="#browse-download">Browsing and Downloading Backups</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+    </div>
+
+    <div class="container" id="introduction">
+        <h2>1. Introduction</h2>
+        <p>The Website Backup System provides a simple way to create and manage backups of your entire website, including files and database. This guide will walk you through all the features of the backup system.</p>
+        
+        <h3>Key Features:</h3>
+        <ul>
+            <li>One-click manual backups with progress tracking</li>
+            <li>Scheduled automatic backups (daily, weekly, or monthly)</li>
+            <li>Full website and database backups</li>
+            <li>Ability to restore the entire site or individual files</li>
+            <li>Download backups for offline storage</li>
+            <li>Automatic management of backup storage (keeps the most recent 10 backups)</li>
+        </ul>
+    </div>
+
+    <div class="container" id="manual-backup">
+        <h2>2. Creating a Manual Backup</h2>
+        
+        <h3>Steps to Create a Backup:</h3>
+        <ol>
+            <li>Log in to the Backup System at <code>https://yourcompanyname.defecttracker.uk/backups/</code></li>
+            <li>On the main dashboard, click the blue <strong>"Create Full Backup"</strong> button</li>
+            <li>Confirm the backup when prompted</li>
+            <li>Wait for the backup to complete - you'll see a progress bar showing:
+                <ul>
+                    <li>The current percentage complete</li>
+                    <li>What part of the backup is currently running</li>
+                    <li>Which files are being processed</li>
+                </ul>
+            </li>
+            <li>Once complete, the backup will appear in the "Available Backups" list</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Note:</strong> The backup process may take several minutes depending on the size of your website. Do not close the browser window while the backup is in progress.</p>
+        </div>
+        
+        <h3>What Happens During a Backup:</h3>
+        <ol>
+            <li>The system first backs up your database (all tables and data)</li>
+            <li>It then creates a ZIP archive and starts adding website files</li>
+            <li>The database backup is added to the ZIP file in a "database" folder</li>
+            <li>The completed backup is stored in the backups directory</li>
+            <li>The system maintains a maximum of 10 backups. When this limit is exceeded, the oldest backup is automatically deleted.</li>
+        </ol>
+    </div>
+
+    <div class="container" id="scheduled-backup">
+        <h2>3. Setting Up Scheduled Backups</h2>
+        
+        <h3>Creating a Backup Schedule:</h3>
+        <ol>
+            <li>Click the <strong>"New Schedule"</strong> button in the Scheduled Backups section</li>
+            <li>Enter a name for your schedule (e.g., "Nightly Backup")</li>
+            <li>Select a frequency:
+                <ul>
+                    <li><strong>Daily:</strong> Runs every day at the specified time</li>
+                    <li><strong>Weekly:</strong> Runs once a week on the selected day</li>
+                    <li><strong>Monthly:</strong> Runs once a month on the selected day</li>
+                </ul>
+            </li>
+            <li>Select the time of day for the backup to run (in 24-hour format)</li>
+            <li>Make sure the "Enabled" checkbox is checked</li>
+            <li>Click "Save Schedule"</li>
+        </ol>
+
+        <h3>Setting Up the Cron Job:</h3>
+        <p>For scheduled backups to work, a cron job must be set up on the server:</p>
+        <ol>
+            <li>Click the <strong>"Set Up Scheduled Backups"</strong> button</li>
+            <li>Follow the instructions specific to our Netcup hosting environment</li>
+            <li>Add the provided cron command to run every 10 minutes</li>
+            <li>Once set up, the scheduler will automatically run backups at your specified times</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Note:</strong> It's recommended to schedule backups during low-traffic periods (like overnight) to minimize any impact on site performance. Remember that the system keeps a maximum of 10 backups, so plan your scheduling accordingly.</p>
+        </div>
+    </div>
+
+    <div class="container" id="backup-contents">
+        <h2>4. What's Included in a Backup</h2>
+        
+        <p>Each backup is a complete snapshot of your website and includes:</p>
+        
+        <h3>Files:</h3>
+        <ul>
+            <li>All website files (HTML, PHP, CSS, JavaScript, etc.)</li>
+            <li>Media files (images, videos, documents)</li>
+            <li>Configuration files</li>
+            <li>Theme files</li>
+        </ul>
+
+        <h3>Database:</h3>
+        <ul>
+            <li>Complete SQL dump of your database</li>
+            <li>All tables and data</li>
+            <li>Table structures and relationships</li>
+        </ul>
+
+        <h3>Excluded Items:</h3>
+        <p>To keep backups efficient, these items are excluded:</p>
+        <ul>
+            <li>Temporary files</li>
+            <li>Cache files</li>
+            <li>Log files</li>
+            <li>The backup system itself (to avoid recursion)</li>
+        </ul>
+
+        <h3>Backup Format:</h3>
+        <p>Backups are stored as ZIP files with this format:</p>
+        <code>mcgoff-backup-YYYY-MM-DD_HH-MM-SS.zip</code>
+        
+        <p>Inside each ZIP file, you'll find:</p>
+        <ul>
+            <li>All website files in their original directory structure</li>
+            <li>A <code>/database/</code> folder containing the SQL dump file</li>
+        </ul>
+    </div>
+
+    <div class="container" id="restore">
+        <h2>5. Restoring from a Backup</h2>
+        
+        <div class="warning">
+            <p><strong>Warning:</strong> Restoring a backup will overwrite existing data. Make sure you understand what you're restoring before proceeding.</p>
+        </div>
+
+        <h3>To Restore the Entire Website:</h3>
+        <ol>
+            <li>Go to the "Available Backups" list</li>
+            <li>Click "Browse Files" next to the backup you want to restore</li>
+            <li>On the restore page, click the "Restore Full Backup" button</li>
+            <li>Confirm the restoration when prompted</li>
+            <li>Wait for the restore process to complete</li>
+        </ol>
+
+        <h3>To Restore Only the Database:</h3>
+        <ol>
+            <li>Go to the "Available Backups" list</li>
+            <li>Click "Browse Files" next to the backup you want to restore</li>
+            <li>Click the "Restore Database" button</li>
+            <li>Confirm the restoration when prompted</li>
+        </ol>
+
+        <h3>To Restore Individual Files:</h3>
+        <ol>
+            <li>Go to the "Available Backups" list</li>
+            <li>Click "Browse Files" next to the backup you want to restore</li>
+            <li>Locate the file you want to restore in the list</li>
+            <li>Click "Restore This File" next to the file</li>
+        </ol>
+
+        <div class="note">
+            <p><strong>Note:</strong> You can use the search function at the top of the file list to quickly find specific files.</p>
+        </div>
+    </div>
+
+    <div class="container" id="browse-download">
+        <h2>6. Browsing and Downloading Backups</h2>
+        
+        <h3>Viewing Available Backups:</h3>
+        <p>All your backups are listed in the "Available Backups" section of the main page, showing:</p>
+        <ul>
+            <li>Filename (including date and time)</li>
+            <li>Creation date</li>
+            <li>File size</li>
+            <li>Available actions</li>
+        </ul>
+
+        <h3>Backup Retention:</h3>
+        <p>The system is configured to keep a maximum of 10 backups. When the 11th backup is created, the oldest backup is automatically removed to save storage space. If you need to keep a backup permanently, download it to your local system for archiving.</p>
+
+        <h3>Downloading a Backup:</h3>
+        <ol>
+            <li>In the "Available Backups" list, click the "Download" button next to the backup you want</li>
+            <li>The backup will be downloaded to your computer as a ZIP file</li>
+            <li>Store this file in a safe location for off-site backup</li>
+        </ol>
+
+        <h3>Browsing Backup Contents:</h3>
+        <ol>
+            <li>Click the "Browse Files" button next to any backup</li>
+            <li>You'll see a complete list of all files included in the backup</li>
+            <li>Use the search box to filter files by name or path</li>
+        </ol>
+    </div>
+
+    <div class="container" id="troubleshooting">
+        <h2>7. Troubleshooting</h2>
+        
+        <h3>Common Issues and Solutions:</h3>
+        
+        <table>
+            <tr>
+                <th>Issue</th>
+                <th>Possible Solution</th>
+            </tr>
+            <tr>
+                <td>Backup fails with timeout error</td>
+                <td>The website may be too large for a single backup process. Try excluding larger directories in the configuration.</td>
+            </tr>
+            <tr>
+                <td>Scheduled backups not running</td>
+                <td>Check that the cron job is set up correctly. View the scheduler log file for detailed information.</td>
+            </tr>
+            <tr>
+                <td>Database restore fails</td>
+                <td>Ensure the database credentials are correct in the config.php file.</td>
+            </tr>
+            <tr>
+                <td>"Permission denied" errors</td>
+                <td>Check that the web server has sufficient permissions to read and write to all necessary directories.</td>
+            </tr>
+            <tr>
+                <td>Backup is incomplete</td>
+                <td>Run the System Diagnostics to check for any issues with your server configuration.</td>
+            </tr>
+            <tr>
+                <td>Need to keep more than 10 backups</td>
+                <td>Download important backups to your local computer. The system automatically removes the oldest backups when the limit of 10 is reached.</td>
+            </tr>
+        </table>
+
+        <h3>Running Diagnostics:</h3>
+        <p>The system includes a diagnostics tool to help identify issues:</p>
+        <ol>
+            <li>Click the "Run System Diagnostics" button on the main page</li>
+            <li>The diagnostics page will show:
+                <ul>
+                    <li>PHP version and configuration</li>
+                    <li>Required PHP extensions</li>
+                    <li>Database connection status</li>
+                    <li>Availability of mysqldump command</li>
+                    <li>Directory permissions</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <footer>
+        <p>Website Backup System Guide - Last updated: 26-02-2025 21:10:05 | Created by: irlam</p>
+    </footer>
+</body>
+</html>

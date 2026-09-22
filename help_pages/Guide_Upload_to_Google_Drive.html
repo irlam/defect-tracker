@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide: Uploading Files to Google Drive After a Defect is Closed for 7 Days</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        img.responsive {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guide: Uploading Files to Google Drive After a Defect is Closed for 7 Days</h1>
+    
+    <h2>Introduction</h2>
+    <p>This guide provides detailed instructions on how to upload files to Google Drive after a defect has been closed for 7 days. Follow the steps below to ensure a smooth and efficient upload process.</p>
+
+    <h2>Prerequisites</h2>
+    <ul>
+        <li>A Google account with access to Google Drive.</li>
+        <li>The file(s) you wish to upload.</li>
+        <li>The defect must have been closed for at least 7 days.</li>
+    </ul>
+
+    <h2>Steps to Create credentials.json and Set Up Google API Client</h2>
+
+    <h3>1. Enable the Google Drive API</h3>
+    <ol>
+        <li>Go to the <a href="https://console.developers.google.com/" target="_blank">Google Cloud Console</a>.</li>
+        <li>Create a new project or select an existing project.</li>
+        <li>In the left sidebar, click on <strong>APIs & Services</strong> > <strong>Library</strong>. <br>
+            <img src="https://help.docebo.com/hc/article_attachments/11074715445010" alt="Google Drive API search" class="responsive">
+        </li>
+        <li>Search for "Google Drive API" and click on it.</li>
+        <li>Click the <strong>Enable</strong> button. <br>
+            <img src="https://www.wonderplugin.com/wp-content/uploads/2019/06/enable-google-data-api-600x453.png" alt="Enable Button" class="responsive">
+        </li>
+    </ol>
+
+    <h3>2. Create OAuth 2.0 Credentials</h3>
+    <ol>
+        <li>In the left sidebar, click on <strong>APIs & Services</strong> > <strong>Credentials</strong>. <br>
+            <img src="https://support.cloudm.io/hc/article_attachments/360026090020/API_Services_Credentials.PNG" alt="Create Credentials" class="responsive">
+        </li>
+        <li>Click on the <strong>Create Credentials</strong> button and select <strong>OAuth 2.0 Client IDs</strong>. <br>
+            <img src="https://techjogging.com/images/create-oauth-credentials-for-google-analytics-apis/google-create-oauth-credentials.png" alt="Select OAuth Client ID" class="responsive">
+        </li>
+        <li>Configure the consent screen by clicking on <strong>Configure consent screen</strong> if prompted. <br>
+            <img src="https://docs.amplify.aws/images/cognitoHostedUI/nextImageExportOptimizer/google5-opt-1920.WEBP" alt="Configure Consent Screen" class="responsive">
+        </li>
+        <li>Choose <strong>External</strong> and click on <strong>Create</strong>.</li>
+        <li>Fill out the required fields (App name, User support email, etc.) and save the configuration.</li>
+        <li>Select <strong>Application type</strong> as <strong>Web application</strong>.</li>
+        <li>Enter a name for your OAuth 2.0 Client ID.</li>
+        <li>In the <strong>Authorized redirect URIs</strong> section, add the following URI:
+            <ul>
+                <li><code>http://YOUR_DOMAIN/google_upload/oauth_callback.php</code></li>
+            </ul>
+            Replace <code>YOUR_DOMAIN</code> with your actual domain name.
+        </li>
+        <li>Click on <strong>Create</strong>.</li>
+        <li>Download the <code>credentials.json</code> file and save it to your local machine.</li>
+    </ol>
+
+    <h3>3. Upload credentials.json to Your Server</h3>
+    <ol>
+        <li>Using an FTP client or your hosting provider's file manager, upload the <code>credentials.json</code> file to the following directory on your server:
+            <ul>
+                <li><code>/var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/google_upload/</code></li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>Steps to Upload Files to Google Drive</h2>
+
+    <h3>1. Verify Defect Closure</h3>
+    <p>Ensure that the defect has been closed for at least 7 days. You can check the closure date in the defect tracking system.</p>
+
+    <h3>2. Prepare Files for Upload</h3>
+    <p>Gather all the files you need to upload to Google Drive. Ensure they are properly named and organized.</p>
+
+    <h3>3. Access Google Drive</h3>
+    <ol>
+        <li>Open your web browser and navigate to <a href="https://drive.google.com" target="_blank">Google Drive</a>.</li>
+        <li>Log in with your Google account credentials.</li>
+    </ol>
+
+    <h3>4. Create a New Folder (Optional)</h3>
+    <p>If you want to organize your files, you can create a new folder in Google Drive.</p>
+    <ol>
+        <li>Click on the "New" button in the top left corner.</li>
+        <li>Select "Folder" from the dropdown menu.</li>
+        <li>Enter a name for the folder and click "Create."</li>
+    </ol>
+
+    <h3>5. Upload Files to Google Drive</h3>
+    <ol>
+        <li>Click on the "New" button in the top left corner.</li>
+        <li>Select "File upload" or "Folder upload" from the dropdown menu, depending on your needs.</li>
+        <li>Navigate to the location of your files on your computer and select the files or folder you want to upload.</li>
+        <li>Click "Open" to start the upload process.</li>
+    </ol>
+
+    <h3>6. Verify Upload</h3>
+    <p>Once the upload is complete, verify that all files have been successfully uploaded to Google Drive. You should see the uploaded files in your Drive.</p>
+
+    <h2>Additional Tips</h2>
+    <ul>
+        <li>Ensure you have a stable internet connection during the upload process.</li>
+        <li>If you encounter any issues, refer to the <a href="https://support.google.com/drive" target="_blank">Google Drive Help Center</a> for troubleshooting tips.</li>
+    </ul>
+
+    <h2>Conclusion</h2>
+    <p>By following these steps, you can efficiently upload your files to Google Drive after a defect has been closed for 7 days. If you have any questions or need further assistance, please contact support.</p>
+</body>
+</html>
