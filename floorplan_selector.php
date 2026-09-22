@@ -86,14 +86,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin_x']) && isset($_P
             cursor: grab;
         }
         
-        .floorplan-container.grabbing {
+        .floorplan-container {
+            touch-action: none;
+            user-select: none;
+        }
+
+        .floorplan-container.pan-mode {
+            cursor: grab;
+        }
+
+        .floorplan-container.pan-mode.grabbing {
             cursor: grabbing;
+        }
+
+        .floorplan-container.pin-mode {
+            cursor: crosshair;
         }
         
         #pdfCanvas, #pinOverlay {
             position: absolute;
             left: 0;
             top: 0;
+            transform-origin: 0 0;
+        }
+
+        #pdfCanvas {
+            pointer-events: none;
+        }
+
+        #pinOverlay {
+            touch-action: none;
         }
         
         .controls {
@@ -114,7 +136,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin_x']) && isset($_P
             background-image: url('uploads/images/location-pin.svg');
             background-size: contain;
             background-repeat: no-repeat;
-            pointer-events: none;
+            pointer-events: auto;
+            cursor: move;
+            touch-action: none;
             transform: translate(-50%, -100%);
         }
         
@@ -172,8 +196,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin_x']) && isset($_P
     </style>
 </head>
 <body class="tool-body" data-bs-theme="dark">
-    <div class="floorplan-container">
-        <div class="instruction">Touch/click and hold for 1 second to place pin</div>
+    <div class="floorplan-container pan-mode">
+        <div class="instruction" id="interactionHint">Drag to move • wheel/pinch to zoom • choose Place Pin to mark location</div>
         <canvas id="pdfCanvas"></canvas>
         <div id="pinOverlay"></div>
         <div id="pdfLoadingOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); display: flex; justify-content: center; align-items: center; font-size: 20px;">
@@ -182,14 +206,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin_x']) && isset($_P
         
         <div class="controls">
             <div class="row">
-                <div class="col-6">
+                <div class="col-7">
                     <div class="btn-group w-100">
-                        <button type="button" id="zoomInButton" class="btn btn-outline-primary"><i class="bx bx-zoom-in"></i></button>
-                        <button type="button" id="zoomOutButton" class="btn btn-outline-primary"><i class="bx bx-zoom-out"></i></button>
-                        <button type="button" id="resetZoomButton" class="btn btn-outline-primary"><i class="bx bx-refresh"></i></button>
+                        <button type="button" id="panModeButton" class="btn btn-primary" title="Pan floor plan"><i class="bx bx-move"></i> Pan</button>
+                        <button type="button" id="pinModeButton" class="btn btn-outline-primary" title="Place defect pin"><i class="bx bx-map-pin"></i> Place Pin</button>
+                        <button type="button" id="zoomInButton" class="btn btn-outline-primary" title="Zoom in"><i class="bx bx-zoom-in"></i></button>
+                        <button type="button" id="zoomOutButton" class="btn btn-outline-primary" title="Zoom out"><i class="bx bx-zoom-out"></i></button>
+                        <button type="button" id="resetZoomButton" class="btn btn-outline-primary" title="Fit floor plan"><i class="bx bx-expand"></i></button>
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-5">
                     <div class="btn-group w-100">
                         <button type="button" id="clearPinButton" class="btn btn-outline-danger"><i class="bx bx-trash"></i> Clear</button>
                         <button type="button" id="confirmButton" class="btn btn-success"><i class="bx bx-check"></i> Done</button>
@@ -205,788 +231,348 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pin_x']) && isset($_P
         // Set PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        // Global variables
+        // Interactive floor plan state
         const floorPlanId = <?php echo json_encode($floorPlan['id']); ?>;
         const floorPlanPath = <?php echo json_encode($floorPlan['file_path']); ?>;
+        const container = document.querySelector('.floorplan-container');
+        const canvas = document.getElementById('pdfCanvas');
+        const overlay = document.getElementById('pinOverlay');
+        const controlsHeight = 86;
+
+        let pdfDoc = null;
         let currentPin = null;
+        let fitScale = 1;
         let currentScale = 1;
         let currentTranslate = { x: 0, y: 0 };
-        let lastTranslate = { x: 0, y: 0 };
-        let pdfDoc = null;
-        let holdTimer = null;
-        const holdDuration = 1000; // 1 second hold for pin placement
-        let touchIndicator = null;
-        let timerIndicator = null;
-        let timerStartTime = 0;
-        let initialPosition = { x: 0, y: 0 };
-        let isTouching = false;
-        let isMouseHolding = false;
-        let isDragging = false;
-        let isPinDragging = false;
-        let dragOffset = { x: 0, y: 0 };
-        
-        // Load floor plan on page load
+        let interactionMode = 'pan';
+        let activePointerId = null;
+        let pointerStart = null;
+        let translateStart = null;
+        let pinDragPointerId = null;
+        let pinchStart = null;
+
         document.addEventListener('DOMContentLoaded', async function() {
+            ensureCoordinateInputs();
+            setMode('pan');
+
             try {
                 await loadFloorPlan(floorPlanPath);
-                setupPinchZoom();
-                setupPanControl();
+                setupInteractions();
                 document.getElementById('pdfLoadingOverlay').style.display = 'none';
             } catch (error) {
                 console.error('Error loading floor plan:', error);
                 showAlert('error', 'Failed to load floor plan');
             }
-            
-            // Button event handlers
-            document.getElementById('zoomInButton').addEventListener('click', () => {
-                currentScale *= 1.2;
-                updateCanvasTransform();
-            });
-            
-            document.getElementById('zoomOutButton').addEventListener('click', () => {
-                currentScale *= 0.8;
-                updateCanvasTransform();
-            });
-            
-            document.getElementById('resetZoomButton').addEventListener('click', () => {
-                currentScale = 1;
-                currentTranslate = { x: 0, y: 0 };
-                lastTranslate = { x: 0, y: 0 };
-                updateCanvasTransform();
-            });
-            
+
+            document.getElementById('panModeButton').addEventListener('click', () => setMode('pan'));
+            document.getElementById('pinModeButton').addEventListener('click', () => setMode('pin'));
+            document.getElementById('zoomInButton').addEventListener('click', () => zoomAt(1.25, container.clientWidth / 2, (container.clientHeight - controlsHeight) / 2));
+            document.getElementById('zoomOutButton').addEventListener('click', () => zoomAt(0.8, container.clientWidth / 2, (container.clientHeight - controlsHeight) / 2));
+            document.getElementById('resetZoomButton').addEventListener('click', fitToView);
             document.getElementById('clearPinButton').addEventListener('click', clearExistingPin);
-            
+            window.addEventListener('resize', () => {
+                if (Math.abs(currentScale - fitScale) < 0.01) fitToView();
+                else updateCanvasTransform();
+            });
+
             document.getElementById('confirmButton').addEventListener('click', () => {
                 const pinX = document.getElementById('pin_x').value;
                 const pinY = document.getElementById('pin_y').value;
-                
-                if (!pinX || !pinY) {
+                if (pinX === '' || pinY === '') {
                     showAlert('warning', 'Please place a pin on the floor plan');
                     return;
                 }
-                
-                // Return to parent window with pin coordinates
+
+                const payload = {
+                    pin_x: parseFloat(pinX),
+                    pin_y: parseFloat(pinY),
+                    floor_plan_id: floorPlanId
+                };
+
                 if (window.opener) {
-                    window.opener.postMessage({
-                        type: 'floor_plan_pin',
-                        data: {
-                            pin_x: parseFloat(pinX),
-                            pin_y: parseFloat(pinY),
-                            floor_plan_id: floorPlanId
-                        }
-                    }, '*');
+                    window.opener.postMessage({ type: 'floor_plan_pin', data: payload }, window.location.origin);
                     window.close();
                 } else {
-                    // Fallback if opened in same window
-                    localStorage.setItem('floor_plan_pin', JSON.stringify({
-                        pin_x: parseFloat(pinX),
-                        pin_y: parseFloat(pinY),
-                        floor_plan_id: floorPlanId
-                    }));
+                    localStorage.setItem('floor_plan_pin', JSON.stringify(payload));
                     window.location.href = 'create_defect.php';
                 }
             });
         });
-        
-        // Load floor plan image or PDF
-        async function loadFloorPlan(url) {
-            try {
-                const fileExtension = url.split('.').pop().toLowerCase();
-                const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension);
-                const isPDF = fileExtension === 'pdf';
-                
-                if (isImage) {
-                    await loadImage(url);
-                } else if (isPDF) {
-                    await loadPDF(url);
-                } else {
-                    throw new Error('Unsupported file type: ' + fileExtension);
+
+        function ensureCoordinateInputs() {
+            for (const id of ['pin_x', 'pin_y']) {
+                if (!document.getElementById(id)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.id = id;
+                    document.body.appendChild(input);
                 }
-            } catch (error) {
-                console.error('Error loading floor plan:', error);
-                throw error;
             }
         }
-        
-        // Load image floor plan
-        async function loadImage(url) {
+
+        function setMode(mode) {
+            interactionMode = mode;
+            container.classList.toggle('pan-mode', mode === 'pan');
+            container.classList.toggle('pin-mode', mode === 'pin');
+            document.getElementById('panModeButton')?.classList.toggle('btn-primary', mode === 'pan');
+            document.getElementById('panModeButton')?.classList.toggle('btn-outline-primary', mode !== 'pan');
+            document.getElementById('pinModeButton')?.classList.toggle('btn-primary', mode === 'pin');
+            document.getElementById('pinModeButton')?.classList.toggle('btn-outline-primary', mode !== 'pin');
+            const hint = document.getElementById('interactionHint');
+            if (hint) {
+                hint.textContent = mode === 'pin'
+                    ? 'Click or tap the exact defect location'
+                    : 'Drag to move • wheel/pinch to zoom • choose Place Pin to mark location';
+            }
+        }
+
+        async function loadFloorPlan(url) {
+            const cleanUrl = url.split('?')[0];
+            const ext = cleanUrl.split('.').pop().toLowerCase();
+            if (['jpg','jpeg','png','gif','webp'].includes(ext)) return loadImage(url);
+            if (ext === 'pdf') return loadPDF(url);
+            throw new Error('Unsupported file type: ' + ext);
+        }
+
+        function loadImage(url) {
             return new Promise((resolve, reject) => {
-                const canvas = document.getElementById('pdfCanvas');
                 const context = canvas.getContext('2d');
-                const container = document.querySelector('.floorplan-container');
                 const img = new Image();
-                
-                img.onload = function() {
-                    const containerWidth = container.clientWidth;
-                    const containerHeight = container.clientHeight;
-                    const scaleX = containerWidth / img.width;
-                    const scaleY = containerHeight / img.height;
-                    
-                    // Use 95% of available space instead of 90%
-                    const scale = Math.min(scaleX, scaleY) * 0.95;
-                    
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    canvas.style.width = `${img.width}px`;
-                    canvas.style.height = `${img.height}px`;
-                    
-                    context.drawImage(img, 0, 0, img.width, img.height);
-                    
-                    // Center the canvas with the larger scale
-                    currentScale = scale;
-                    updateCanvasTransform();
-                    
-                    setupPinPlacement();
+                img.onload = () => {
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.style.width = img.naturalWidth + 'px';
+                    canvas.style.height = img.naturalHeight + 'px';
+                    context.drawImage(img, 0, 0);
+                    syncOverlaySize();
+                    fitToView();
                     resolve();
                 };
-                
-                img.onerror = function() {
-                    reject(new Error('Failed to load image: ' + url));
-                };
-                
+                img.onerror = () => reject(new Error('Failed to load image'));
                 img.src = url;
             });
         }
-        
-        // Load PDF floor plan
+
         async function loadPDF(url) {
-            try {
-                const loadingTask = pdfjsLib.getDocument(url);
-                pdfDoc = await loadingTask.promise;
-                const page = await pdfDoc.getPage(1);
-                const canvas = document.getElementById('pdfCanvas');
-                const context = canvas.getContext('2d');
-                const container = document.querySelector('.floorplan-container');
-                
-                const viewport = page.getViewport({ scale: 1.0 });
-                const containerWidth = container.clientWidth;
-                const containerHeight = container.clientHeight;
-                const scaleX = containerWidth / viewport.width;
-                const scaleY = containerHeight / viewport.height;
-                
-                // Use 95% of available space
-                const scale = Math.min(scaleX, scaleY) * 0.95;
-                
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                canvas.style.width = `${viewport.width}px`;
-                canvas.style.height = `${viewport.height}px`;
-                
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-                
-                await page.render(renderContext);
-                
-                // Center the canvas with the larger scale
-                currentScale = scale;
-                updateCanvasTransform();
-                
-                setupPinPlacement();
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                throw error;
-            }
+            const loadingTask = pdfjsLib.getDocument(url);
+            pdfDoc = await loadingTask.promise;
+            const page = await pdfDoc.getPage(1);
+            const viewport = page.getViewport({ scale: 1 });
+            const context = canvas.getContext('2d');
+
+            canvas.width = Math.ceil(viewport.width);
+            canvas.height = Math.ceil(viewport.height);
+            canvas.style.width = canvas.width + 'px';
+            canvas.style.height = canvas.height + 'px';
+            await page.render({ canvasContext: context, viewport }).promise;
+            syncOverlaySize();
+            fitToView();
         }
-        
-        // Update canvas transform 
+
+        function syncOverlaySize() {
+            overlay.style.width = canvas.width + 'px';
+            overlay.style.height = canvas.height + 'px';
+        }
+
+        function viewportHeight() {
+            return Math.max(160, container.clientHeight - controlsHeight);
+        }
+
+        function centerForScale(scale) {
+            return {
+                x: (container.clientWidth - canvas.width * scale) / 2,
+                y: (viewportHeight() - canvas.height * scale) / 2
+            };
+        }
+
+        function fitToView() {
+            const scaleX = (container.clientWidth * 0.96) / Math.max(1, canvas.width);
+            const scaleY = (viewportHeight() * 0.94) / Math.max(1, canvas.height);
+            fitScale = Math.max(0.05, Math.min(scaleX, scaleY));
+            currentScale = fitScale;
+            currentTranslate = { x: 0, y: 0 };
+            updateCanvasTransform();
+        }
+
         function updateCanvasTransform() {
-            const canvas = document.getElementById('pdfCanvas');
-            const overlay = document.getElementById('pinOverlay');
-            const container = document.querySelector('.floorplan-container');
-            
-            // Calculate centering position
-            const containerWidth = container.clientWidth;
-            const containerHeight = container.clientHeight;
-            const canvasWidth = parseInt(canvas.style.width || canvas.width);
-            const canvasHeight = parseInt(canvas.style.height || canvas.height);
-            
-            const centerX = (containerWidth - canvasWidth * currentScale) / 2;
-            const centerY = (containerHeight - canvasHeight * currentScale) / 2;
-            
-            const translateX = centerX + currentTranslate.x;
-            const translateY = centerY + currentTranslate.y;
-            
-            // Apply transform
-            const transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
+            const center = centerForScale(currentScale);
+            const tx = center.x + currentTranslate.x;
+            const ty = center.y + currentTranslate.y;
+            const transform = `translate(${tx}px, ${ty}px) scale(${currentScale})`;
             canvas.style.transform = transform;
             overlay.style.transform = transform;
-            
-            // Match overlay size to canvas
-            overlay.style.width = `${canvasWidth}px`;
-            overlay.style.height = `${canvasHeight}px`;
         }
-        
-        // Setup pin placement with touch and hold
-        function setupPinPlacement() {
-            const overlay = document.getElementById('pinOverlay');
-            const container = document.querySelector('.floorplan-container');
-            overlay.innerHTML = '';  // Clear overlay
-            
-            // Create empty hidden inputs for pin coordinates
-            if (!document.getElementById('pin_x')) {
-                const pinXInput = document.createElement('input');
-                pinXInput.type = 'hidden';
-                pinXInput.id = 'pin_x';
-                document.body.appendChild(pinXInput);
-                
-                const pinYInput = document.createElement('input');
-                pinYInput.type = 'hidden';
-                pinYInput.id = 'pin_y';
-                document.body.appendChild(pinYInput);
+
+        function contentPointAt(clientX, clientY, scale = currentScale, translate = currentTranslate) {
+            const rect = container.getBoundingClientRect();
+            const center = centerForScale(scale);
+            return {
+                x: (clientX - rect.left - center.x - translate.x) / scale,
+                y: (clientY - rect.top - center.y - translate.y) / scale
+            };
+        }
+
+        function zoomAt(factor, clientX, clientY) {
+            if (!canvas.width || !canvas.height) return;
+            const oldScale = currentScale;
+            const content = contentPointAt(clientX, clientY, oldScale, currentTranslate);
+            const minScale = Math.max(fitScale * 0.5, 0.03);
+            const maxScale = Math.max(fitScale * 12, 8);
+            const newScale = Math.max(minScale, Math.min(maxScale, oldScale * factor));
+            if (Math.abs(newScale - oldScale) < 0.0001) return;
+
+            const rect = container.getBoundingClientRect();
+            const newCenter = centerForScale(newScale);
+            currentScale = newScale;
+            currentTranslate = {
+                x: clientX - rect.left - newCenter.x - content.x * newScale,
+                y: clientY - rect.top - newCenter.y - content.y * newScale
+            };
+            updateCanvasTransform();
+        }
+
+        function placePinAtClient(clientX, clientY) {
+            const point = contentPointAt(clientX, clientY);
+            const x = Math.max(0, Math.min(1, point.x / canvas.width));
+            const y = Math.max(0, Math.min(1, point.y / canvas.height));
+            if (point.x < 0 || point.x > canvas.width || point.y < 0 || point.y > canvas.height) {
+                showAlert('warning', 'Choose a point inside the floor plan');
+                return;
             }
-            
-            // Helper function to get relative coordinates
-            function getRelativeCoordinates(clientX, clientY) {
-                const rect = overlay.getBoundingClientRect();
-                return {
-                    x: (clientX - rect.left) / currentScale / overlay.clientWidth,
-                    y: (clientY - rect.top) / currentScale / overlay.clientHeight
-                };
-            }
-            
-            // ----- TOUCH EVENTS ----- //
-            
-            // Touch start - begin timing for potential pin placement
-            overlay.addEventListener('touchstart', function(e) {
-                if (e.touches.length !== 1) return; // Only handle single touches
-                
-                const touch = e.touches[0];
-                initialPosition = { 
-                    x: touch.clientX, 
-                    y: touch.clientY 
-                };
-                
-                // Get relative position within the overlay
-                const rect = overlay.getBoundingClientRect();
-                const overlayX = (touch.clientX - rect.left) / currentScale;
-                const overlayY = (touch.clientY - rect.top) / currentScale;
-                
-                // Start the hold timer
-                timerStartTime = Date.now();
-                isTouching = true;
-                isDragging = false;
-                
-                // Create touch indicator and timer
-                createTouchIndicator(touch.clientX, touch.clientY);
-                createTimerIndicator(touch.clientX, touch.clientY);
-                
-                // Start the timer animation
-                requestAnimationFrame(updateTimerIndicator);
-                
-                // Set hold timer
-                holdTimer = setTimeout(() => {
-                    if (isTouching && !isDragging) {
-                        const coords = getRelativeCoordinates(touch.clientX, touch.clientY);
-                        placePin(coords.x, coords.y);
-                        
-                        // Vibrate device if supported (100ms)
-                        if (navigator.vibrate) {
-                            navigator.vibrate(100);
-                        }
-                    }
-                }, holdDuration);
-            });
-            
-            // Touch move - cancel pin placement if dragged too far
-            overlay.addEventListener('touchmove', function(e) {
-                if (!isTouching || e.touches.length !== 1) return;
-                
-                const touch = e.touches[0];
-                const deltaX = Math.abs(touch.clientX - initialPosition.x);
-                const deltaY = Math.abs(touch.clientY - initialPosition.y);
-                
-                // If moved more than 10px, consider it a drag
-                if (deltaX > 10 || deltaY > 10) {
-                    isDragging = true;
-                    if (holdTimer) {
-                        clearTimeout(holdTimer);
-                        holdTimer = null;
-                    }
-                    
-                    // Remove indicators
-                    removeTouchIndicator();
-                    removeTimerIndicator();
-                }
-                
-                // Update touch indicator position
-                if (touchIndicator) {
-                    touchIndicator.style.left = `${touch.clientX}px`;
-                    touchIndicator.style.top = `${touch.clientY}px`;
-                }
-                
-                // Update timer indicator position
-                if (timerIndicator) {
-                    timerIndicator.style.left = `${touch.clientX}px`;
-                    timerIndicator.style.top = `${touch.clientY}px`;
-                }
-                
-                e.preventDefault(); // Prevent scrolling
-            });
-            
-            // Touch end - clean up
-            overlay.addEventListener('touchend', function() {
-                isTouching = false;
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-                
-                // Remove indicators
-                removeTouchIndicator();
-                removeTimerIndicator();
-            });
-            
-            // Touch cancel - clean up
-            overlay.addEventListener('touchcancel', function() {
-                isTouching = false;
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-                
-                // Remove indicators
-                removeTouchIndicator();
-                removeTimerIndicator();
-            });
-            
-            // ----- MOUSE EVENTS ----- //
-            
-            // Mouse down - begin timing for potential pin placement
-            overlay.addEventListener('mousedown', function(e) {
-                // Skip if using touch
-                if (isTouching) return;
-                
-                initialPosition = { 
-                    x: e.clientX, 
-                    y: e.clientY 
-                };
-                
-                // Start the hold timer
-                timerStartTime = Date.now();
-                isMouseHolding = true;
-                isDragging = false;
-                
-                // Create indicators
-                createTouchIndicator(e.clientX, e.clientY);
-                createTimerIndicator(e.clientX, e.clientY);
-                
-                // Start the timer animation
-                requestAnimationFrame(updateTimerIndicator);
-                
-                // Set hold timer
-                holdTimer = setTimeout(() => {
-                    if (isMouseHolding && !isDragging) {
-                        const coords = getRelativeCoordinates(e.clientX, e.clientY);
-                        placePin(coords.x, coords.y);
-                    }
-                }, holdDuration);
-            });
-            
-            // Mouse move - cancel pin placement if dragged too far
-            document.addEventListener('mousemove', function(e) {
-                if (!isMouseHolding) return;
-                
-                const deltaX = Math.abs(e.clientX - initialPosition.x);
-                const deltaY = Math.abs(e.clientY - initialPosition.y);
-                
-                // If moved more than 10px, consider it a drag
-                if (deltaX > 10 || deltaY > 10) {
-                    isDragging = true;
-                    if (holdTimer) {
-                        clearTimeout(holdTimer);
-                        holdTimer = null;
-                    }
-                    
-                    // Remove indicators
-                    removeTouchIndicator();
-                    removeTimerIndicator();
-                }
-                
-                // Update indicator positions
-                if (touchIndicator) {
-                    touchIndicator.style.left = `${e.clientX}px`;
-                    touchIndicator.style.top = `${e.clientY}px`;
-                }
-                
-                if (timerIndicator) {
-                    timerIndicator.style.left = `${e.clientX}px`;
-                    timerIndicator.style.top = `${e.clientY}px`;
-                }
-            });
-            
-            // Mouse up - clean up
-            document.addEventListener('mouseup', function() {
-                isMouseHolding = false;
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-                
-                // Remove indicators
-                removeTouchIndicator();
-                removeTimerIndicator();
-            });
-            
-            // Mouse leave - clean up
-            overlay.addEventListener('mouseleave', function() {
-                isMouseHolding = false;
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-                
-                // Remove indicators
-                removeTouchIndicator();
-                removeTimerIndicator();
-            });
+            placePin(x, y);
+            setMode('pan');
         }
-        
-        // Create visual touch indicator
-        function createTouchIndicator(x, y) {
-            // Remove any existing indicator
-            removeTouchIndicator();
-            
-            // Create new indicator
-            touchIndicator = document.createElement('div');
-            touchIndicator.className = 'touch-indicator';
-            touchIndicator.style.left = `${x}px`;
-            touchIndicator.style.top = `${y}px`;
-            document.body.appendChild(touchIndicator);
-        }
-        
-        // Remove touch indicator
-        function removeTouchIndicator() {
-            if (touchIndicator) {
-                touchIndicator.remove();
-                touchIndicator = null;
-            }
-        }
-        
-        // Create timer indicator
-        function createTimerIndicator(x, y) {
-            // Remove any existing indicator
-            removeTimerIndicator();
-            
-            // Create new indicator
-            timerIndicator = document.createElement('div');
-            timerIndicator.className = 'timer-indicator';
-            timerIndicator.style.left = `${x}px`;
-            timerIndicator.style.top = `${y}px`;
-            
-            // Create timer circle
-            const timerCircle = document.createElement('div');
-            timerCircle.className = 'timer-circle';
-            timerIndicator.appendChild(timerCircle);
-            
-            document.body.appendChild(timerIndicator);
-        }
-        
-        // Remove timer indicator
-        function removeTimerIndicator() {
-            if (timerIndicator) {
-                timerIndicator.remove();
-                timerIndicator = null;
-            }
-        }
-        
-        // Update timer indicator animation
-        function updateTimerIndicator() {
-            if (!timerIndicator || (!isTouching && !isMouseHolding)) return;
-            
-            const elapsed = Date.now() - timerStartTime;
-            const progress = Math.min(elapsed / holdDuration, 1);
-            
-            // Update the conic gradient
-            const timerCircle = timerIndicator.querySelector('.timer-circle');
-            if (timerCircle) {
-                timerCircle.style.background = `conic-gradient(rgb(0, 123, 255) ${progress * 360}deg, rgba(0, 123, 255, 0.3) 0%)`;
-            }
-            
-            if (progress < 1 && (isTouching || isMouseHolding)) {
-                requestAnimationFrame(updateTimerIndicator);
-            }
-        }
-        
-        // Place pin on the floor plan
+
         function placePin(x, y) {
             clearExistingPin();
-            
-            // Create new pin
             currentPin = document.createElement('div');
             currentPin.className = 'location-pin';
-            const overlay = document.getElementById('pinOverlay');
             currentPin.style.left = (x * 100) + '%';
             currentPin.style.top = (y * 100) + '%';
             overlay.appendChild(currentPin);
-            
-            // Set hidden input values
-            document.getElementById('pin_x').value = x;
-            document.getElementById('pin_y').value = y;
-            
-            // Make pin draggable
+            document.getElementById('pin_x').value = x.toFixed(6);
+            document.getElementById('pin_y').value = y.toFixed(6);
             setupPinDragging(currentPin);
-            
-            showAlert('success', 'Pin placed successfully!', 'You can drag the pin to adjust its position');
+            showAlert('success', 'Pin placed', 'Drag the pin to fine-tune its position');
         }
-        
-        // Clear existing pin
+
         function clearExistingPin() {
-            const overlay = document.getElementById('pinOverlay');
-            while (overlay.firstChild) {
-                overlay.removeChild(overlay.firstChild);
-            }
+            overlay.querySelectorAll('.location-pin').forEach(pin => pin.remove());
             currentPin = null;
-            
-            // Clear hidden input values
             document.getElementById('pin_x').value = '';
             document.getElementById('pin_y').value = '';
         }
-        
-        // Make pin draggable
+
         function setupPinDragging(pin) {
-            // Touch drag
-            pin.addEventListener('touchstart', function(e) {
-                if (e.touches.length !== 1) return;
-                
+            pin.addEventListener('pointerdown', e => {
+                e.preventDefault();
                 e.stopPropagation();
-                
-                isPinDragging = true;
-                const touch = e.touches[0];
-                const pinRect = pin.getBoundingClientRect();
-                
-                // Calculate offset from touch point to pin center
-                dragOffset = {
-                    x: touch.clientX - (pinRect.left + pinRect.width / 2),
-                    y: touch.clientY - (pinRect.top + pinRect.height / 2)
-                };
-                
-                // Add shadow to indicate active dragging
-                pin.style.filter = 'drop-shadow(0 0 10px rgba(0,123,255,0.8))';
+                pinDragPointerId = e.pointerId;
+                pin.setPointerCapture(e.pointerId);
+                pin.style.filter = 'drop-shadow(0 0 10px rgba(0,123,255,.8))';
             });
-            
-            // Mouse drag - start
-            pin.addEventListener('mousedown', function(e) {
-                e.stopPropagation();
-                
-                isPinDragging = true;
-                const pinRect = pin.getBoundingClientRect();
-                
-                // Calculate offset from mouse point to pin center
-                dragOffset = {
-                    x: e.clientX - (pinRect.left + pinRect.width / 2),
-                    y: e.clientY - (pinRect.top + pinRect.height / 2)
-                };
-                
-                // Add shadow to indicate active dragging
-                pin.style.filter = 'drop-shadow(0 0 10px rgba(0,123,255,0.8))';
-            });
-            
-            // Touch drag - move
-            document.addEventListener('touchmove', function(e) {
-                if (!isPinDragging || e.touches.length !== 1) return;
-                
+
+            pin.addEventListener('pointermove', e => {
+                if (pinDragPointerId !== e.pointerId) return;
                 e.preventDefault();
-                
-                const touch = e.touches[0];
-                updatePinPosition(touch.clientX, touch.clientY);
+                const point = contentPointAt(e.clientX, e.clientY);
+                const x = Math.max(0, Math.min(1, point.x / canvas.width));
+                const y = Math.max(0, Math.min(1, point.y / canvas.height));
+                pin.style.left = (x * 100) + '%';
+                pin.style.top = (y * 100) + '%';
+                document.getElementById('pin_x').value = x.toFixed(6);
+                document.getElementById('pin_y').value = y.toFixed(6);
             });
-            
-            // Mouse drag - move
-            document.addEventListener('mousemove', function(e) {
-                if (!isPinDragging) return;
-                
-                e.preventDefault();
-                updatePinPosition(e.clientX, e.clientY);
-            });
-            
-            // Touch drag - end
-            document.addEventListener('touchend', function() {
-                if (!isPinDragging) return;
-                
-                isPinDragging = false;
+
+            const finish = e => {
+                if (pinDragPointerId !== e.pointerId) return;
+                try { pin.releasePointerCapture(e.pointerId); } catch (_) {}
+                pinDragPointerId = null;
                 pin.style.filter = '';
-                
-                showAlert('success', 'Pin position updated');
-            });
-            
-                        // Mouse drag - end
-            document.addEventListener('mouseup', function() {
-                if (!isPinDragging) return;
-                
-                isPinDragging = false;
-                pin.style.filter = '';
-                
-                showAlert('success', 'Pin position updated');
-            });
-            
-            // Mouse drag - cancel
-            document.addEventListener('mouseleave', function() {
-                if (!isPinDragging) return;
-                
-                isPinDragging = false;
-                pin.style.filter = '';
-            });
-            
-            // Function to update pin position during drag
-            function updatePinPosition(clientX, clientY) {
-                const overlay = document.getElementById('pinOverlay');
-                const rect = overlay.getBoundingClientRect();
-                
-                // Calculate new position (compensating for drag offset)
-                const newX = (clientX - dragOffset.x - rect.left) / currentScale;
-                const newY = (clientY - dragOffset.y - rect.top) / currentScale;
-                
-                // Convert to relative coordinates (0-1)
-                const relativeX = newX / overlay.clientWidth;
-                const relativeY = newY / overlay.clientHeight;
-                
-                // Constrain within bounds
-                const boundedX = Math.max(0, Math.min(1, relativeX));
-                const boundedY = Math.max(0, Math.min(1, relativeY));
-                
-                // Update pin position
-                pin.style.left = (boundedX * 100) + '%';
-                pin.style.top = (boundedY * 100) + '%';
-                
-                // Update hidden input values
-                document.getElementById('pin_x').value = boundedX;
-                document.getElementById('pin_y').value = boundedY;
-            }
+            };
+            pin.addEventListener('pointerup', finish);
+            pin.addEventListener('pointercancel', finish);
         }
-        
-        // Setup pinch-zoom functionality
-        function setupPinchZoom() {
-            const container = document.querySelector('.floorplan-container');
-            let initialDistance = 0;
-            let initialScale = 1;
-            
-            container.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 2) {
-                    e.preventDefault();
-                    
-                    // Calculate initial distance between touch points
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    initialDistance = Math.sqrt(dx * dx + dy * dy);
-                    initialScale = currentScale;
-                }
-            });
-            
-            container.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 2 && initialDistance > 0) {
-                    e.preventDefault();
-                    
-                    // Calculate new distance
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    const newDistance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Calculate scale factor
-                    const scaleFactor = newDistance / initialDistance;
-                    currentScale = initialScale * scaleFactor;
-                    
-                    // Constrain scale
-                    currentScale = Math.max(0.5, Math.min(5, currentScale));
-                    
-                    updateCanvasTransform();
-                }
-            });
-            
-            container.addEventListener('touchend', function() {
-                initialDistance = 0;
-            });
-            
-            container.addEventListener('touchcancel', function() {
-                initialDistance = 0;
-            });
-            
-            // Add mouse wheel zoom
-            container.addEventListener('wheel', function(e) {
+
+        function setupInteractions() {
+            overlay.addEventListener('pointerdown', e => {
+                if (e.button !== undefined && e.button !== 0) return;
+                if (pinDragPointerId !== null) return;
                 e.preventDefault();
-                
-                // Determine zoom direction
-                const delta = e.deltaY || e.detail || e.wheelDelta;
-                
-                if (delta > 0) {
-                    // Zoom out
-                    currentScale = Math.max(0.5, currentScale * 0.9);
-                } else {
-                    // Zoom in
-                    currentScale = Math.min(5, currentScale * 1.1);
+
+                if (interactionMode === 'pin') {
+                    placePinAtClient(e.clientX, e.clientY);
+                    return;
                 }
-                
-                updateCanvasTransform();
-            });
-        }
-        
-        // Setup pan control for both touch and mouse
-        function setupPanControl() {
-            const container = document.querySelector('.floorplan-container');
-            let startX, startY;
-            let isPanning = false;
-            
-            // Mouse pan events
-            container.addEventListener('mousedown', function(e) {
-                // Skip if we're interacting with the pin
-                if (isPinDragging || isMouseHolding) return;
-                
+
+                activePointerId = e.pointerId;
+                pointerStart = { x: e.clientX, y: e.clientY };
+                translateStart = { ...currentTranslate };
+                overlay.setPointerCapture(e.pointerId);
                 container.classList.add('grabbing');
-                isPanning = true;
-                startX = e.clientX - currentTranslate.x;
-                startY = e.clientY - currentTranslate.y;
             });
-            
-            document.addEventListener('mousemove', function(e) {
-                if (!isPanning) return;
-                
+
+            overlay.addEventListener('pointermove', e => {
+                if (activePointerId !== e.pointerId || !pointerStart) return;
                 e.preventDefault();
-                currentTranslate.x = e.clientX - startX;
-                currentTranslate.y = e.clientY - startY;
-                
+                currentTranslate = {
+                    x: translateStart.x + (e.clientX - pointerStart.x),
+                    y: translateStart.y + (e.clientY - pointerStart.y)
+                };
                 updateCanvasTransform();
             });
-            
-            document.addEventListener('mouseup', function() {
-                if (!isPanning) return;
-                
+
+            const finishPan = e => {
+                if (activePointerId !== e.pointerId) return;
+                try { overlay.releasePointerCapture(e.pointerId); } catch (_) {}
+                activePointerId = null;
+                pointerStart = null;
+                translateStart = null;
                 container.classList.remove('grabbing');
-                isPanning = false;
-                lastTranslate.x = currentTranslate.x;
-                lastTranslate.y = currentTranslate.y;
+            };
+            overlay.addEventListener('pointerup', finishPan);
+            overlay.addEventListener('pointercancel', finishPan);
+
+            container.addEventListener('wheel', e => {
+                e.preventDefault();
+                zoomAt(e.deltaY < 0 ? 1.12 : 0.89, e.clientX, e.clientY);
+            }, { passive: false });
+
+            container.addEventListener('touchstart', e => {
+                if (e.touches.length !== 2) return;
+                e.preventDefault();
+                const a=e.touches[0], b=e.touches[1];
+                pinchStart = {
+                    distance: Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY),
+                    scale: currentScale,
+                    midpoint: { x:(a.clientX+b.clientX)/2, y:(a.clientY+b.clientY)/2 },
+                    content: contentPointAt((a.clientX+b.clientX)/2,(a.clientY+b.clientY)/2)
+                };
+            }, { passive:false });
+
+            container.addEventListener('touchmove', e => {
+                if (e.touches.length !== 2 || !pinchStart) return;
+                e.preventDefault();
+                const a=e.touches[0], b=e.touches[1];
+                const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+                const midpoint={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};
+                const newScale=Math.max(Math.max(fitScale*.5,.03),Math.min(Math.max(fitScale*12,8),pinchStart.scale*(distance/pinchStart.distance)));
+                const rect=container.getBoundingClientRect();
+                const center=centerForScale(newScale);
+                currentScale=newScale;
+                currentTranslate={
+                    x:midpoint.x-rect.left-center.x-pinchStart.content.x*newScale,
+                    y:midpoint.y-rect.top-center.y-pinchStart.content.y*newScale
+                };
+                updateCanvasTransform();
+            }, { passive:false });
+
+            container.addEventListener('touchend', e => {
+                if (e.touches.length < 2) pinchStart=null;
             });
-            
-            // Touch pan events (for single finger pan)
-            container.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 1 && !isPinDragging) {
-                    startX = e.touches[0].clientX - currentTranslate.x;
-                    startY = e.touches[0].clientY - currentTranslate.y;
-                }
-            });
-            
-            container.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 1 && isDragging && !isPinDragging) {
-                    e.preventDefault();
-                    isPanning = true;
-                    
-                    currentTranslate.x = e.touches[0].clientX - startX;
-                    currentTranslate.y = e.touches[0].clientY - startY;
-                    
-                    updateCanvasTransform();
-                }
-            });
-            
-            container.addEventListener('touchend', function() {
-                if (isPanning) {
-                    lastTranslate.x = currentTranslate.x;
-                    lastTranslate.y = currentTranslate.y;
-                    isPanning = false;
-                }
-            });
+            container.addEventListener('touchcancel', () => { pinchStart=null; });
         }
-        
+
         // Show alert
         function showAlert(icon, title, text = '') {
             Swal.fire({
