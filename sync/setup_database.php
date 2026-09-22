@@ -1,8 +1,8 @@
 <?php
 /**
- * Sync Database Setup Script for k87747_defecttracker
+ * Sync Database Setup Script
  * Created: 2025-02-26 10:19:29
- * Updated by: irlam
+ * Uses deployment configuration and current administrator data.
  */
 
 // Include database configuration
@@ -204,7 +204,8 @@ try {
                               (?, ?, ?, 0, 'bidirectional', 'success', 'Initial database setup')");
                               
         $now = date('Y-m-d H:i:s');
-        $stmt->execute(['irlam', $now, $now]);
+        $setupUser = getenv('SYNC_SETUP_USER') ?: 'system';
+        $stmt->execute([$setupUser, $now, $now]);
         echo "Created sync log entry.\n";
     } catch (PDOException $e) {
         echo "Error creating sync log: " . $e->getMessage() . "\n";
@@ -215,9 +216,14 @@ try {
     try {
         $userId = null;
         $userStmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-        $userStmt->execute(['irlam']);
-        $userId = $userStmt->fetchColumn();
-        
+        $setupUser = getenv('SYNC_SETUP_USER') ?: '';
+        if ($setupUser === '') {
+            echo "No SYNC_SETUP_USER configured; skipping user-linked system log.\n";
+            $userId = false;
+        } else {
+            $userStmt->execute([$setupUser]);
+            $userId = $userStmt->fetchColumn();
+        }
         if ($userId) {
             $stmt = $pdo->prepare("INSERT INTO system_logs 
                                   (user_id, action, action_by, action_at, details) 
@@ -226,7 +232,7 @@ try {
             $stmt->execute([$userId, $userId, date('Y-m-d H:i:s')]);
             echo "Added system log entry.\n";
         } else {
-            echo "Warning: User 'irlam' not found. Skipping system log entry.\n";
+            echo "Setup user not found; skipping system log entry.\n";
         }
     } catch (PDOException $e) {
         echo "Error adding system log: " . $e->getMessage() . "\n";
