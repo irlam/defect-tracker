@@ -1,11 +1,11 @@
 <?php
 // includes/functions.php
 // Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-01-21 18:34:35
-// Current User's Login: irlam
+// Runtime user is taken from the authenticated session.
 
 // Define constants
 define('CURRENT_UTC_DATETIME', gmdate('d-m-Y H:i:s'));
-define('CURRENT_USER', isset($_SESSION['username']) ? $_SESSION['username'] : 'irlam');
+define('CURRENT_USER', isset($_SESSION['username']) ? (string) $_SESSION['username'] : 'system');
 
 function isAdmin($userId = null) {
     global $db;
