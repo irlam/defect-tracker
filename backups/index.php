@@ -473,7 +473,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         // Function to run the actual backup
         function runBackup() {
             // Start status check loop
-            statusCheckInterval = setInterval(checkBackupStatus, 500);
+            statusCheckInterval = setInterval(checkBackupStatus, 5000);
             
             // Make AJAX request to run backup
             fetch('create-backup.php', {
