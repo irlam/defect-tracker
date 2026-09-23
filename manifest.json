@@ -5,7 +5,15 @@
   "display": "standalone",
   "background_color": "#0b1220",
   "theme_color": "#2563eb",
-  "description": "Track and manage defects efficiently.",
+  "description": "Track and manage site defects, including offline field capture and automatic upload.",
+  "shortcuts": [
+    {
+      "name": "New field report",
+      "short_name": "Field report",
+      "description": "Capture a defect report even when reception is unavailable.",
+      "url": "/offline-field.html"
+    }
+  ],
   "icons": [
     {
       "src": "/assets/icons/android/android-launchericon-48-48.png",

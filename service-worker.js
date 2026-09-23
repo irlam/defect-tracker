@@ -1,10 +1,17 @@
-const CACHE_VERSION = 'v1.0.1';
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `defect-tracker-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
+const OFFLINE_FIELD_URL = '/offline-field.html';
+const FIELD_DB_NAME = 'defect_tracker_field_queue';
+const FIELD_DB_VERSION = 1;
+const FIELD_OUTBOX_STORE = 'defect_submissions';
 
 const STATIC_ASSETS = [
   '/css/app.css',
   '/offline.html',
+  '/offline-field.html',
+  '/js/offline-defect-queue.js',
+  '/js/offline-field.js',
   '/favicons/favicon-96x96.png'
 ];
 
@@ -45,18 +52,35 @@ self.addEventListener('fetch', event => {
 
   // Handle navigation requests
   if (event.request.mode === 'navigate') {
+    const navigationUrl = new URL(event.request.url);
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(OFFLINE_URL);
-      })
+      fetch(event.request).then(response => {
+        if (navigationUrl.pathname === OFFLINE_FIELD_URL && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(OFFLINE_FIELD_URL, copy));
+        }
+        return response;
+      }).catch(() => caches.match(
+        navigationUrl.pathname === OFFLINE_FIELD_URL ? OFFLINE_FIELD_URL : OFFLINE_URL
+      ))
     );
     return;
   }
 
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin || url.search || !STATIC_ASSETS.includes(url.pathname)) {
+  if (url.origin !== self.location.origin) {
     return;
   }
+
+  // Floor-plan previews selected during online preparation are placed in a
+  // separate cache by the field queue. Serve only those known cached files;
+  // private defect photos and authenticated pages always bypass this path.
+  if (event.request.destination === 'image' && /\/uploads\/(?:floor_plans|floor_plan_images)\//i.test(url.pathname)) {
+    event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+    return;
+  }
+
+  if (url.search || !STATIC_ASSETS.includes(url.pathname)) return;
 
   // Only explicitly public static assets use the cache-first strategy.
   event.respondWith(
@@ -76,6 +100,123 @@ self.addEventListener('fetch', event => {
       });
     })
   );
+});
+
+function openFieldDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(FIELD_DB_NAME, FIELD_DB_VERSION);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Unable to open the field outbox'));
+  });
+}
+
+function fieldRequest(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Field outbox request failed'));
+  });
+}
+
+function fieldTransaction(transaction) {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = resolve;
+    transaction.onerror = () => reject(transaction.error || new Error('Field outbox transaction failed'));
+    transaction.onabort = () => reject(transaction.error || new Error('Field outbox transaction aborted'));
+  });
+}
+
+async function readFieldOutbox(db) {
+  const transaction = db.transaction(FIELD_OUTBOX_STORE, 'readonly');
+  return fieldRequest(transaction.objectStore(FIELD_OUTBOX_STORE).getAll());
+}
+
+async function saveFieldItem(db, item) {
+  const transaction = db.transaction(FIELD_OUTBOX_STORE, 'readwrite');
+  transaction.objectStore(FIELD_OUTBOX_STORE).put(item);
+  return fieldTransaction(transaction);
+}
+
+async function deleteFieldItem(db, id) {
+  const transaction = db.transaction(FIELD_OUTBOX_STORE, 'readwrite');
+  transaction.objectStore(FIELD_OUTBOX_STORE).delete(id);
+  return fieldTransaction(transaction);
+}
+
+function restoreFieldFormData(entries, csrfToken) {
+  const formData = new FormData();
+  entries.forEach(entry => {
+    if (entry.name === 'csrf_token') return;
+    if (entry.kind === 'file') {
+      formData.append(entry.name, entry.blob, entry.fileName);
+    } else {
+      formData.append(entry.name, entry.value);
+    }
+  });
+  formData.set('csrf_token', csrfToken);
+  return formData;
+}
+
+async function notifyFieldClients(message) {
+  const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  clientList.forEach(client => client.postMessage(message));
+}
+
+async function syncFieldReportsInBackground() {
+  const contextResponse = await fetch('/api/offline_field_context.php', {
+    credentials: 'include',
+    cache: 'no-store',
+    headers: { Accept: 'application/json' }
+  });
+  if (contextResponse.status === 401) {
+    await notifyFieldClients({ type: 'FIELD_SYNC_NEEDS_LOGIN' });
+    return;
+  }
+  if (!contextResponse.ok) throw new Error(`Field context unavailable (${contextResponse.status})`);
+  const context = await contextResponse.json();
+  const db = await openFieldDatabase();
+  const items = (await readFieldOutbox(db))
+    .filter(item => Number(item.userId) === Number(context.userId) && item.status !== 'failed')
+    .sort((a, b) => a.createdAt - b.createdAt);
+
+  for (const item of items) {
+    item.status = 'syncing';
+    item.lastAttemptAt = Date.now();
+    await saveFieldItem(db, item);
+    try {
+      const response = await fetch('/create_defect.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Accept: 'application/json', 'X-Offline-Submission': '1' },
+        body: restoreFieldFormData(item.payload, context.csrfToken)
+      });
+      let body = {};
+      try { body = await response.json(); } catch (error) { body = {}; }
+      if (response.ok && body.success) {
+        await deleteFieldItem(db, item.id);
+        continue;
+      }
+      item.lastError = body.message || `Upload failed (${response.status})`;
+      if (response.status >= 400 && response.status < 500) {
+        item.attempts = Number(item.attempts || 0) + 1;
+        item.status = 'failed';
+        await saveFieldItem(db, item);
+        continue;
+      }
+      throw new Error(item.lastError);
+    } catch (error) {
+      item.attempts = Number(item.attempts || 0) + 1;
+      item.lastError = error.message || 'Network unavailable';
+      item.status = 'pending';
+      await saveFieldItem(db, item);
+      throw error;
+    }
+  }
+  await notifyFieldClients({ type: 'FIELD_SYNC_COMPLETE' });
+}
+
+self.addEventListener('sync', event => {
+  if (event.tag !== 'sync-field-reports') return;
+  event.waitUntil(syncFieldReportsInBackground());
 });
 
 // Handle push notifications

@@ -34,6 +34,7 @@ Run:
     php tests/defect-lifecycle-regression.php
     php tests/site-mail.php
     node tests/service-worker-cache.cjs
+    php tests/offline-field-regression.php
 
 GitHub Actions also runs syntax and regression checks on pushes and pull requests.
 

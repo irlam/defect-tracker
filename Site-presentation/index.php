@@ -324,10 +324,10 @@ $statusCountsJSON = json_encode($statusCounts);
                     <div style="border: 1px solid #ccc; padding: 0.5rem;">Server Database</div>
                 </div>
                 <ul class="feature-list">
-                    <li>Enable field use without constant internet access.</li>
-                    <li>Robust synchronization mechanism for data consistency.</li>
-                    <li>Device tracking and management features.</li>
-                    <li>Conflict resolution logic for sync operations.</li>
+                    <li>Create field defect reports with photos while reception is unavailable.</li>
+                    <li>Store pending reports safely on the device and upload them automatically.</li>
+                    <li>Prepare project, contractor, and floor-plan reference data for offline use.</li>
+                    <li>Prevent duplicate defects when a connection drops during submission.</li>
                 </ul>
             </div>
         </section>

@@ -3996,3 +3996,27 @@ hr {
     align-items: center;
   }
 }
+.offline-field-status {
+    position: fixed;
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    z-index: 1085;
+    min-height: 2.75rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.96);
+    color: #f8fafc;
+    box-shadow: 0 12px 30px rgba(2, 6, 23, 0.34);
+    font: 600 0.875rem/1.2 system-ui, sans-serif;
+    backdrop-filter: blur(10px);
+}
+
+.offline-field-status[data-state="pending"] {
+    border-color: rgba(245, 158, 11, 0.8);
+    background: rgba(120, 53, 15, 0.96);
+}
+
+.offline-field-status[data-state="offline"] {
+    border-color: rgba(56, 189, 248, 0.75);
+}

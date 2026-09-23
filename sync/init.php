@@ -35,12 +35,12 @@ function sync_init_client() {
             currentTimestamp: "' . date('d-m-Y H:i:s') . '"
         };
     </script>';
-    echo '<script src="/sync/client/db-manager.js"></script>';
+    echo '<script src="/js/offline-defect-queue.js"></script>';
     echo '<script src="/sync/client/sync-manager.js"></script>';
     echo '<script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/sync/client/service-worker.js")
+                navigator.serviceWorker.register("/service-worker.js")
                     .then(reg => console.log("Service worker registered: ", reg.scope))
                     .catch(err => console.error("Service worker registration failed: ", err));
             });

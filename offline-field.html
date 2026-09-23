@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b1220">
+    <title>Offline Field Report · Defect Tracker</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        :root { color-scheme: dark; }
+        body { margin: 0; min-height: 100vh; background: #07101f; color: #e5edf8; font-family: system-ui, sans-serif; }
+        .field-shell { width: min(760px, 100%); margin: 0 auto; padding: max(1rem, env(safe-area-inset-top)) 1rem max(5rem, env(safe-area-inset-bottom)); }
+        .field-header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; margin-bottom: 1rem; }
+        .field-header h1 { margin: 0 0 .35rem; font-size: clamp(1.45rem, 6vw, 2rem); }
+        .field-header p { margin: 0; color: #94a3b8; }
+        .connection-pill { flex: 0 0 auto; padding: .45rem .7rem; border-radius: 999px; background: #7c2d12; color: #ffedd5; font-size: .78rem; font-weight: 700; }
+        .connection-pill.online { background: #14532d; color: #dcfce7; }
+        .saved-banner, .field-alert { border-radius: .8rem; padding: .8rem 1rem; margin-bottom: 1rem; background: #164e63; color: #cffafe; }
+        .field-alert { background: #7f1d1d; color: #fee2e2; }
+        .field-card { background: #111c2f; border: 1px solid #27364d; border-radius: 1rem; padding: 1rem; box-shadow: 0 18px 45px rgba(0,0,0,.2); }
+        .field-grid { display: grid; gap: 1rem; }
+        .field-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        label { display: grid; gap: .4rem; font-size: .88rem; font-weight: 700; color: #cbd5e1; }
+        input, select, textarea { width: 100%; box-sizing: border-box; min-height: 3rem; border: 1px solid #40506a; border-radius: .7rem; padding: .7rem .8rem; background: #07101f; color: #f8fafc; font: inherit; }
+        textarea { min-height: 7rem; resize: vertical; }
+        input[type="file"] { min-height: auto; }
+        .floor-plan { position: relative; min-height: 180px; display: grid; place-items: center; overflow: hidden; border: 1px dashed #51637d; border-radius: .8rem; background: #030712; touch-action: manipulation; }
+        .floor-plan img { display: block; max-width: 100%; max-height: 65vh; object-fit: contain; }
+        .floor-pin { position: absolute; width: 1.4rem; height: 1.4rem; transform: translate(-50%, -100%); border: 3px solid #fff; border-radius: 50% 50% 50% 0; background: #ef4444; rotate: -45deg; box-shadow: 0 3px 10px rgba(0,0,0,.45); pointer-events: none; }
+        .floor-pin::after { content: ''; position: absolute; inset: .25rem; border-radius: 50%; background: #fff; }
+        .field-help { margin: .4rem 0 0; color: #94a3b8; font-size: .82rem; }
+        .field-actions { display: grid; grid-template-columns: 1fr auto; gap: .75rem; margin-top: 1rem; }
+        .field-button { min-height: 3.15rem; border: 0; border-radius: .8rem; padding: .75rem 1rem; background: #2563eb; color: #fff; font: 700 1rem system-ui, sans-serif; }
+        .field-button.secondary { background: #27364d; text-decoration: none; display: grid; place-items: center; }
+        .field-button:disabled { opacity: .55; }
+        .queue-panel { margin-top: 1rem; }
+        .queue-panel h2 { margin: 0 0 .75rem; font-size: 1.05rem; }
+        .queue-list { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }
+        .queue-item { display: grid; grid-template-columns: 1fr auto; gap: .75rem; align-items: center; padding: .75rem; border-radius: .7rem; background: #07101f; border: 1px solid #27364d; }
+        .queue-item strong, .queue-item small { display: block; }
+        .queue-item small { margin-top: .2rem; color: #94a3b8; }
+        .queue-actions { display: flex; gap: .45rem; }
+        .queue-action { border: 0; border-radius: .55rem; padding: .5rem .65rem; background: #1d4ed8; color: white; font-weight: 700; }
+        .queue-action.danger { background: #7f1d1d; }
+        @media (max-width: 560px) { .field-grid.two, .field-actions { grid-template-columns: 1fr; } .field-actions .secondary { order: 2; } }
+    </style>
+</head>
+<body>
+<main class="field-shell">
+    <header class="field-header">
+        <div><h1>Field defect report</h1><p>Reports and photos are stored safely on this device until reception returns.</p></div>
+        <span id="connectionPill" class="connection-pill">Offline</span>
+    </header>
+    <div id="savedBanner" class="saved-banner" hidden>Report saved. You can raise another defect while the previous one waits to sync.</div>
+    <div id="fieldAlert" class="field-alert" role="alert" hidden></div>
+    <form id="offlineFieldForm" class="field-card">
+        <div class="field-grid">
+            <div class="field-grid two">
+                <label>Title<input name="title" maxlength="200" required autocomplete="off"></label>
+                <label>Due date<input type="date" name="due_date"></label>
+            </div>
+            <div class="field-grid two">
+                <label>Project<select id="fieldProject" name="project_id" required><option value="">Select project</option></select></label>
+                <label>Contractor<select id="fieldContractor" name="contractor_id" required><option value="">Select contractor</option></select></label>
+            </div>
+            <div class="field-grid two">
+                <label>Priority<select name="priority" required><option value="">Select priority</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></label>
+                <label>Floor plan<select id="fieldFloorPlan" name="floor_plan_id" required><option value="">Select floor plan</option></select></label>
+            </div>
+            <label>Description<textarea name="description" required></textarea></label>
+            <div>
+                <div id="floorPlan" class="floor-plan"><span id="floorPrompt">Select a floor plan, then tap its preview to place the pin.</span><img id="floorImage" alt="Selected floor plan" hidden><span id="floorPin" class="floor-pin" hidden></span></div>
+                <p class="field-help">Tap the exact defect location. The red marker is saved as proportional coordinates.</p>
+                <input type="hidden" id="fieldPinX" name="pin_x">
+                <input type="hidden" id="fieldPinY" name="pin_y">
+            </div>
+            <label>Site photos<input type="file" name="images[]" accept="image/*" capture="environment" multiple required></label>
+        </div>
+        <div class="field-actions">
+            <button id="saveFieldReport" class="field-button" type="submit">Save field report</button>
+            <a class="field-button secondary" href="/dashboard.php">Return to dashboard</a>
+        </div>
+    </form>
+    <section id="pendingPanel" class="field-card queue-panel" hidden>
+        <h2>Reports stored on this device</h2>
+        <ul id="pendingReports" class="queue-list"></ul>
+    </section>
+</main>
+<script src="/js/offline-defect-queue.js"></script>
+<script src="/js/offline-field.js"></script>
+</body>
+</html>

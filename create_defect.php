@@ -13,8 +13,29 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$isOfflineSubmission = ($_SERVER['HTTP_X_OFFLINE_SUBMISSION'] ?? '') === '1';
+
+function finishDefectRequest(bool $success, string $message, int $statusCode, string $redirect, array $extra = []): void
+{
+    global $isOfflineSubmission;
+    if ($isOfflineSubmission) {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store, private');
+        echo json_encode(array_merge(['success' => $success, 'message' => $message], $extra));
+        exit;
+    }
+
+    $_SESSION[$success ? 'success_message' : 'error_message'] = $message;
+    header('Location: ' . $redirect);
+    exit;
+}
+
 // Authentication check
 if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
+    if ($isOfflineSubmission) {
+        finishDefectRequest(false, 'Your session expired. Sign in again and the saved report will upload automatically.', 401, 'login.php');
+    }
     header("Location: login.php");
     exit();
 }
@@ -70,17 +91,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         logEntry("CSRF token validation failed. POST data: " . print_r($_POST, true));
-        $_SESSION['error_message'] = "CSRF token validation failed";
-        header("Location: defects.php");
-        exit();
+        finishDefectRequest(false, 'Your session security token expired. Sign in again to upload the saved report.', 403, 'defects.php');
     }
 
     $selectedFloorPlanId = filter_input(INPUT_POST, 'floor_plan_id', FILTER_VALIDATE_INT);
     if (!$selectedFloorPlanId) {
         logEntry("No floor plan selected. POST data: " . print_r($_POST, true));
-        $_SESSION['error_message'] = "Please select a floor plan.";
-        header("Location: create_defect.php");
-        exit();
+        finishDefectRequest(false, 'Please select a floor plan.', 422, 'create_defect.php');
     }
     foreach ($floorPlans as $floorPlan) {
         if ($floorPlan['id'] == $selectedFloorPlanId) {
@@ -91,9 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (!$selectedFloorPlan) {
         logEntry("Selected floor plan not found. ID: " . $selectedFloorPlanId . " POST data: " . print_r($_POST, true));
-        $_SESSION['error_message'] = "Selected floor plan not found.";
-        header("Location: create_defect.php");
-        exit();
+        finishDefectRequest(false, 'The selected floor plan is no longer available.', 422, 'create_defect.php');
     }
 
     $imagePath = $selectedFloorPlan['image_path'];
@@ -104,9 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($pinX === false || $pinY === false || $pinX < 0 || $pinX > 1 || $pinY < 0 || $pinY > 1) {
         logEntry("Invalid pin coordinates. pinX: " . $pinX . ", pinY: " . $pinY . " POST data: " . print_r($_POST, true));
-        $_SESSION['error_message'] = "Invalid pin coordinates.";
-        header("Location: create_defect.php");
-        exit();
+        finishDefectRequest(false, 'Invalid floor-plan pin coordinates.', 422, 'create_defect.php');
     }
 
     // Store user text as entered and escape it only when rendering. Encoding
@@ -117,18 +130,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $projectId = filter_input(INPUT_POST, 'project_id', FILTER_VALIDATE_INT);
     $contractorId = filter_input(INPUT_POST, 'contractor_id', FILTER_VALIDATE_INT);
     $priority = strtolower(trim((string) ($_POST['priority'] ?? '')));
+    $clientSubmissionId = trim((string) ($_POST['client_submission_id'] ?? ''));
 
     $allowedPriorities = ['low', 'medium', 'high', 'critical'];
     if (!$title || !$description || !$projectId || !$contractorId || !in_array($priority, $allowedPriorities, true)) {
-        $_SESSION['error_message'] = 'Complete all required defect details before submitting.';
-        header('Location: create_defect.php');
-        exit();
+        finishDefectRequest(false, 'Complete all required defect details before submitting.', 422, 'create_defect.php');
     }
 
     if ((int) $selectedFloorPlan['project_id'] !== (int) $projectId) {
-        $_SESSION['error_message'] = 'The selected floor plan does not belong to the selected project.';
-        header('Location: create_defect.php');
-        exit();
+        finishDefectRequest(false, 'The selected floor plan does not belong to the selected project.', 422, 'create_defect.php');
+    }
+
+    if ($isOfflineSubmission && !preg_match('/^[A-Za-z0-9-]{20,100}$/', $clientSubmissionId)) {
+        finishDefectRequest(false, 'The saved report identifier is invalid.', 422, 'create_defect.php');
+    }
+
+    $submissionLockName = null;
+    if ($clientSubmissionId !== '') {
+        // Serialise retries for the same user/report. This closes the narrow
+        // race where a foreground tab and Background Sync reconnect together.
+        $submissionLockName = 'defect-field-' . substr(hash('sha256', $currentUserId . ':' . $clientSubmissionId), 0, 48);
+        $lockStatement = $db->prepare('SELECT GET_LOCK(:lock_name, 10)');
+        $lockStatement->execute([':lock_name' => $submissionLockName]);
+        if ((int) $lockStatement->fetchColumn() !== 1) {
+            finishDefectRequest(false, 'The saved report is already being uploaded. It will retry automatically.', 503, 'defects.php');
+        }
+
+        $existingSubmission = $db->prepare(
+            'SELECT id FROM defects WHERE client_id = :client_id AND reported_by = :reported_by LIMIT 1'
+        );
+        $existingSubmission->execute([
+            ':client_id' => $clientSubmissionId,
+            ':reported_by' => $currentUserId,
+        ]);
+        $existingDefectId = (int) ($existingSubmission->fetchColumn() ?: 0);
+        if ($existingDefectId > 0) {
+            $releaseStatement = $db->prepare('SELECT RELEASE_LOCK(:lock_name)');
+            $releaseStatement->execute([':lock_name' => $submissionLockName]);
+            finishDefectRequest(true, 'This field report was already uploaded.', 200, 'defects.php', [
+                'defectId' => $existingDefectId,
+                'duplicate' => true,
+            ]);
+        }
     }
     // Replace the current due date handling line
 // FROM: $dueDate = filter_input(INPUT_POST, 'due_date', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -158,8 +201,8 @@ if (!empty($rawDueDate)) {
 
 	    // Insert defect into database
 	logEntry("Due date value before database insertion: " . ($dueDate === null ? "NULL" : $dueDate));
-    $defectQuery = "INSERT INTO defects (project_id, floor_plan_id, title, description, contractor_id, priority, due_date, pin_x, pin_y, reported_by, created_at, has_pin, assigned_to, created_by)
-                    VALUES (:project_id, :floor_plan_id, :title, :description, :contractor_id, :priority, :due_date, :pin_x, :pin_y, :reported_by, :created_at, :has_pin, :assigned_to, :created_by)";
+    $defectQuery = "INSERT INTO defects (project_id, floor_plan_id, title, description, contractor_id, priority, due_date, pin_x, pin_y, reported_by, created_at, has_pin, assigned_to, created_by, client_id)
+                    VALUES (:project_id, :floor_plan_id, :title, :description, :contractor_id, :priority, :due_date, :pin_x, :pin_y, :reported_by, :created_at, :has_pin, :assigned_to, :created_by, :client_id)";
     $defectStmt = $db->prepare($defectQuery);
     $defectStmt->bindParam(':project_id', $projectId);
     $defectStmt->bindParam(':floor_plan_id', $selectedFloorPlanId);
@@ -182,6 +225,11 @@ if ($dueDate === null) {
     $defectStmt->bindParam(':has_pin', $hasPin, PDO::PARAM_BOOL);
     $defectStmt->bindParam(':assigned_to', $contractorId);
     $defectStmt->bindParam(':created_by', $currentUserId);
+    if ($clientSubmissionId === '') {
+        $defectStmt->bindValue(':client_id', null, PDO::PARAM_NULL);
+    } else {
+        $defectStmt->bindValue(':client_id', $clientSubmissionId, PDO::PARAM_STR);
+    }
 
     try {
         $db->beginTransaction();
@@ -197,10 +245,17 @@ if ($dueDate === null) {
         if ($db->inTransaction()) {
             $db->rollBack();
         }
+        if ($submissionLockName !== null) {
+            $releaseStatement = $db->prepare('SELECT RELEASE_LOCK(:lock_name)');
+            $releaseStatement->execute([':lock_name' => $submissionLockName]);
+        }
         logEntry("Database error inserting defect: " . $e->getMessage() . " Query: " . $defectQuery);
-        $_SESSION['error_message'] = "The defect could not be created. Please try again.";
-        header("Location: defects.php");
-        exit();
+        finishDefectRequest(false, 'The defect could not be created. It remains safely queued for another attempt.', 503, 'defects.php');
+    }
+
+    if ($submissionLockName !== null) {
+        $releaseStatement = $db->prepare('SELECT RELEASE_LOCK(:lock_name)');
+        $releaseStatement->execute([':lock_name' => $submissionLockName]);
     }
 
     logEntry("Defect created with ID: " . $defectId);
@@ -354,10 +409,11 @@ if (!empty($_FILES['images']['name'][0])) {
     logEntry("FILES array contents: " . print_r($_FILES, true));
 }
 
-    $_SESSION['success_message'] = "Defect created successfully.";
-    header("Location: defects.php");
-    exit();
-}	
+    finishDefectRequest(true, 'Defect created successfully.', 200, 'defects.php', [
+        'defectId' => (int) $defectId,
+        'duplicate' => false,
+    ]);
+}
 
 
 // Get priority list
@@ -1294,59 +1350,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             });
-        });
-    }
-    
-    // Validate custom dropdowns and pin placement before the native form
-    // submission. Allowing the browser to submit normally is important on
-    // unreliable site connections where scripted fetch flows are brittle.
-    const createDefectForm = document.getElementById('createDefectForm');
-    if (createDefectForm && !createDefectForm.hasAttribute('data-event-bound')) {
-        createDefectForm.setAttribute('data-event-bound', 'true');
-        createDefectForm.addEventListener('submit', function(event) {
-            if (this.dataset.submitting === 'true') {
-                event.preventDefault();
-                return;
-            }
-
-            const requiredSelections = [
-                ['project_id', 'Select a project.'],
-                ['contractor_id', 'Select a contractor.'],
-                ['priority', 'Select a priority.'],
-                ['floor_plan_id', 'Select a floor plan.'],
-                ['pin_x', 'Tap the floor plan to place the defect pin.'],
-                ['pin_y', 'Tap the floor plan to place the defect pin.']
-            ];
-            const missingSelection = requiredSelections.find(([id]) => {
-                const field = document.getElementById(id);
-                return !field || field.value === '';
-            });
-
-            if (!this.checkValidity() || missingSelection) {
-                event.preventDefault();
-                this.classList.add('was-validated');
-                if (missingSelection) {
-                    window.alert(missingSelection[1]);
-                }
-                return;
-            }
-
-            this.dataset.submitting = 'true';
-            const submitButton = this.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.setAttribute('aria-busy', 'true');
-            }
-
-            // Show loading modal
-            if (window.bootstrap && bootstrap.Modal) {
-                const loadingModal = document.getElementById('loadingModal');
-                if (loadingModal) {
-                    const bsModal = new bootstrap.Modal(loadingModal);
-                    bsModal.show();
-                }
-            }
-            
         });
     }
     

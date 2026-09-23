@@ -33,6 +33,9 @@ async function fetchHandled(path, method = 'GET', mode = 'cors') {
   handlers.install({ waitUntil(promise) { pending = promise; } });
   await pending;
   assert(!cachedAssets.includes('/'), 'Must not precache authenticated root redirects');
+  for (const path of ['/offline-field.html', '/js/offline-defect-queue.js', '/js/offline-field.js']) {
+    assert(cachedAssets.includes(path), `${path} must be available for offline field capture`);
+  }
   for (const path of ['/api/get_defect.php?id=334', '/uploads/defects/334/photo.jpg', '/login.php', '/css/app.css?v=2', 'https://cdn.example.test/file.js']) {
     assert.equal(await fetchHandled(path), undefined, path);
   }
@@ -43,6 +46,6 @@ async function fetchHandled(path, method = 'GET', mode = 'cors') {
   assert.equal(await fetchHandled('/dashboard.php', 'GET', 'navigate'), 'cached-public-asset');
   handlers.activate({ waitUntil(promise) { pending = promise; } });
   await pending;
-  assert.deepEqual(deleted, ['defect-tracker-v1.0.0']);
-  console.log('PASS: private data/mutations bypass cache; navigation fallback and scoped cache cleanup work.');
+  assert.deepEqual(deleted, ['defect-tracker-v1.0.0', 'defect-tracker-v1.0.1']);
+  console.log('PASS: private data/mutations bypass cache; offline field shell and scoped cache cleanup work.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -554,6 +554,17 @@ class Navbar {
                 }
             }
         </script>';
+
+        if (!defined('OFFLINE_FIELD_QUEUE_LOADED')) {
+            $offlineQueueFile = dirname(__DIR__) . '/js/offline-defect-queue.js';
+            $offlineQueueVersion = is_file($offlineQueueFile) ? (string) filemtime($offlineQueueFile) : '1';
+            echo '<script>window.OFFLINE_FIELD_CONFIG = ' . json_encode([
+                'userId' => $this->userId,
+                'username' => $this->username,
+            ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';</script>';
+            echo '<script src="/js/offline-defect-queue.js?v=' . rawurlencode($offlineQueueVersion) . '"></script>';
+            define('OFFLINE_FIELD_QUEUE_LOADED', true);
+        }
     } // End of render() method
 
     /**

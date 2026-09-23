@@ -46,95 +46,104 @@ function clearExistingPin() {
     document.getElementById('pin_y').value = '';
 }
 
-// Form submission handler
-// Form submission handler - UPDATED VERSION
-function handleFormSubmission(event) {
+async function handleFormSubmission(event) {
     event.preventDefault();
-    console.log('Form submission started');
+    const form = event.currentTarget;
+    if (form.dataset.submitting === 'true') return;
 
-    $('#loadingModal').modal('show');
+    const requiredSelections = [
+        ['project_id', 'Select a project.'],
+        ['contractor_id', 'Select a contractor.'],
+        ['priority', 'Select a priority.'],
+        ['floor_plan_id', 'Select a floor plan.'],
+        ['pin_x', 'Tap the floor plan to place the defect pin.'],
+        ['pin_y', 'Tap the floor plan to place the defect pin.']
+    ];
+    const missingSelection = requiredSelections.find(([id]) => {
+        const field = document.getElementById(id);
+        return !field || field.value === '';
+    });
+    if (!form.checkValidity() || missingSelection) {
+        form.classList.add('was-validated');
+        if (missingSelection) window.alert(missingSelection[1]);
+        return;
+    }
+    if (!window.offlineDefectQueue) {
+        showToast('error', 'Offline field storage is unavailable. Refresh the page while online and try again.');
+        return;
+    }
 
-    captureCanvasData()
-        .then(canvasBlob => {
-            // Create FormData from the form to preserve ALL form fields
-            const formData = new FormData(event.target);
-            
-            // Log the due_date field to verify it's included
-            console.log('Due date in form submission:', formData.get('due_date'));
-            
-            // Handle image processing
-            let hasImages = false;
-            
-            // Remove any existing images[] entries to add them back cleanly
-            const originalImages = formData.getAll('images[]');
-            formData.delete('images[]');
-            
-            // First check if we have any edited images
-            if (window.editedImages && Object.values(window.editedImages).length > 0) {
-                Object.values(window.editedImages).forEach((file, i) => {
-                    console.log('Adding edited file to form:', file.name, file.size);
-                    formData.append('images[]', file);
-                    hasImages = true;
-                });
-            }
-            
-            // Then add any camera/original images that weren't edited
-            if (window.originalImages && Object.values(window.originalImages).length > 0) {
-                Object.values(window.originalImages).forEach((file, i) => {
-                    // Only add if we don't have an edited version
-                    const indexKey = file.name || i.toString();
-                    if (!window.editedImages || !window.editedImages[indexKey]) {
-                        console.log('Adding original file to form:', file.name, file.size);
-                        formData.append('images[]', file);
-                        hasImages = true;
-                    }
-                });
-            }
-            
-            // If we don't have special images, add back the original ones from the file input
-            if (!hasImages && originalImages.length > 0) {
-                originalImages.forEach(file => {
-                    formData.append('images[]', file);
-                    hasImages = true;
-                });
-            }
+    form.dataset.submitting = 'true';
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+    }
+    const loadingElement = document.getElementById('loadingModal');
+    const loadingModal = loadingElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(loadingElement) : null;
+    if (loadingModal) loadingModal.show();
 
-            if (!hasImages) {
-                console.warn('No images found to submit! Check if files were captured correctly.');
-            }
+    let queuedItem = null;
+    try {
+        const canvasBlob = await captureCanvasData();
+        const formData = new FormData(form);
+        let hasImages = false;
+        const selectedFiles = formData.getAll('images[]');
+        formData.delete('images[]');
 
-            if (canvasBlob) {
-                formData.append('canvas_image', canvasBlob, 'canvas_image.png');
-            }
-
-            // Submit the form with our FormData containing ALL form fields including due_date
-            fetch('create_defect.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${response.status} - ${response.statusText}`);
-                }
-                return response.text();
-            })
-            .then(data => {
-                $('#loadingModal').modal('hide');
-                console.log('Form submission successful:', data);
-                showToast('success', 'Defect created successfully!');
-                window.location.href = 'defects.php';
-            })
-            .catch(error => {
-                $('#loadingModal').modal('hide');
-                console.error('Form submission error:', error);
-                showToast('error', `Error creating defect: ${error.message}`);
+        if (window.editedImages) {
+            Object.values(window.editedImages).forEach(file => {
+                formData.append('images[]', file);
+                hasImages = true;
             });
-        })
-        .catch(error => {
-            $('#loadingModal').modal('hide');
-            console.error('Error capturing canvas data:', error);
-            showToast('error', `Error capturing canvas data: ${error}`);
-        });
+        }
+        if (window.originalImages) {
+            Object.values(window.originalImages).forEach((file, index) => {
+                const key = file.name || String(index);
+                if (!window.editedImages || !window.editedImages[key]) {
+                    formData.append('images[]', file);
+                    hasImages = true;
+                }
+            });
+        }
+        if (!hasImages) {
+            selectedFiles.forEach(file => {
+                if (file instanceof Blob && file.size > 0) {
+                    formData.append('images[]', file);
+                    hasImages = true;
+                }
+            });
+        }
+        if (!hasImages) throw new Error('Attach at least one site image before saving the report.');
+        if (canvasBlob) formData.append('canvas_image', canvasBlob, 'canvas_image.png');
+
+        queuedItem = await window.offlineDefectQueue.enqueue(formData, formData.get('title'));
+        const result = navigator.onLine
+            ? await window.offlineDefectQueue.syncPending()
+            : { status: 'offline' };
+        if (result.status === 'synced' || result.status === 'empty') {
+            showToast('success', 'Defect created and synced successfully.');
+            window.setTimeout(() => { window.location.href = 'defects.php'; }, 500);
+            return;
+        }
+        if (result.status === 'failed') {
+            await window.offlineDefectQueue.discard(queuedItem.id);
+            throw new Error(result.message || 'The report needs correcting before it can be uploaded.');
+        }
+
+        showToast('success', 'Report saved safely on this device. It will upload automatically when online.');
+        window.setTimeout(() => { window.location.href = '/offline-field.html?saved=1'; }, 700);
+    } catch (error) {
+        console.error('Field report save failed:', error);
+        showToast('error', error.message || 'The report could not be saved on this device.');
+    } finally {
+        if (loadingModal) loadingModal.hide();
+        form.dataset.submitting = 'false';
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute('aria-busy');
+        }
+    }
 }
 // Load floor plan from URL
 async function loadFloorPlan(url) {
