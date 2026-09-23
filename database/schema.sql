@@ -5,8 +5,8 @@
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: 10.35.233.124:3306
--- Generation Time: Oct 29, 2025 at 12:07 PM
+-- Host intentionally omitted
+-- Generation timestamp intentionally omitted
 -- Server version: 8.0.43
 -- PHP Version: 8.4.8
 
@@ -21,7 +21,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `k87747_defecttracker`
+-- Database name intentionally omitted
 --
 
 -- --------------------------------------------------------
@@ -169,6 +169,7 @@ CREATE TABLE `contractors` (
 --
 -- Dumping data for table `contractors`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 --
 -- Triggers `contractors`
@@ -292,24 +293,7 @@ CREATE TABLE `defects` (
 --
 -- Dumping data for table `defects`
 --
-
-Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'accepted', NULL, NULL, 'all ok', 'high', '2025-03-21', '2025-03-19 19:34:50', '2025-03-22 13:11:23', 'pending', NULL, '2025-03-19 21:35:57', NULL, NULL, 54, 22, 0.258264, 0.643535, NULL, NULL, NULL, '2025-03-22 14:11:23', NULL, NULL, 22, '2025-03-19 20:35:57', NULL, NULL, 1, NULL),
-(312, 13, 112, 22, 53, 'another title test', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'accepted', NULL, 'kkk', 'kkk', 'high', '2025-03-21', '2025-03-19 20:37:22', '2025-03-22 13:32:33', 'pending', NULL, '2025-03-20 08:27:26', NULL, NULL, 53, 22, 0.801358, 0.541792, NULL, NULL, NULL, '2025-03-22 14:32:33', NULL, 'kkk', 22, '2025-03-20 07:43:41', '2025-03-20 07:43:33', 22, 1, 22),
-(313, 14, 113, 22, 52, 'drunk again :-)', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', '', 'uploads/defect_images/defect_67db3ca496d41_20250319_215236.png', NULL, NULL, 'low', '2025-03-26', '2025-03-19 20:49:13', '2025-03-22 13:11:35', 'pending', NULL, '2025-03-19 22:52:36', NULL, 22, 52, 22, 0.179161, 0.386512, NULL, NULL, NULL, '2025-03-22 14:11:35', NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(314, 12, 104, 22, 52, 'new test', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'open', NULL, NULL, NULL, 'low', '2025-03-27', '2025-03-20 14:16:57', '2025-03-20 15:16:57', 'synced', NULL, NULL, NULL, NULL, 52, 22, 0.830508, 0.489302, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(315, 12, 104, 22, 53, 'test99', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'open', NULL, NULL, NULL, 'low', '2025-03-27', '2025-03-20 14:21:44', '2025-03-22 12:33:17', 'pending', NULL, '2025-03-22 14:33:17', NULL, 22, 53, 22, 0.930837, 0.278459, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(316, 12, 105, 22, 53, 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkk', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'open', NULL, NULL, NULL, 'low', '2025-03-27', '2025-03-20 14:43:52', '2025-03-20 15:43:52', 'synced', NULL, NULL, NULL, NULL, 53, 22, 0.742969, 0.422495, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(317, 12, 107, 22, 55, '4444', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'open', NULL, NULL, NULL, 'medium', '2025-03-26', '2025-03-21 13:20:16', '2025-03-21 14:20:16', 'synced', NULL, NULL, NULL, NULL, 55, 22, 0.778538, 0.370957, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(318, 12, 104, 22, 31, 'defect1', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'open', NULL, NULL, NULL, 'low', '2025-03-29', '2025-03-22 12:49:03', '2025-03-22 13:49:03', 'synced', NULL, NULL, NULL, NULL, 31, 22, 0.432302, 0.699976, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(319, 12, 104, 22, 55, 'Test tv', 'Edencroft issue ', 'rejected', NULL, 'Absolutely rubbish', NULL, 'low', '2025-03-29', '2025-03-22 17:17:52', '2025-03-22 17:19:18', 'pending', NULL, '2025-03-22 19:19:18', NULL, NULL, 55, 22, 0.818677, 0.656969, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 22),
-(320, 12, 104, 22, 53, 'Lanzarote ', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'open', NULL, NULL, 'Happy days', '', '2025-04-30', '2025-03-24 13:36:39', '2025-03-28 15:21:40', 'pending', NULL, '2025-03-24 15:37:11', NULL, 22, 53, 22, 0.731599, 0.531551, NULL, NULL, NULL, '2025-03-28 16:21:40', NULL, 'kk', 22, '2025-03-24 14:38:55', '2025-03-28 15:20:29', 22, 1, NULL),
-(321, 12, 104, 22, 53, 'Lanzarote test ', 'Lanzarote ', 'accepted', NULL, NULL, 'all ok', 'low', '2025-03-31', '2025-03-24 14:13:02', '2025-03-28 14:53:43', 'pending', NULL, '2025-03-28 15:53:43', NULL, NULL, 53, 22, 0.580928, 0.365855, NULL, NULL, NULL, NULL, NULL, NULL, 22, '2025-03-28 14:53:43', NULL, NULL, 1, NULL),
-(322, 12, 104, 22, 31, 'app 404', 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', 'accepted', NULL, NULL, 'all ok', 'medium', '2025-04-02', '2025-03-28 14:22:47', '2025-03-28 15:23:04', 'pending', NULL, '2025-03-28 16:23:04', NULL, NULL, 31, 22, 0.0912623, 0.701375, NULL, NULL, NULL, NULL, NULL, NULL, 22, '2025-03-28 15:23:04', NULL, NULL, 1, NULL),
-(323, 12, 106, 30, 54, 'managers add defect', 'managers add defect', 'open', NULL, NULL, NULL, 'low', '2025-04-15', '2025-04-08 04:28:12', '2025-04-08 06:28:12', 'synced', NULL, NULL, NULL, NULL, 54, 30, 0.152474, 0.585177, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(324, 12, 107, 30, 54, '', 'managers add defect', 'accepted', NULL, NULL, 'all ok', 'high', '2025-04-14', '2025-04-12 06:56:15', '2025-04-12 10:00:47', 'pending', NULL, '2025-04-12 12:00:47', NULL, NULL, 54, 30, 0.593958, 0.685161, NULL, NULL, NULL, NULL, NULL, NULL, 30, '2025-04-12 10:00:47', NULL, NULL, 1, NULL),
-(325, 12, 105, 30, 53, 'Ttt', 'Crap', 'open', NULL, NULL, NULL, 'low', '2025-05-02', '2025-04-25 15:06:46', '2025-04-25 17:06:46', 'synced', NULL, NULL, NULL, NULL, 53, 30, 0.649971, 0.506207, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(326, 13, 107, 30, 55, 'bbbbbbbbbb', 'bbb\r\nCrap', 'open', NULL, NULL, NULL, 'medium', '2025-07-22', '2025-07-17 13:37:15', '2025-07-17 15:37:15', 'synced', NULL, NULL, NULL, NULL, 55, 30, 0.442286, 0.535225, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL),
-(327, 12, 104, 22, 55, 'Lighting ', 'Lighting missing ', 'open', NULL, NULL, NULL, 'low', '2025-09-03', '2025-08-27 06:35:06', '2025-08-27 08:35:06', 'synced', NULL, NULL, NULL, NULL, 55, 22, 0.415207, 0.395521, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, NULL);
+-- Data intentionally omitted from the schema-only baseline.
 
 --
 -- Triggers `defects`
@@ -392,6 +376,7 @@ CREATE TABLE `defect_history` (
 --
 -- Dumping data for table `defect_history`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -417,6 +402,7 @@ CREATE TABLE `defect_images` (
 --
 -- Dumping data for table `defect_images`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 --
 -- Triggers `defect_images`
@@ -497,6 +483,7 @@ CREATE TABLE `floor_plans` (
 --
 -- Dumping data for table `floor_plans`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 --
 -- Triggers `floor_plans`
@@ -531,6 +518,7 @@ CREATE TABLE `maintenance_log` (
 --
 -- Dumping data for table `maintenance_log`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -589,6 +577,7 @@ CREATE TABLE `permissions` (
 --
 -- Dumping data for table `permissions`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -614,6 +603,7 @@ CREATE TABLE `projects` (
 --
 -- Dumping data for table `projects`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -634,6 +624,7 @@ CREATE TABLE `roles` (
 --
 -- Dumping data for table `roles`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -650,6 +641,7 @@ CREATE TABLE `role_permissions` (
 --
 -- Dumping data for table `role_permissions`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -715,6 +707,7 @@ CREATE TABLE `sync_logs` (
 --
 -- Dumping data for table `sync_logs`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -773,6 +766,7 @@ CREATE TABLE `system_logs` (
 --
 -- Dumping data for table `system_logs`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -809,6 +803,7 @@ CREATE TABLE `users` (
 --
 -- Dumping data for table `users`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 --
 -- Triggers `users`
@@ -816,16 +811,16 @@ CREATE TABLE `users` (
 DELIMITER $$
 CREATE TRIGGER `users_insert_trigger` BEFORE INSERT ON `users` FOR EACH ROW BEGIN
     SET NEW.created_at = NOW();
-    SET NEW.created_by = 'irlam';
+    SET NEW.created_by = COALESCE(NEW.created_by, 'system');
     SET NEW.updated_at = NOW();
-    SET NEW.updated_by = 'irlam';
+    SET NEW.updated_by = COALESCE(NEW.updated_by, 'system');
 END
 $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `users_update_trigger` BEFORE UPDATE ON `users` FOR EACH ROW BEGIN
     SET NEW.updated_at = NOW();
-    SET NEW.updated_by = 'irlam';
+    SET NEW.updated_by = COALESCE(NEW.updated_by, 'system');
 END
 $$
 DELIMITER ;
@@ -850,6 +845,7 @@ CREATE TABLE `user_logs` (
 --
 -- Dumping data for table `user_logs`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -879,17 +875,7 @@ CREATE TABLE `user_recent_descriptions` (
 --
 -- Dumping data for table `user_recent_descriptions`
 --
-
-Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', '2025-03-22 13:49:03'),
-(99, 22, 'Edencroft issue ', '2025-03-22 18:17:52'),
-(100, 22, 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', '2025-03-24 14:36:39'),
-(101, 22, 'Lanzarote ', '2025-03-24 15:13:02'),
-(102, 22, 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using &#039;Content here, content here&#039;, making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for &#039;lorem ipsum&#039; will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).', '2025-03-28 15:22:47'),
-(103, 30, 'managers add defect', '2025-04-08 06:28:12'),
-(104, 30, 'managers add defect', '2025-04-12 08:56:15'),
-(105, 30, 'Crap', '2025-04-25 17:06:46'),
-(106, 30, 'bbb\r\nCrap', '2025-07-17 15:37:15'),
-(107, 22, 'Lighting missing ', '2025-08-27 08:35:06');
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
@@ -912,6 +898,7 @@ CREATE TABLE `user_roles` (
 --
 -- Dumping data for table `user_roles`
 --
+-- Data intentionally omitted from the schema-only baseline.
 
 -- --------------------------------------------------------
 
