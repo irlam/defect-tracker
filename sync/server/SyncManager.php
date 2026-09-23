@@ -399,7 +399,7 @@ class SyncManager {
     }
     
     // Resolve conflict with chosen strategy
-    public function resolveConflict($conflictId, $resolution) {
+    public function resolveConflict($conflictId, $resolution, $resolvedBy = null) {
         try {
             // First get the conflict details
             $stmt = $this->db->prepare("SELECT * FROM sync_conflicts WHERE id = ?");
@@ -417,7 +417,8 @@ class SyncManager {
                                           resolved_by = ?, 
                                           resolved_at = ? 
                                       WHERE id = ?");
-            $stmt->execute([$resolution, 'irlam', date('Y-m-d H:i:s'), $conflictId]);
+            $actor = $resolvedBy ?? (string)($_SESSION['username'] ?? 'system');
+            $stmt->execute([$resolution, $actor, date('Y-m-d H:i:s'), $conflictId]);
             
             // Update related sync queue item to retry with force_sync
             $stmt = $this->db->prepare("UPDATE sync_queue 
