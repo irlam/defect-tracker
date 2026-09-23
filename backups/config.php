@@ -21,7 +21,7 @@ define('MAX_BACKUPS', 10); // Maximum number of backups to keep
 define('BACKUP_NAME_PREFIX', 'mcgoff-backup');
 
 // Website Files to Backup
-define('WEBSITE_ROOT', '/var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs');
+define('WEBSITE_ROOT', realpath(dirname(__DIR__)) ?: dirname(__DIR__));
 define('EXCLUDE_PATHS', serialize(array(
     __DIR__, // Exclude the backups system itself
     WEBSITE_ROOT . '/tmp',
@@ -44,8 +44,8 @@ define('MYSQLDUMP_PATH', '/usr/bin/mysqldump');
 date_default_timezone_set('UTC'); // Server is in UTC
 
 // Current date/time and user
-define('CURRENT_DATETIME', '2025-02-26 19:04:30');
-define('CURRENT_USER', 'irlam');
+define('CURRENT_DATETIME', gmdate('Y-m-d H:i:s'));
+define('CURRENT_USER', isset($_SESSION['username']) && $_SESSION['username'] !== '' ? (string) $_SESSION['username'] : 'system');
 
 // Create backup directory if it doesn't exist
 if (!file_exists(BACKUP_DIR)) {
