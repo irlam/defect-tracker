@@ -37,8 +37,8 @@ $defectId = (int)$_GET['defect_id'];
 $userId = (int)$_SESSION['user_id'];
 
 // Use dynamic date/time and username
-$currentDateTime = '2025-03-22 12:35:21'; // Current time from user's message
-$currentUsername = 'irlam'; // Current username from user's message
+$currentDateTime = date('d/m/Y H:i:s');
+$currentUsername = (string)($_SESSION['username'] ?? 'System User');
 
 try {
     $database = new Database();
