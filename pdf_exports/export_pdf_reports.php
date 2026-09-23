@@ -14,7 +14,7 @@ $display_end_date = date('d/m/Y', strtotime($end_date));
 
 // Set current user and datetime for the report header in specified format
 $current_datetime = date('d/m/Y H:i:s');
-$current_user = (string)($_SESSION['username'] ?? 'System User')
+$current_user = (string)($_SESSION['username'] ?? 'System User');
 
 // Create new PDF document
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
