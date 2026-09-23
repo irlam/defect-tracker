@@ -126,8 +126,36 @@ try {
         
         if (file_exists($progressFile)) {
             $fileProgress = json_decode(file_get_contents($progressFile), true);
-            // Only use if the file is recent (last 60 seconds)
-            if (isset($fileProgress['last_updated']) && (time() - $fileProgress['last_updated']) < 60) {
+
+            if (is_array($fileProgress) && isset($fileProgress['last_updated'])) {
+                $age = time() - (int) $fileProgress['last_updated'];
+
+                // A worker killed by the hosting FastCGI timeout can leave the
+                // progress file at 90-95% forever. If progress is stale and no
+                // backup lock is currently held, report a clean failure instead.
+                if ($age >= 60 && !in_array($fileProgress['status'] ?? '', ['complete', 'failed'], true)) {
+                    $lockHandle = @fopen(__DIR__ . '/tmp/backup.lock', 'c');
+                    $workerActive = false;
+                    if ($lockHandle) {
+                        $workerActive = !flock($lockHandle, LOCK_EX | LOCK_NB);
+                        if (!$workerActive) {
+                            flock($lockHandle, LOCK_UN);
+                        }
+                        fclose($lockHandle);
+                    }
+
+                    if (!$workerActive) {
+                        $fileProgress = [
+                            'status' => 'failed',
+                            'progress' => 0,
+                            'message' => 'The backup worker stopped before completion. Please retry once.',
+                            'current_file' => '',
+                            'last_updated' => time()
+                        ];
+                        file_put_contents($progressFile, json_encode($fileProgress), LOCK_EX);
+                    }
+                }
+
                 echo json_encode([
                     'success' => true,
                     'status' => $fileProgress
