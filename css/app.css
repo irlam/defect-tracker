@@ -1014,6 +1014,14 @@ body.has-app-navbar .app-content-offset {
   border: 1px solid rgba(148, 163, 184, 0.18);
   background: rgba(15, 23, 42, 0.95);
   box-shadow: 0 18px 38px -22px rgba(15, 23, 42, 0.85);
+  max-height: min(
+    var(--app-dropdown-available-height, calc(100vh - var(--app-navbar-height, 80px) - 1.5rem)),
+    calc(100vh - 1.5rem)
+  );
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .app-navbar .dropdown-item {
@@ -3950,5 +3958,41 @@ hr {
   .report-page-break {
     display: block;
     page-break-before: always;
+  }
+}
+
+
+/* Shared navigation safety: keep menus usable on short laptop screens and touch devices. */
+.app-navbar .dropdown-menu::-webkit-scrollbar {
+  width: 0.55rem;
+}
+
+.app-navbar .dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+@media (max-width: 991.98px) {
+  .app-navbar__collapse {
+    max-height: calc(100vh - var(--app-navbar-height, 72px) - 0.75rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 0.75rem;
+  }
+
+  .app-navbar .dropdown-menu {
+    position: static !important;
+    transform: none !important;
+    width: 100%;
+    max-height: min(52vh, 26rem);
+    margin: 0.35rem 0 0.65rem;
+    overflow-y: auto;
+  }
+
+  .app-navbar .dropdown-item,
+  .app-navbar .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
 }
