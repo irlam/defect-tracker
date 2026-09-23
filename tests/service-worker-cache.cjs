@@ -16,14 +16,14 @@ const context = {
   caches: {
     open: async () => ({ addAll: async assets => { cachedAssets = assets; } }),
     match: async () => 'cached-public-asset',
-    keys: async () => ['defect-tracker-v1.0.0', 'defect-tracker-v1.0.1', 'unrelated-app'],
+    keys: async () => ['defect-tracker-v1.0.0', 'defect-tracker-v1.0.1', 'defect-tracker-v1.1.0', 'unrelated-app'],
     delete: async name => { deleted.push(name); },
   },
   fetch: async () => 'network-response',
 };
 for (const registrationFile of ['../index.html', '../main.js', '../login.php', '../js/offline-defect-queue.js', '../sync/init.php']) {
   const source = fs.readFileSync(require.resolve(registrationFile), 'utf8');
-  assert(source.includes('/service-worker.js?v=1.1.0'), `${registrationFile} must cache-bust the field worker registration`);
+  assert(source.includes('/service-worker.js?v=1.2.0'), `${registrationFile} must cache-bust the field worker registration`);
 }
 vm.runInNewContext(fs.readFileSync(require.resolve('../service-worker.js'), 'utf8'), context);
 async function fetchHandled(path, method = 'GET', mode = 'cors') {
@@ -50,6 +50,6 @@ async function fetchHandled(path, method = 'GET', mode = 'cors') {
   assert.equal(await fetchHandled('/dashboard.php', 'GET', 'navigate'), 'cached-public-asset');
   handlers.activate({ waitUntil(promise) { pending = promise; } });
   await pending;
-  assert.deepEqual(deleted, ['defect-tracker-v1.0.0', 'defect-tracker-v1.0.1']);
+  assert.deepEqual(deleted, ['defect-tracker-v1.0.0', 'defect-tracker-v1.0.1', 'defect-tracker-v1.1.0']);
   console.log('PASS: private data/mutations bypass cache; offline field shell and scoped cache cleanup work.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

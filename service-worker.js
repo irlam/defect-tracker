@@ -1,10 +1,11 @@
-const CACHE_VERSION = 'v1.1.0';
+const CACHE_VERSION = 'v1.2.0';
 const CACHE_NAME = `defect-tracker-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 const OFFLINE_FIELD_URL = '/offline-field.html';
 const FIELD_DB_NAME = 'defect_tracker_field_queue';
 const FIELD_DB_VERSION = 1;
 const FIELD_OUTBOX_STORE = 'defect_submissions';
+const FIELD_META_STORE = 'field_metadata';
 
 const STATIC_ASSETS = [
   '/css/app.css',
@@ -130,6 +131,12 @@ async function readFieldOutbox(db) {
   return fieldRequest(transaction.objectStore(FIELD_OUTBOX_STORE).getAll());
 }
 
+async function readFieldMetadata(db, key) {
+  const transaction = db.transaction(FIELD_META_STORE, 'readonly');
+  const result = await fieldRequest(transaction.objectStore(FIELD_META_STORE).get(key));
+  return result ? result.value : null;
+}
+
 async function saveFieldItem(db, item) {
   const transaction = db.transaction(FIELD_OUTBOX_STORE, 'readwrite');
   transaction.objectStore(FIELD_OUTBOX_STORE).put(item);
@@ -161,6 +168,40 @@ async function notifyFieldClients(message) {
   clientList.forEach(client => client.postMessage(message));
 }
 
+async function reportFieldTelemetry(context, db, deviceId, event) {
+  try {
+    const items = (await readFieldOutbox(db)).filter(item => Number(item.userId) === Number(context.userId));
+    const failed = items.filter(item => item.status === 'failed');
+    const syncing = items.filter(item => item.status === 'syncing');
+    const pending = items.filter(item => !['failed', 'syncing'].includes(item.status));
+    const oldestPendingAt = items.length ? new Date(Math.min(...items.map(item => item.createdAt))).toISOString() : null;
+    const response = await fetch('/api/offline_field_telemetry.php', {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': context.csrfToken
+      },
+      body: JSON.stringify({
+        deviceId,
+        pendingCount: pending.length,
+        failedCount: failed.length,
+        syncingCount: syncing.length,
+        oldestPendingAt,
+        status: failed.length ? 'error' : (syncing.length ? 'syncing' : 'online'),
+        lastError: failed[0] ? failed[0].lastError : null,
+        event: event || null
+      })
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn('Field telemetry report deferred:', error);
+    return false;
+  }
+}
+
 async function syncFieldReportsInBackground() {
   const contextResponse = await fetch('/api/offline_field_context.php', {
     credentials: 'include',
@@ -174,9 +215,12 @@ async function syncFieldReportsInBackground() {
   if (!contextResponse.ok) throw new Error(`Field context unavailable (${contextResponse.status})`);
   const context = await contextResponse.json();
   const db = await openFieldDatabase();
+  const storedDeviceId = await readFieldMetadata(db, 'deviceId');
   const items = (await readFieldOutbox(db))
     .filter(item => Number(item.userId) === Number(context.userId) && item.status !== 'failed')
     .sort((a, b) => a.createdAt - b.createdAt);
+  const deviceId = storedDeviceId || (items[0] && items[0].deviceId) || `worker-${context.userId}-unknown`;
+  await reportFieldTelemetry(context, db, deviceId, null);
 
   for (const item of items) {
     item.status = 'syncing';
@@ -186,7 +230,7 @@ async function syncFieldReportsInBackground() {
       const response = await fetch('/create_defect.php', {
         method: 'POST',
         credentials: 'include',
-        headers: { Accept: 'application/json', 'X-Offline-Submission': '1' },
+        headers: { Accept: 'application/json', 'X-Offline-Submission': '1', 'X-Field-Device-ID': item.deviceId || deviceId },
         body: restoreFieldFormData(item.payload, context.csrfToken)
       });
       let body = {};
@@ -200,6 +244,13 @@ async function syncFieldReportsInBackground() {
         item.attempts = Number(item.attempts || 0) + 1;
         item.status = 'failed';
         await saveFieldItem(db, item);
+        await reportFieldTelemetry(context, db, deviceId, {
+          id: `failed-${item.id}-${item.attempts}`,
+          submissionId: item.id,
+          type: 'upload_failed',
+          status: 'failed',
+          message: item.lastError
+        });
         continue;
       }
       throw new Error(item.lastError);
@@ -211,6 +262,7 @@ async function syncFieldReportsInBackground() {
       throw error;
     }
   }
+  await reportFieldTelemetry(context, db, deviceId, null);
   await notifyFieldClients({ type: 'FIELD_SYNC_COMPLETE' });
 }
 

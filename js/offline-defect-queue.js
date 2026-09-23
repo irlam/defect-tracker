@@ -142,6 +142,53 @@
         return stored && Number(stored.userId) > 0 ? Number(stored.userId) : null;
     }
 
+    async function activeDeviceId() {
+        let deviceId = await getMetadata('deviceId');
+        if (typeof deviceId === 'string' && deviceId.length >= 10) return deviceId;
+        deviceId = `field-${makeId()}`;
+        await setMetadata('deviceId', deviceId);
+        return deviceId;
+    }
+
+    async function reportTelemetry(event) {
+        if (!navigator.onLine) return false;
+        const context = await getMetadata('referenceData');
+        if (!context || !context.csrfToken) return false;
+        const userId = await activeUser();
+        const deviceId = await activeDeviceId();
+        const items = (await getAllItems()).filter(item => Number(item.userId) === Number(userId));
+        const pending = items.filter(item => !['failed', 'syncing'].includes(item.status));
+        const failed = items.filter(item => item.status === 'failed');
+        const syncingItems = items.filter(item => item.status === 'syncing');
+        const oldestPending = items.length ? new Date(Math.min(...items.map(item => item.createdAt))).toISOString() : null;
+        const lastErrorItem = [...failed, ...items.filter(item => item.lastError)].sort((a, b) => (b.lastAttemptAt || 0) - (a.lastAttemptAt || 0))[0];
+        try {
+            const response = await fetch('/api/offline_field_telemetry.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': context.csrfToken
+                },
+                body: JSON.stringify({
+                    deviceId,
+                    pendingCount: pending.length,
+                    failedCount: failed.length,
+                    syncingCount: syncingItems.length,
+                    oldestPendingAt: oldestPending,
+                    status: failed.length ? 'error' : (syncingItems.length ? 'syncing' : 'online'),
+                    lastError: lastErrorItem ? lastErrorItem.lastError : null,
+                    event: event || null
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            return false;
+        }
+    }
+
     async function pendingItemsForActiveUser() {
         const userId = await activeUser();
         const items = await getAllItems();
@@ -225,6 +272,7 @@
         if (!navigator.onLine) return getMetadata('referenceData');
         const context = await fetchContext();
         cacheFloorPlanPreviews(context).catch(error => console.warn('Preview caching failed:', error));
+        reportTelemetry().catch(() => false);
         return context;
     }
 
@@ -243,7 +291,15 @@
         }
         item.status = 'syncing';
         item.lastAttemptAt = Date.now();
+        item.deviceId = item.deviceId || await activeDeviceId();
         await saveItem(item);
+        reportTelemetry({
+            id: `started-${item.id}-${item.attempts || 0}`,
+            submissionId: item.id,
+            type: 'upload_started',
+            status: 'info',
+            message: 'Field report upload started.'
+        });
         try {
             const response = await fetch('/create_defect.php', {
                 method: 'POST',
@@ -251,7 +307,8 @@
                 redirect: 'manual',
                 headers: {
                     Accept: 'application/json',
-                    'X-Offline-Submission': '1'
+                    'X-Offline-Submission': '1',
+                    'X-Field-Device-ID': item.deviceId
                 },
                 body: restoreFormData(item.payload, context.csrfToken)
             });
@@ -259,6 +316,7 @@
             try { body = await response.json(); } catch (error) { body = {}; }
             if (response.ok && body.success) {
                 await removeItem(item.id);
+                reportTelemetry();
                 return { status: 'synced', defectId: body.defectId, duplicate: Boolean(body.duplicate) };
             }
             if (response.status === 401 || response.status === 403 || response.type === 'opaqueredirect') {
@@ -267,12 +325,26 @@
             }
             if (response.status >= 400 && response.status < 500) {
                 await markForRetry(item, body.message || `Report needs attention (${response.status}).`, 'failed');
+                reportTelemetry({
+                    id: `failed-${item.id}-${item.attempts || 0}`,
+                    submissionId: item.id,
+                    type: 'upload_failed',
+                    status: 'failed',
+                    message: body.message || `Report rejected with status ${response.status}.`
+                });
                 return { status: 'failed', message: body.message };
             }
             throw new Error(body.message || `Server error ${response.status}`);
         } catch (error) {
             const attempts = Number(item.attempts || 0) + 1;
             await markForRetry(item, error, attempts >= MAX_ATTEMPTS ? 'failed' : 'pending');
+            reportTelemetry(attempts >= MAX_ATTEMPTS ? {
+                id: `failed-${item.id}-${attempts}`,
+                submissionId: item.id,
+                type: 'upload_failed',
+                status: 'failed',
+                message: error.message || 'Upload failed after repeated attempts.'
+            } : null);
             return { status: attempts >= MAX_ATTEMPTS ? 'failed' : 'pending', error };
         }
     }
@@ -299,6 +371,7 @@
         } finally {
             syncing = false;
             await updateBadge();
+            reportTelemetry();
         }
     }
 
@@ -310,6 +383,7 @@
         const item = {
             id,
             userId,
+            deviceId: await activeDeviceId(),
             createdAt: Date.now(),
             updatedAt: Date.now(),
             attempts: 0,
@@ -328,6 +402,13 @@
             }).catch(() => undefined);
         }
         await updateBadge();
+        reportTelemetry({
+            id: `queued-${id}`,
+            submissionId: id,
+            type: 'report_queued',
+            status: 'info',
+            message: 'Field report saved to the device outbox.'
+        });
         return item;
     }
 
@@ -340,18 +421,33 @@
         item.updatedAt = Date.now();
         await saveItem(item);
         await updateBadge();
+        reportTelemetry({
+            id: `retry-${item.id}-${Date.now()}`,
+            submissionId: item.id,
+            type: 'manual_retry',
+            status: 'info',
+            message: 'User requested another upload attempt.'
+        });
         return syncPending();
     }
 
     async function discardItem(id) {
+        const item = await getItem(id);
         await removeItem(id);
         await updateBadge();
+        reportTelemetry({
+            id: `discarded-${id}`,
+            submissionId: id,
+            type: 'report_discarded',
+            status: 'info',
+            message: item ? 'Saved field report removed from this device.' : 'Outbox item removed.'
+        });
     }
 
     async function initialise() {
         await openDatabase();
         if (navigator.serviceWorker) {
-            navigator.serviceWorker.register('/service-worker.js?v=1.1.0').catch(error => {
+            navigator.serviceWorker.register('/service-worker.js?v=1.2.0').catch(error => {
                 console.warn('Offline field worker registration deferred:', error);
             });
         }
@@ -376,6 +472,7 @@
         getReferenceData: () => getMetadata('referenceData'),
         refreshFieldData,
         updateBadge,
+        reportTelemetry,
         makeId
     };
 

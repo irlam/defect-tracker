@@ -10,6 +10,7 @@
 require_once __DIR__ . '/../init.php';
 require_once dirname(__DIR__, 2) . '/config/constants.php';
 require_once dirname(__DIR__, 2) . '/includes/navbar.php';
+require_once dirname(__DIR__, 2) . '/includes/FieldSyncTelemetry.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -129,7 +130,7 @@ $stmt->execute([$userId]);
 $currentUser = $stmt->fetch(PDO::FETCH_ASSOC);
 $username = $currentUser['username'] ?? 'unknown';
 
-$pageTitle = 'Sync Operations Console';
+$pageTitle = 'Field Sync Console';
 $navbar = null;
 
 try {
@@ -151,7 +152,66 @@ $stats = [
     'total_syncs' => 0,
     'last_sync' => 'Never',
     'conflicts' => 0,
+    'device_pending' => 0,
+    'device_failed' => 0,
+    'uploads_today' => 0,
+    'field_outcomes' => 0,
+    'active_devices' => 0,
+    'last_field_sync' => null,
 ];
+
+$fieldDevices = [];
+$recentFieldEvents = [];
+$fieldTelemetryError = '';
+
+try {
+    FieldSyncTelemetry::ensureSchema($db);
+
+    $stmt = $db->query('
+        SELECT
+            COALESCE(SUM(CASE WHEN last_seen >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN pending_count ELSE 0 END), 0) AS pending,
+            COALESCE(SUM(CASE WHEN last_seen >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN failed_count ELSE 0 END), 0) AS failed,
+            SUM(CASE WHEN last_seen >= DATE_SUB(NOW(), INTERVAL 24 HOUR) THEN 1 ELSE 0 END) AS active_devices,
+            MAX(last_sync_at) AS last_sync
+        FROM field_sync_devices
+    ');
+    $deviceStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $stats['device_pending'] = (int) ($deviceStats['pending'] ?? 0);
+    $stats['device_failed'] = (int) ($deviceStats['failed'] ?? 0);
+    $stats['active_devices'] = (int) ($deviceStats['active_devices'] ?? 0);
+    $stats['last_field_sync'] = $deviceStats['last_sync'] ?? null;
+
+    $stmt = $db->query('
+        SELECT
+            SUM(CASE WHEN status = "success" AND created_at >= CURDATE() THEN 1 ELSE 0 END) AS uploads_today,
+            COUNT(*) AS outcomes
+        FROM field_sync_events
+        WHERE event_type IN ("upload_completed", "duplicate_confirmed", "upload_failed")
+    ');
+    $eventStats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    $stats['uploads_today'] = (int) ($eventStats['uploads_today'] ?? 0);
+    $stats['field_outcomes'] = (int) ($eventStats['outcomes'] ?? 0);
+
+    $stmt = $db->query('
+        SELECT device_id, username, pending_count, failed_count, syncing_count,
+               oldest_pending_at, last_seen, last_sync_at, last_status, last_error
+        FROM field_sync_devices
+        ORDER BY last_seen DESC
+        LIMIT 20
+    ');
+    $fieldDevices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $db->query('
+        SELECT device_id, username, event_type, status, defect_id, message, created_at
+        FROM field_sync_events
+        ORDER BY created_at DESC
+        LIMIT 20
+    ');
+    $recentFieldEvents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $fieldError) {
+    $fieldTelemetryError = 'Field telemetry could not be loaded. Check that the database account can create and read the telemetry tables.';
+    error_log('Field sync telemetry dashboard error: ' . $fieldError->getMessage());
+}
 
 try {
     $stmt = $db->query('
@@ -443,68 +503,68 @@ try {
 $refreshInterval = 60;
 $currentTimeDisplay = date('d/m/Y H:i');
 
-$lastSyncLabel = ($stats['last_sync'] && $stats['last_sync'] !== 'Never')
-    ? date('d/m/Y H:i', strtotime($stats['last_sync'])) . ' UK'
-    : 'No completed sync recorded';
+$lastFieldSyncLabel = !empty($stats['last_field_sync'])
+    ? date('d/m/Y H:i', strtotime((string) $stats['last_field_sync'])) . ' UK'
+    : 'No field upload recorded';
 
 $heroMetrics = [
     [
-        'title' => 'Pending Items',
-        'value' => number_format($stats['pending_items']),
-        'description' => 'Queued for processing',
+        'title' => 'Reports on Devices',
+        'value' => number_format($stats['device_pending']),
+        'description' => 'Waiting to upload (devices seen in 7 days)',
         'icon' => 'bx-time-five',
-        'tone' => $stats['pending_items'] > 0 ? 'amber' : 'neutral',
+        'tone' => $stats['device_pending'] > 0 ? 'amber' : 'neutral',
         'element_id' => 'pending-count',
     ],
     [
-        'title' => 'Failed Items',
-        'value' => number_format($stats['failed_items']),
-        'description' => 'Require investigation',
+        'title' => 'Need Attention',
+        'value' => number_format($stats['device_failed']),
+        'description' => 'Field uploads currently failing',
         'icon' => 'bx-error-circle',
-        'tone' => $stats['failed_items'] > 0 ? 'crimson' : 'neutral',
+        'tone' => $stats['device_failed'] > 0 ? 'crimson' : 'neutral',
         'element_id' => 'failed-count',
     ],
     [
-        'title' => 'Completed Items',
-        'value' => number_format($stats['completed_items']),
-        'description' => 'Successfully synced today',
+        'title' => 'Uploaded Today',
+        'value' => number_format($stats['uploads_today']),
+        'description' => 'Successful uploads and confirmed retries',
         'icon' => 'bx-check-shield',
         'tone' => 'teal',
         'element_id' => 'completed-count',
     ],
     [
-        'title' => 'Total Sync Runs',
-        'value' => number_format($stats['total_syncs']),
-        'description' => 'All recorded executions',
+        'title' => 'Field Outcomes',
+        'value' => number_format($stats['field_outcomes']),
+        'description' => 'Recorded upload successes and failures',
         'icon' => 'bx-pulse',
         'tone' => 'indigo',
         'element_id' => 'total-syncs',
     ],
     [
-        'title' => 'Last Sync',
-        'value' => $lastSyncLabel,
-        'description' => 'Most recent server run',
+        'title' => 'Last Field Upload',
+        'value' => $lastFieldSyncLabel,
+        'description' => 'Most recent successful device upload',
         'icon' => 'bx-calendar-check',
         'tone' => 'neutral',
         'element_id' => 'last-sync',
     ],
     [
-        'title' => 'Active Conflicts',
-        'value' => number_format($stats['conflicts']),
-        'description' => 'Awaiting resolution',
-        'icon' => 'bx-git-branch',
-        'tone' => $stats['conflicts'] > 0 ? 'amber' : 'neutral',
+        'title' => 'Active Devices',
+        'value' => number_format($stats['active_devices']),
+        'description' => 'Reported in during the last 24 hours',
+        'icon' => 'bx-mobile-alt',
+        'tone' => 'neutral',
         'element_id' => 'conflicts-count',
     ],
 ];
 
 $syncAdminLinks = [
     ['href' => 'dashboard.php', 'icon' => 'bx-layout', 'label' => 'Dashboard'],
-    ['href' => 'admin_checkTriggers.php', 'icon' => 'bx-slider', 'label' => 'Check Triggers'],
-    ['href' => 'resolve_conflict.php', 'icon' => 'bx-error', 'label' => 'Conflicts'],
-    ['href' => 'sync_logs.php', 'icon' => 'bx-history', 'label' => 'Logs'],
-    ['href' => 'cleanup_settings.php', 'icon' => 'bx-broom', 'label' => 'Cleanup'],
-    ['href' => 'performance_metrics.php', 'icon' => 'bx-trending-up', 'label' => 'Performance'],
+    ['href' => 'admin_checkTriggers.php', 'icon' => 'bx-slider', 'label' => 'Legacy Triggers'],
+    ['href' => 'resolve_conflict.php', 'icon' => 'bx-error', 'label' => 'Legacy Conflicts'],
+    ['href' => 'sync_logs.php', 'icon' => 'bx-history', 'label' => 'Legacy Logs'],
+    ['href' => 'cleanup_settings.php', 'icon' => 'bx-broom', 'label' => 'Legacy Cleanup'],
+    ['href' => 'performance_metrics.php', 'icon' => 'bx-trending-up', 'label' => 'Legacy Performance'],
 ];
 ?>
 <!DOCTYPE html>
@@ -512,7 +572,7 @@ $syncAdminLinks = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sync administration console providing live queue analytics and resolution tools.">
+    <meta name="description" content="Field sync administration console showing live offline device and upload activity.">
     <meta name="author" content="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="last-modified" content="<?php echo htmlspecialchars(date('c'), ENT_QUOTES, 'UTF-8'); ?>">
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Defect Tracker</title>
@@ -794,8 +854,8 @@ $syncAdminLinks = [
         <header class="sync-dashboard__header mb-4 d-flex flex-column gap-4">
             <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
                 <div>
-                    <h1 class="h3 mb-2"><i class='bx bx-cloud-sync me-2'></i>Sync Operations Console</h1>
-                    <p class="text-muted mb-0">Monitor queue health, retry failed items, and resolve conflicts without leaving the themed workspace.</p>
+                    <h1 class="h3 mb-2"><i class='bx bx-cloud-sync me-2'></i>Field Sync Console</h1>
+                    <p class="text-muted mb-0">Monitor offline field devices, queued reports, upload failures, and successful defect delivery.</p>
                 </div>
                 <div class="d-flex flex-column align-items-start text-muted small gap-1">
                     <span><i class='bx bx-user-circle me-1'></i><?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?></span>
@@ -808,6 +868,18 @@ $syncAdminLinks = [
                 <div class="alert <?php echo $messageType === 'error' ? 'alert-danger' : 'alert-success'; ?> d-flex align-items-center gap-2 mb-0" role="alert">
                     <i class='bx <?php echo $messageType === 'error' ? 'bx-error-circle' : 'bx-check-circle'; ?> fs-4'></i>
                     <span><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($fieldTelemetryError !== ''): ?>
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-0" role="alert">
+                    <i class='bx bx-error-circle fs-4'></i>
+                    <span><?php echo htmlspecialchars($fieldTelemetryError, ENT_QUOTES, 'UTF-8'); ?></span>
+                </div>
+            <?php elseif (empty($fieldDevices)): ?>
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-0" role="status">
+                    <i class='bx bx-info-circle fs-4'></i>
+                    <span>No field device has reported yet. Devices will appear here automatically after they load this release while online.</span>
                 </div>
             <?php endif; ?>
 
@@ -849,23 +921,117 @@ $syncAdminLinks = [
             <article class="sync-panel">
                 <div class="sync-panel__header">
                     <div>
-                        <h2 class="sync-panel__title"><i class='bx bx-pulse me-2'></i>Sync Overview</h2>
-                        <p class="sync-panel__description">Queue throughput and the latest synchronisation activity.</p>
+                        <h2 class="sync-panel__title"><i class='bx bx-mobile-alt me-2'></i>Field Devices</h2>
+                        <p class="sync-panel__description">Last-known outbox health reported by mobile devices. Counts update whenever a device is online.</p>
                     </div>
                     <div class="text-muted small">
                         Last updated <span id="last-updated"><?php echo htmlspecialchars(date('H:i:s'), ENT_QUOTES, 'UTF-8'); ?></span>
                     </div>
                 </div>
-                <div class="sync-chart" id="sync-chart">
-                    <p class="sync-empty mb-0">Trend chart integration coming soon.</p>
-                </div>
+                <?php if (empty($fieldDevices)): ?>
+                    <p class="sync-empty mb-0">No device telemetry has been received yet.</p>
+                <?php else: ?>
+                    <div class="table-responsive sync-table">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">User / Device</th>
+                                    <th scope="col">Pending</th>
+                                    <th scope="col">Failed</th>
+                                    <th scope="col">Syncing</th>
+                                    <th scope="col">Last Seen</th>
+                                    <th scope="col">Last Upload</th>
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($fieldDevices as $device): ?>
+                                    <?php
+                                        $deviceStatus = (string) ($device['last_status'] ?? 'online');
+                                        $deviceBadge = $deviceStatus === 'error' ? 'badge-soft-danger' : ($deviceStatus === 'syncing' ? 'badge-soft-warning' : 'badge-soft-success');
+                                        $shortDeviceId = substr((string) ($device['device_id'] ?? 'unknown'), 0, 12);
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <div><?php echo htmlspecialchars($device['username'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="text-muted small" title="<?php echo htmlspecialchars($device['device_id'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($shortDeviceId, ENT_QUOTES, 'UTF-8'); ?></div>
+                                        </td>
+                                        <td><?php echo number_format((int) ($device['pending_count'] ?? 0)); ?></td>
+                                        <td><?php echo number_format((int) ($device['failed_count'] ?? 0)); ?></td>
+                                        <td><?php echo number_format((int) ($device['syncing_count'] ?? 0)); ?></td>
+                                        <td><?php echo htmlspecialchars($device['last_seen'] ?? 'Never', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td><?php echo htmlspecialchars($device['last_sync_at'] ?? 'Never', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td>
+                                            <span class="badge <?php echo $deviceBadge; ?> text-uppercase small"><?php echo htmlspecialchars($deviceStatus, ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php if (!empty($device['last_error'])): ?>
+                                                <div class="text-danger small mt-1"><?php echo htmlspecialchars($device['last_error'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
             </article>
 
             <article class="sync-panel">
                 <div class="sync-panel__header">
                     <div>
-                        <h2 class="sync-panel__title"><i class='bx bx-cog me-2'></i>Operations</h2>
-                        <p class="sync-panel__description">Manage the queue: retry, clear, or resolve conflicts.</p>
+                        <h2 class="sync-panel__title"><i class='bx bx-transfer-alt me-2'></i>Recent Field Activity</h2>
+                        <p class="sync-panel__description">Device outbox actions and server-confirmed defect uploads.</p>
+                    </div>
+                </div>
+                <?php if (empty($recentFieldEvents)): ?>
+                    <p class="sync-empty mb-0">No field sync activity has been recorded yet.</p>
+                <?php else: ?>
+                    <div class="table-responsive sync-table">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Time</th>
+                                    <th scope="col">User / Device</th>
+                                    <th scope="col">Event</th>
+                                    <th scope="col">Defect</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recentFieldEvents as $event): ?>
+                                    <?php
+                                        $eventStatus = (string) ($event['status'] ?? 'info');
+                                        $eventBadge = $eventStatus === 'failed' ? 'badge-soft-danger' : ($eventStatus === 'success' ? 'badge-soft-success' : 'badge-soft-warning');
+                                    ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($event['created_at'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td>
+                                            <div><?php echo htmlspecialchars($event['username'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="text-muted small"><?php echo htmlspecialchars(substr((string) ($event['device_id'] ?? 'unknown'), 0, 12), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        </td>
+                                        <td><?php echo htmlspecialchars(str_replace('_', ' ', (string) ($event['event_type'] ?? 'event')), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td>
+                                            <?php if (!empty($event['defect_id'])): ?>
+                                                <a href="/view_defect.php?id=<?php echo (int) $event['defect_id']; ?>">#<?php echo (int) $event['defect_id']; ?></a>
+                                            <?php else: ?>
+                                                <span class="text-muted">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><span class="badge <?php echo $eventBadge; ?> text-uppercase small"><?php echo htmlspecialchars($eventStatus, ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                        <td><?php echo htmlspecialchars($event['message'] ?? '—', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </article>
+
+            <article class="sync-panel">
+                <div class="sync-panel__header">
+                    <div>
+                        <h2 class="sync-panel__title"><i class='bx bx-archive me-2'></i>Legacy Server Queue Operations</h2>
+                        <p class="sync-panel__description">These controls apply only to the older server-side sync_queue workflow, not mobile device outboxes.</p>
                     </div>
                 </div>
                 <div class="sync-actions">
@@ -908,8 +1074,8 @@ $syncAdminLinks = [
             <article class="sync-panel">
                 <div class="sync-panel__header">
                     <div>
-                        <h2 class="sync-panel__title"><i class='bx bx-history me-2'></i>Recent Sync Logs</h2>
-                        <p class="sync-panel__description">Last ten synchronisation runs with outcome and duration.</p>
+                        <h2 class="sync-panel__title"><i class='bx bx-history me-2'></i>Legacy Sync Logs</h2>
+                        <p class="sync-panel__description">Last ten runs from the older server-side sync framework.</p>
                     </div>
                 </div>
                 <?php if (empty($recentLogs)): ?>
@@ -962,8 +1128,8 @@ $syncAdminLinks = [
             <article class="sync-panel">
                 <div class="sync-panel__header">
                     <div>
-                        <h2 class="sync-panel__title"><i class='bx bx-error me-2'></i>Failed Sync Items</h2>
-                        <p class="sync-panel__description">Items needing manual attention before they can be retried.</p>
+                        <h2 class="sync-panel__title"><i class='bx bx-error me-2'></i>Legacy Server Failures</h2>
+                        <p class="sync-panel__description">Failed records from the older server queue; mobile failures appear above.</p>
                     </div>
                 </div>
                 <?php if (empty($recentErrors)): ?>
@@ -1014,8 +1180,8 @@ $syncAdminLinks = [
             <article class="sync-panel">
                 <div class="sync-panel__header">
                     <div>
-                        <h2 class="sync-panel__title"><i class='bx bx-git-branch me-2'></i>Active Conflicts</h2>
-                        <p class="sync-panel__description">Review client vs server payloads and resolve individually when needed.</p>
+                        <h2 class="sync-panel__title"><i class='bx bx-git-branch me-2'></i>Legacy Conflicts</h2>
+                        <p class="sync-panel__description">Conflicts recorded by the older server-side sync framework.</p>
                     </div>
                 </div>
                 <?php if (empty($conflicts)): ?>

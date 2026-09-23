@@ -45,6 +45,7 @@ require_once 'includes/functions.php';
 require_once 'includes/DefectImageProcessor.php';
 require_once 'includes/navbar.php';
 require_once 'includes/defect_workflow.php';
+require_once 'includes/FieldSyncTelemetry.php';
 require_once 'classes/NotificationHelper.php';
 // require_once 'includes/PdfConverter.php';
 
@@ -167,6 +168,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($existingDefectId > 0) {
             $releaseStatement = $db->prepare('SELECT RELEASE_LOCK(:lock_name)');
             $releaseStatement->execute([':lock_name' => $submissionLockName]);
+            try {
+                FieldSyncTelemetry::markServerCompletion($db, [
+                    'client_submission_id' => $clientSubmissionId,
+                    'device_id' => $_SERVER['HTTP_X_FIELD_DEVICE_ID'] ?? null,
+                    'user_id' => $currentUserId,
+                    'username' => $currentUser,
+                    'defect_id' => $existingDefectId,
+                    'duplicate' => true,
+                ]);
+            } catch (Throwable $telemetryError) {
+                logEntry('Field sync duplicate telemetry failed: ' . $telemetryError->getMessage());
+            }
             finishDefectRequest(true, 'This field report was already uploaded.', 200, 'defects.php', [
                 'defectId' => $existingDefectId,
                 'duplicate' => true,
@@ -408,6 +421,21 @@ if (!empty($_FILES['images']['name'][0])) {
     // Debug the FILES array
     logEntry("FILES array contents: " . print_r($_FILES, true));
 }
+
+    if ($clientSubmissionId !== '') {
+        try {
+            FieldSyncTelemetry::markServerCompletion($db, [
+                'client_submission_id' => $clientSubmissionId,
+                'device_id' => $_SERVER['HTTP_X_FIELD_DEVICE_ID'] ?? null,
+                'user_id' => $currentUserId,
+                'username' => $currentUser,
+                'defect_id' => (int) $defectId,
+                'duplicate' => false,
+            ]);
+        } catch (Throwable $telemetryError) {
+            logEntry('Field sync completion telemetry failed: ' . $telemetryError->getMessage());
+        }
+    }
 
     finishDefectRequest(true, 'Defect created successfully.', 200, 'defects.php', [
         'defectId' => (int) $defectId,
