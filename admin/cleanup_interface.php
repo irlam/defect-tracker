@@ -142,7 +142,7 @@ $pageTitle = "Website Cleanup";
                     </ul>
                     <p class="mb-0"><strong>What will be preserved:</strong></p>
                     <ul class="mb-0">
-                        <li>Admin account (username: irlam)</li>
+                        <li>Administrator accounts</li>
                         <li>System configuration and settings</li>
                         <li>Database structure</li>
                         <li>System roles and permissions</li>
