@@ -26,7 +26,9 @@ define('EXCLUDE_PATHS', serialize(array(
     __DIR__, // Exclude the backups system itself
     WEBSITE_ROOT . '/tmp',
     WEBSITE_ROOT . '/cache',
-    WEBSITE_ROOT . '/logs'
+    WEBSITE_ROOT . '/logs',
+    WEBSITE_ROOT . '/.git',
+    WEBSITE_ROOT . '/.github'
 )));
 
 // Database Settings
