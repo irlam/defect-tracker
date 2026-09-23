@@ -107,18 +107,31 @@ function runDatabaseChecks(PDO $db, array $requiredTables): array
         'details' => empty($missingTables) ? [] : ['Missing tables' => $missingTables],
     ];
 
-    // Table size summary
+    // Table size summary. information_schema.TABLE_ROWS is only an estimate
+    // for InnoDB and can remain stale after a cleanup, so calculate exact live
+    // counts for the small set of tables displayed here.
     $sizeQuery = $db->query(
-        "SELECT TABLE_NAME, TABLE_ROWS, ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024), 2) AS size_mb
-         FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()
+        "SELECT TABLE_NAME, ROUND(((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024), 2) AS size_mb
+         FROM information_schema.TABLES
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'
          ORDER BY (DATA_LENGTH + INDEX_LENGTH) DESC LIMIT 6"
     );
     $tableSizes = $sizeQuery ? $sizeQuery->fetchAll(PDO::FETCH_ASSOC) : [];
 
+    foreach ($tableSizes as &$tableInfo) {
+        $tableName = (string)($tableInfo['TABLE_NAME'] ?? '');
+        if (preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
+            $tableInfo['TABLE_ROWS'] = (int)$db->query("SELECT COUNT(*) FROM `{$tableName}`")->fetchColumn();
+        } else {
+            $tableInfo['TABLE_ROWS'] = 0;
+        }
+    }
+    unset($tableInfo);
+
     $checks[] = [
         'label' => 'Table Overview',
         'status' => 'healthy',
-        'message' => 'Top tables by size.',
+        'message' => 'Top tables by size with exact live row counts.',
         'details' => ['tables' => $tableSizes],
     ];
 
