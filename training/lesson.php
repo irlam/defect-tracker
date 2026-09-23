@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/TrainingContent.php';
 
 $slug = trim((string)($_GET['lesson'] ?? ''));
 if ($slug === '') {
@@ -25,6 +26,11 @@ $outcomes = is_array($content['outcomes'] ?? null) ? $content['outcomes'] : [];
 $steps = is_array($content['steps'] ?? null) ? $content['steps'] : [];
 $progress = $lesson['progress'] ?? ['status'=>'not_started','progress_percent'=>0,'last_position'=>null];
 $tryUrl = (string)($content['try_url'] ?? '/dashboard.php');
+$enhanced = trainingEnhancedContent($slug);
+$demoScenes = is_array($enhanced['demo'] ?? null) ? $enhanced['demo'] : [];
+$tips = is_array($enhanced['tips'] ?? null) ? $enhanced['tips'] : [];
+$knowledge = is_array($enhanced['knowledge'] ?? null) ? $enhanced['knowledge'] : [];
+$lessonIntro = (string)($enhanced['intro'] ?? $lesson['description'] ?? '');
 
 trainingRenderHeader(
     (string)$lesson['title'],
@@ -77,21 +83,71 @@ trainingRenderHeader(
                 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
                     <div>
                         <span class="training-eyebrow"><i class="bx bx-play-circle"></i> Guided walkthrough</span>
-                        <h2 id="demo-heading" class="h4 mt-2 mb-1">Interactive demonstration area</h2>
-                        <p class="text-muted small mb-0">Phase 1 provides the reusable stage. Narrated animation and real screen walkthroughs arrive in Phase 2.</p>
+                        <h2 id="demo-heading" class="h4 mt-2 mb-1">Interactive demonstration</h2>
+                        <p class="text-muted small mb-0"><?php echo trainingEsc($lessonIntro); ?></p>
                     </div>
-                    <span class="training-placeholder-badge training-status-chip"><i class="bx bx-wrench"></i> Demo shell ready</span>
+                    <span class="training-status-chip"><i class="bx bx-mouse-alt"></i> Interactive</span>
                 </div>
 
-                <div class="training-demo-stage" role="region" aria-label="Training demonstration placeholder">
-                    <div>
-                        <div class="training-demo-stage__icon"><i class="bx bx-movie-play"></i></div>
-                        <h3 class="h5 mt-3">Animation stage</h3>
-                        <p class="text-muted mb-0">
-                            This area is designed for cursor animation, highlights, captions, screen recordings and step controls without changing the lesson layout.
-                        </p>
+                <?php if ($demoScenes): ?>
+                    <div class="training-demo" data-training-demo data-scene-count="<?php echo count($demoScenes); ?>">
+                        <div class="training-demo__topbar">
+                            <div>
+                                <span class="training-demo__counter" data-demo-counter>Step 1 of <?php echo count($demoScenes); ?></span>
+                                <h3 class="h5 mb-0" data-demo-title><?php echo trainingEsc($demoScenes[0]['title'] ?? 'Demonstration'); ?></h3>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-light" data-demo-narrate aria-pressed="false">
+                                    <i class="bx bx-volume-full me-1"></i>Read aloud
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-light" data-demo-play aria-pressed="false">
+                                    <i class="bx bx-play me-1"></i>Auto play
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="training-demo__viewport" aria-live="polite">
+                            <?php foreach ($demoScenes as $index => $scene): ?>
+                                <article
+                                    class="training-demo__scene<?php echo $index === 0 ? ' is-active' : ''; ?>"
+                                    data-demo-scene="<?php echo $index; ?>"
+                                    data-demo-voice="<?php echo trainingEsc($scene['voice'] ?? $scene['caption'] ?? ''); ?>"
+                                    <?php echo $index === 0 ? '' : 'hidden'; ?>
+                                >
+                                    <?php trainingRenderDemoScreen((string)($scene['screen'] ?? ''), (string)($scene['focus'] ?? '')); ?>
+                                </article>
+                            <?php endforeach; ?>
+                            <div class="training-demo__cursor" data-demo-cursor aria-hidden="true"><i class="bx bx-pointer"></i></div>
+                        </div>
+
+                        <div class="training-demo__caption">
+                            <div class="training-demo__caption-icon"><i class="bx bx-info-circle"></i></div>
+                            <p class="mb-0" data-demo-caption><?php echo trainingEsc($demoScenes[0]['caption'] ?? ''); ?></p>
+                        </div>
+
+                        <div class="training-demo__controls">
+                            <button type="button" class="btn btn-outline-light" data-demo-prev disabled>
+                                <i class="bx bx-left-arrow-alt me-1"></i>Previous
+                            </button>
+                            <div class="training-demo__dots" aria-label="Demonstration steps">
+                                <?php foreach ($demoScenes as $index => $_scene): ?>
+                                    <button
+                                        type="button"
+                                        class="training-demo__dot<?php echo $index === 0 ? ' is-active' : ''; ?>"
+                                        data-demo-go="<?php echo $index; ?>"
+                                        aria-label="Go to demonstration step <?php echo $index + 1; ?>"
+                                        aria-current="<?php echo $index === 0 ? 'step' : 'false'; ?>"
+                                    ></button>
+                                <?php endforeach; ?>
+                            </div>
+                            <button type="button" class="btn btn-primary" data-demo-next>
+                                Next <i class="bx bx-right-arrow-alt ms-1"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                <?php else: ?>
+                    <div class="training-demo-stage"><p class="text-muted mb-0">Interactive content is being prepared for this lesson.</p></div>
+                <?php endif; ?>
             </section>
 
             <section class="training-lesson-card p-4 mb-4" aria-labelledby="steps-heading">
@@ -107,11 +163,56 @@ trainingRenderHeader(
                 </div>
             </section>
 
+            <?php if ($tips): ?>
+            <section class="training-lesson-card p-4 mb-4" aria-labelledby="tips-heading">
+                <span class="training-eyebrow"><i class="bx bx-bulb"></i> Site-ready guidance</span>
+                <h2 id="tips-heading" class="h4 mt-2 mb-3">Good practice</h2>
+                <div class="row g-3">
+                    <?php foreach ($tips as $tip): ?>
+                        <div class="col-md-4">
+                            <article class="training-tip h-100">
+                                <i class="bx bx-check-shield"></i>
+                                <h3 class="h6 mt-2"><?php echo trainingEsc($tip['title'] ?? 'Tip'); ?></h3>
+                                <p class="small text-muted mb-0"><?php echo trainingEsc($tip['body'] ?? ''); ?></p>
+                            </article>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+            <?php endif; ?>
+
+            <?php if ($knowledge): ?>
+            <section class="training-lesson-card p-4 mb-4" aria-labelledby="knowledge-heading" data-training-quiz>
+                <span class="training-eyebrow"><i class="bx bx-brain"></i> Knowledge check</span>
+                <h2 id="knowledge-heading" class="h4 mt-2">Check your understanding</h2>
+                <p class="text-muted small">Answer all questions correctly. You can retry any question immediately.</p>
+
+                <div class="training-quiz-list">
+                    <?php foreach ($knowledge as $qIndex => $question): ?>
+                        <fieldset class="training-quiz-question" data-quiz-question data-answer="<?php echo (int)($question['answer'] ?? 0); ?>">
+                            <legend class="h6"><?php echo ($qIndex + 1) . '. ' . trainingEsc($question['question'] ?? 'Question'); ?></legend>
+                            <?php foreach (($question['options'] ?? []) as $oIndex => $option): ?>
+                                <label class="training-quiz-option">
+                                    <input type="radio" name="quiz_<?php echo $qIndex; ?>" value="<?php echo $oIndex; ?>">
+                                    <span><?php echo trainingEsc($option); ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                            <div class="training-quiz-feedback small mt-2" data-quiz-feedback aria-live="polite"></div>
+                        </fieldset>
+                    <?php endforeach; ?>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+                    <button type="button" class="btn btn-primary" data-quiz-check>Check answers</button>
+                    <span class="small text-muted" data-quiz-score aria-live="polite">Not checked yet</span>
+                </div>
+            </section>
+            <?php endif; ?>
+
             <section class="training-lesson-card p-4" aria-labelledby="try-heading">
                 <span class="training-eyebrow"><i class="bx bx-mouse"></i> Try it yourself</span>
                 <h2 id="try-heading" class="h4 mt-2">Open the real feature</h2>
                 <p class="text-muted">
-                    Training should lead directly into the live workflow. Open the relevant Defect Tracker feature in a new tab and follow the steps above.
+                    Put the lesson into practice in Defect Tracker. The training page stays open in this tab while the live workflow opens separately.
                 </p>
                 <a class="btn btn-primary" href="<?php echo trainingEsc($tryUrl); ?>" target="_blank" rel="noopener">
                     Open live feature <i class="bx bx-link-external ms-1"></i>
@@ -132,7 +233,7 @@ trainingRenderHeader(
 
             <section class="training-card p-4 mb-4">
                 <span class="training-eyebrow"><i class="bx bx-headphone"></i> Narration</span>
-                <h2 class="h5 mt-2">Audio-ready lesson</h2>
+                <h2 class="h5 mt-2">Narration & transcript</h2>
 
                 <?php if (!empty($lesson['audio_path'])): ?>
                     <div class="training-audio-shell mt-3">
@@ -143,7 +244,7 @@ trainingRenderHeader(
                     </div>
                 <?php else: ?>
                     <div class="training-audio-shell mt-3 text-muted small">
-                        Narration has not been recorded yet. The lesson template is ready to accept an MP3/WebM audio file.
+                        Use <strong>Read aloud</strong> in the interactive demonstration for browser narration. A recorded voice track can still be added later without changing the lesson layout.
                     </div>
                 <?php endif; ?>
 
@@ -159,7 +260,7 @@ trainingRenderHeader(
                     <?php if (!empty($lesson['transcript'])): ?>
                         <?php echo nl2br(trainingEsc($lesson['transcript'])); ?>
                     <?php else: ?>
-                        The transcript field is ready for Phase 2 narration. Written steps remain available at all times for accessibility.
+                        The interactive demonstration captions and the written walkthrough provide the current lesson transcript. A recorded narration transcript can be added here later.
                     <?php endif; ?>
                 </div>
             </section>
