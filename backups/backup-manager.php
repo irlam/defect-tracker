@@ -98,10 +98,19 @@ class BackupManager {
             
             // Add the database dump
             if ($dbBackupFile) {
-                $zip->addFile($dbBackupFile, 'database/' . basename($dbBackupFile));
+                $dbEntry = 'database/' . basename($dbBackupFile);
+                if (!$zip->addFile($dbBackupFile, $dbEntry)) {
+                    throw new RuntimeException('Unable to add database dump to backup.');
+                }
+                if (method_exists($zip, 'setCompressionName')) {
+                    $zip->setCompressionName($dbEntry, ZipArchive::CM_DEFLATE, 6);
+                }
             }
-            
-            $zip->close();
+
+            $this->updateProgress('finalizing', 92, 'Finalizing ZIP archive...', '');
+            if (!$zip->close()) {
+                throw new RuntimeException('Unable to finalize ZIP archive.');
+            }
             
             // Update progress - Cleaning up
             $this->updateProgress('cleanup', 95, 'Cleaning up temporary files...', '');
@@ -331,8 +340,17 @@ class BackupManager {
                 // Add files in this directory
                 $this->addFilesToZip($zip, $rootPath, $filePathInZip);
             } else {
-                // Add file to ZIP
-                $zip->addFile($filePath, $filePathInZip);
+                // Add file to ZIP. Store application files without compression:
+                // on shared FastCGI hosting, deflating the entire application can
+                // spend several minutes inside ZipArchive::close() and hit the
+                // web server's request timeout. The database dump is compressed
+                // separately below because it benefits substantially from it.
+                if (!$zip->addFile($filePath, $filePathInZip)) {
+                    throw new RuntimeException('Unable to add file to backup: ' . $filePathInZip);
+                }
+                if (method_exists($zip, 'setCompressionName')) {
+                    $zip->setCompressionName($filePathInZip, ZipArchive::CM_STORE);
+                }
                 $fileCount++;
                 
                 // Update progress every few files
