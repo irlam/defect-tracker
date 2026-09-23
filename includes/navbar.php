@@ -479,6 +479,33 @@ class Navbar {
             document.addEventListener("DOMContentLoaded", updateNavbarOffset);
             window.addEventListener("resize", updateNavbarOffset);
 
+            function constrainNavbarDropdown(menu) {
+                if (!menu || !menu.classList.contains("dropdown-menu")) {
+                    return;
+                }
+
+                // Wait until Bootstrap/Popper has positioned the menu, then use
+                // the actual on-screen top edge to calculate the remaining
+                // viewport space. This prevents long menus from falling below
+                // short laptop/tablet viewports.
+                requestAnimationFrame(function() {
+                    const rect = menu.getBoundingClientRect();
+                    const viewportPadding = 12;
+                    const available = Math.max(180, window.innerHeight - Math.max(rect.top, 0) - viewportPadding);
+                    menu.style.setProperty("--app-dropdown-available-height", available + "px");
+                });
+            }
+
+            document.addEventListener("shown.bs.dropdown", function(event) {
+                const dropdown = event.target && event.target.closest ? event.target.closest(".dropdown") : null;
+                const menu = dropdown ? dropdown.querySelector(".dropdown-menu") : null;
+                constrainNavbarDropdown(menu);
+            });
+
+            window.addEventListener("resize", function() {
+                document.querySelectorAll(".app-navbar .dropdown-menu.show").forEach(constrainNavbarDropdown);
+            });
+
         </script>';
 
         echo '<script>
@@ -603,17 +630,7 @@ class Navbar {
                         ['label' => 'Maintenance Planner', 'url' => '/maintenance/maintenance.php'],
                         ['label' => 'Backup Manager', 'url' => '/backup_manager.php'],
                         ['label' => '---divider---'],
-                        ['type' => 'header', 'label' => 'Diagnostics'],
-                        ['label' => 'System Health', 'url' => '/system-tools/system_health.php'],
-                        ['label' => 'Database Check', 'url' => '/system-tools/check_database.php'],
-                        ['label' => 'Database Optimizer', 'url' => '/system-tools/database_optimizer.php'],
-                        ['label' => 'GD Library Check', 'url' => '/system-tools/check_gd.php'],
-                        ['label' => 'ImageMagick Check', 'url' => '/system-tools/check_imagemagick.php'],
-                        ['label' => 'File Structure Map', 'url' => '/system-tools/show_file_structure.php'],
-                        ['label' => 'System Analysis Report', 'url' => '/system-tools/system_analysis_report.php'],
-                        ['label' => 'Navbar Verification', 'url' => '/system-tools/navbar_verification.php'],
-                        ['label' => 'Navbar Functions List', 'url' => '/system-tools/navbar_functions_list.php'],
-                        ['label' => 'User Logs', 'url' => '/user_logs.php'],
+                        ['label' => 'System Tools & Diagnostics', 'url' => '/system-tools/index.php'],
                     ]],
                     ['label' => 'Help', 'url' => '/help_index.php'],
                     ['label' => 'Logout', 'url' => '/logout.php'],
