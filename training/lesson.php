@@ -32,7 +32,11 @@ trainingRenderHeader(
 );
 ?>
 
-<div id="training-content">
+<div id="training-content"
+     data-training-lesson
+     data-lesson-id="<?php echo (int)$lesson['id']; ?>"
+     data-schema-ready="<?php echo $training->isReady() ? '1' : '0'; ?>"
+     data-csrf="<?php echo trainingEsc($trainingCsrfToken); ?>">
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/training/">Training</a></li>
@@ -172,7 +176,14 @@ trainingRenderHeader(
 
     <div class="d-flex flex-wrap justify-content-between gap-2 mt-4">
         <a class="btn btn-outline-light" href="/training/"><i class="bx bx-left-arrow-alt me-1"></i>Training Hub</a>
-        <span class="text-muted small align-self-center">Phase 1 lesson engine</span>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="text-muted small" id="training-save-status" aria-live="polite">Phase 1 lesson engine</span>
+            <?php if ($training->isReady()): ?>
+                <button type="button" class="btn btn-success" data-training-complete>
+                    <i class="bx bx-check-circle me-1"></i>Mark lesson complete
+                </button>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 
