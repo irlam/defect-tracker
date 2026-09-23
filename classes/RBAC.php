@@ -5,10 +5,10 @@ class RBAC {
     private $currentUser;
     private $currentDateTime;
 
-    public function __construct($db, $currentUser = 'irlam', $currentDateTime = '2025-01-14 21:22:10') {
+    public function __construct($db, $currentUser = null, $currentDateTime = null) {
         $this->db = $db;
-        $this->currentUser = $currentUser;
-        $this->currentDateTime = $currentDateTime;
+        $this->currentUser = $currentUser ?? (string)($_SESSION['username'] ?? 'system');
+        $this->currentDateTime = $currentDateTime ?? gmdate('Y-m-d H:i:s');
     }
 
     public function getRoles() {
