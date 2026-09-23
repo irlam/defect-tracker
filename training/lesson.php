@@ -111,6 +111,8 @@ trainingRenderHeader(
                                 <article
                                     class="training-demo__scene<?php echo $index === 0 ? ' is-active' : ''; ?>"
                                     data-demo-scene="<?php echo $index; ?>"
+                                    data-demo-title="<?php echo trainingEsc($scene['title'] ?? 'Demonstration'); ?>"
+                                    data-demo-caption="<?php echo trainingEsc($scene['caption'] ?? ''); ?>"
                                     data-demo-voice="<?php echo trainingEsc($scene['voice'] ?? $scene['caption'] ?? ''); ?>"
                                     <?php echo $index === 0 ? '' : 'hidden'; ?>
                                 >
