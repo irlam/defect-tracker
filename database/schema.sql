@@ -1408,6 +1408,81 @@ DROP TABLE IF EXISTS `acceptance_history`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`k87747_defecttracker`@`%` SQL SECURITY DEFINER VIEW `acceptance_history`  AS SELECT `d`.`id` AS `defect_id`, `d`.`title` AS `title`, `d`.`status` AS `status`, `d`.`acceptance_comment` AS `acceptance_comment`, `u`.`username` AS `accepted_by_user`, `d`.`accepted_at` AS `accepted_at`, `p`.`name` AS `project_name`, `c`.`company_name` AS `contractor_name` FROM (((`defects` `d` left join `users` `u` on((`d`.`accepted_by` = `u`.`id`))) left join `projects` `p` on((`d`.`project_id` = `p`.`id`))) left join `contractors` `c` on((`d`.`contractor_id` = `c`.`id`))) WHERE ((`d`.`status` = 'accepted') OR (`d`.`accepted_at` is not null)) ;
 
 --
+-- Table structure for table `training_modules`
+--
+
+CREATE TABLE `training_modules` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `slug` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `icon` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'bx-book-open',
+  `accent` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'blue',
+  `sort_order` int NOT NULL DEFAULT '100',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_training_modules_slug` (`slug`),
+  KEY `idx_training_modules_active_sort` (`is_active`,`sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Table structure for table `training_lessons`
+--
+
+CREATE TABLE `training_lessons` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `module_id` int NOT NULL,
+  `slug` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(180) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `estimated_minutes` smallint unsigned NOT NULL DEFAULT '5',
+  `difficulty` enum('Beginner','Intermediate','Advanced') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Beginner',
+  `role_scope` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'all',
+  `content_json` longtext COLLATE utf8mb4_unicode_ci,
+  `audio_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `transcript` mediumtext COLLATE utf8mb4_unicode_ci,
+  `animation_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `sort_order` int NOT NULL DEFAULT '100',
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_training_lessons_slug` (`slug`),
+  KEY `idx_training_lessons_module_sort` (`module_id`,`is_active`,`sort_order`),
+  CONSTRAINT `fk_training_lessons_module` FOREIGN KEY (`module_id`) REFERENCES `training_modules` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Table structure for table `training_progress`
+--
+
+CREATE TABLE `training_progress` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `lesson_id` int NOT NULL,
+  `status` enum('not_started','in_progress','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'not_started',
+  `progress_percent` tinyint unsigned NOT NULL DEFAULT '0',
+  `last_position` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `started_at` datetime DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_training_progress_user_lesson` (`user_id`,`lesson_id`),
+  KEY `idx_training_progress_user_status` (`user_id`,`status`),
+  KEY `idx_training_progress_lesson` (`lesson_id`),
+  CONSTRAINT `fk_training_progress_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_training_progress_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `training_lessons` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_training_progress_percent` CHECK ((`progress_percent` between 0 and 100))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Data intentionally omitted from the training schema baseline.
+--
+
+--
 -- Constraints for dumped tables
 --
 
