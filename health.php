@@ -8,7 +8,7 @@ require_once __DIR__ . '/config/database.php';
 
 $response = [
     'app' => 'Defect Tracker',
-    'version' => '3.0.0-rc1',
+    'version' => '3.0.0',
     'status' => 'error',
     'database' => 'unavailable',
 ];
