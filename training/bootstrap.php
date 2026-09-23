@@ -26,6 +26,11 @@ if ($db instanceof PDO) {
 
 $training = new TrainingRepository($db instanceof PDO ? $db : null);
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$trainingCsrfToken = (string)$_SESSION['csrf_token'];
+
 function trainingEsc(mixed $value): string
 {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
