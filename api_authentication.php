@@ -12,8 +12,8 @@ class APIAuthentication {
 
     public function __construct($db) {
         $this->db = $db;
-        $this->currentUser = 'irlam';
-        $this->currentDateTime = '2025-01-14 21:31:43';
+        $this->currentUser = (string)($_SESSION['username'] ?? 'system');
+        $this->currentDateTime = gmdate('Y-m-d H:i:s');
     }
 
     public function generateApiKey($userId) {
