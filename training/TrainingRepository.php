@@ -176,6 +176,51 @@ final class TrainingRepository
         return $lesson;
     }
 
+    public function updateProgress(int $userId, int $lessonId, string $status, int $percent, ?string $lastPosition = null): bool
+    {
+        if (!$this->schemaReady || !$this->db || $userId < 1 || $lessonId < 1) {
+            return false;
+        }
+
+        $allowed = ['not_started', 'in_progress', 'completed'];
+        if (!in_array($status, $allowed, true)) {
+            return false;
+        }
+
+        $percent = max(0, min(100, $percent));
+        if ($status === 'completed') {
+            $percent = 100;
+        }
+
+        $stmt = $this->db->prepare(
+            "INSERT INTO training_progress
+                (user_id, lesson_id, status, progress_percent, last_position, started_at, completed_at)
+             VALUES
+                (:user_id, :lesson_id, :status, :progress_percent, :last_position,
+                 CASE WHEN :status_started IN ('in_progress','completed') THEN NOW() ELSE NULL END,
+                 CASE WHEN :status_completed = 'completed' THEN NOW() ELSE NULL END)
+             ON DUPLICATE KEY UPDATE
+                status = VALUES(status),
+                progress_percent = VALUES(progress_percent),
+                last_position = VALUES(last_position),
+                started_at = COALESCE(training_progress.started_at, VALUES(started_at)),
+                completed_at = CASE
+                    WHEN VALUES(status) = 'completed' THEN COALESCE(training_progress.completed_at, NOW())
+                    ELSE training_progress.completed_at
+                END"
+        );
+
+        return $stmt->execute([
+            'user_id' => $userId,
+            'lesson_id' => $lessonId,
+            'status' => $status,
+            'progress_percent' => $percent,
+            'last_position' => $lastPosition,
+            'status_started' => $status,
+            'status_completed' => $status,
+        ]);
+    }
+
     private function detectSchema(): bool
     {
         if (!$this->db) {
