@@ -24,16 +24,19 @@
   }
 
   const lesson = document.querySelector('[data-training-lesson]');
+  let saveProgress = async () => ({success: false});
+
   if (lesson && lesson.dataset.schemaReady === '1') {
     const lessonId = lesson.dataset.lessonId;
     const csrf = lesson.dataset.csrf;
     const saveStatus = document.getElementById('training-save-status');
 
-    const saveProgress = async (status, percent) => {
+    saveProgress = async (status, percent, lastPosition = '') => {
       const body = new URLSearchParams({
         lesson_id: lessonId,
         status,
         progress_percent: String(percent),
+        last_position: lastPosition,
         csrf_token: csrf
       });
 
@@ -44,10 +47,12 @@
       });
 
       if (!response.ok) throw new Error('Progress update failed');
-      return response.json();
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || 'Progress update failed');
+      return result;
     };
 
-    saveProgress('in_progress', 10).catch(() => {
+    saveProgress('in_progress', 10, 'lesson-opened').catch(() => {
       if (saveStatus) saveStatus.textContent = 'Progress could not be saved';
     });
 
@@ -57,10 +62,12 @@
         completeButton.disabled = true;
         if (saveStatus) saveStatus.textContent = 'Saving completion…';
         try {
-          const result = await saveProgress('completed', 100);
-          if (!result.success) throw new Error('Progress update failed');
+          await saveProgress('completed', 100, 'completed');
           if (saveStatus) saveStatus.textContent = 'Lesson complete';
           completeButton.innerHTML = '<i class="bx bx-check-double me-1"></i>Completed';
+          document.querySelectorAll('.training-progress .progress-bar').forEach((bar) => {
+            if (bar.closest('.training-lesson-header')) bar.style.width = '100%';
+          });
         } catch (error) {
           completeButton.disabled = false;
           if (saveStatus) saveStatus.textContent = 'Could not save completion';
@@ -69,4 +76,249 @@
     }
   }
 
+  document.querySelectorAll('[data-training-demo]').forEach((demo) => {
+    const scenes = Array.from(demo.querySelectorAll('[data-demo-scene]'));
+    const title = demo.querySelector('[data-demo-title]');
+    const caption = demo.querySelector('[data-demo-caption]');
+    const counter = demo.querySelector('[data-demo-counter]');
+    const prev = demo.querySelector('[data-demo-prev]');
+    const next = demo.querySelector('[data-demo-next]');
+    const play = demo.querySelector('[data-demo-play]');
+    const narrate = demo.querySelector('[data-demo-narrate]');
+    const dots = Array.from(demo.querySelectorAll('[data-demo-go]'));
+    const cursor = demo.querySelector('[data-demo-cursor]');
+
+    let current = 0;
+    let timer = null;
+    let speaking = false;
+
+    const sceneTitle = (index) => {
+      const scene = scenes[index];
+      const heading = scene?.querySelector('h4, h3, strong');
+      return heading?.textContent?.trim() || 'Demonstration';
+    };
+
+    const animateCursor = () => {
+      if (!cursor || reduceMotion) return;
+      cursor.classList.remove('is-moving');
+      void cursor.offsetWidth;
+      cursor.classList.add('is-moving');
+    };
+
+    const stopSpeech = () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      speaking = false;
+      if (narrate) {
+        narrate.setAttribute('aria-pressed', 'false');
+        narrate.innerHTML = '<i class="bx bx-volume-full me-1"></i>Read aloud';
+      }
+    };
+
+    const speakCurrent = () => {
+      if (!('speechSynthesis' in window) || !narrate) return;
+      if (speaking) {
+        stopSpeech();
+        return;
+      }
+      stopSpeech();
+      const text = scenes[current]?.dataset.demoVoice || caption?.textContent || '';
+      if (!text) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.96;
+      utterance.pitch = 1;
+      utterance.onend = stopSpeech;
+      utterance.onerror = stopSpeech;
+      speaking = true;
+      narrate.setAttribute('aria-pressed', 'true');
+      narrate.innerHTML = '<i class="bx bx-stop-circle me-1"></i>Stop narration';
+      window.speechSynthesis.speak(utterance);
+    };
+
+    const showScene = (index, userInitiated = true) => {
+      current = Math.max(0, Math.min(scenes.length - 1, index));
+      stopSpeech();
+
+      scenes.forEach((scene, i) => {
+        const active = i === current;
+        scene.hidden = !active;
+        scene.classList.toggle('is-active', active);
+      });
+
+      dots.forEach((dot, i) => {
+        const active = i === current;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-current', active ? 'step' : 'false');
+      });
+
+      const activeScene = scenes[current];
+      const activeTitle = activeScene?.closest('[data-training-demo]') ? activeScene.parentElement?.parentElement?.querySelector('[data-demo-title]') : null;
+      const externalTitle = demo.querySelector('[data-demo-title]');
+      const rawScene = activeScene?.dataset.demoScene;
+      const sceneHeading = activeScene?.querySelector('.demo-app-toolbar strong')?.textContent?.trim();
+
+      if (counter) counter.textContent = 'Step ' + (current + 1) + ' of ' + scenes.length;
+      if (externalTitle) {
+        const labels = Array.from(demo.querySelectorAll('[data-demo-go]')).map((_, i) => scenes[i]?.getAttribute('data-demo-title'));
+        const serverTitle = demo.querySelector('[data-demo-title]');
+        if (serverTitle && activeScene) {
+          const stored = activeScene.dataset.title;
+          if (stored) serverTitle.textContent = stored;
+        }
+      }
+
+      const hiddenSceneTitle = activeScene?.querySelector('[data-scene-heading]');
+      if (title && hiddenSceneTitle) title.textContent = hiddenSceneTitle.textContent;
+
+      const captionText = activeScene?.querySelector('[data-scene-caption]');
+      if (caption && captionText) caption.textContent = captionText.textContent;
+
+      if (prev) prev.disabled = current === 0;
+      if (next) {
+        next.innerHTML = current === scenes.length - 1
+          ? 'Replay <i class="bx bx-revision ms-1"></i>'
+          : 'Next <i class="bx bx-right-arrow-alt ms-1"></i>';
+      }
+
+      animateCursor();
+
+      if (userInitiated && lesson?.dataset.schemaReady === '1') {
+        const percent = Math.min(80, 20 + Math.round(((current + 1) / scenes.length) * 60));
+        saveProgress('in_progress', percent, 'demo-step-' + (current + 1)).catch(() => {});
+      }
+    };
+
+    prev?.addEventListener('click', () => showScene(current - 1));
+    next?.addEventListener('click', () => showScene(current === scenes.length - 1 ? 0 : current + 1));
+    dots.forEach((dot) => dot.addEventListener('click', () => showScene(Number(dot.dataset.demoGo || 0))));
+    narrate?.addEventListener('click', speakCurrent);
+
+    const stopAutoPlay = () => {
+      if (timer) window.clearInterval(timer);
+      timer = null;
+      if (play) {
+        play.setAttribute('aria-pressed', 'false');
+        play.innerHTML = '<i class="bx bx-play me-1"></i>Auto play';
+      }
+    };
+
+    play?.addEventListener('click', () => {
+      if (timer) {
+        stopAutoPlay();
+        return;
+      }
+      play.setAttribute('aria-pressed', 'true');
+      play.innerHTML = '<i class="bx bx-pause me-1"></i>Pause';
+      timer = window.setInterval(() => {
+        const nextIndex = current + 1;
+        if (nextIndex >= scenes.length) {
+          stopAutoPlay();
+          return;
+        }
+        showScene(nextIndex, true);
+      }, reduceMotion ? 6500 : 5000);
+    });
+
+    demo.tabIndex = 0;
+    demo.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showScene(current === scenes.length - 1 ? current : current + 1);
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showScene(current === 0 ? current : current - 1);
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      stopAutoPlay();
+      stopSpeech();
+    });
+  });
+
+  document.querySelectorAll('[data-training-demo] [data-demo-scene]').forEach((scene) => {
+    const index = Number(scene.dataset.demoScene || 0);
+    const lessonSlug = new URLSearchParams(window.location.search).get('lesson') || '';
+    const enhancedTitles = {
+      'create-a-defect': [
+        'Start a new defect','Choose project and contractor','Set priority and due date',
+        'Write a useful defect description','Add evidence and location','Review and submit'
+      ],
+      'floor-plan-location': [
+        'Open the correct drawing','Navigate in Pan mode','Zoom into the exact area',
+        'Switch to Place Pin','Fine-tune the marker','Confirm the position'
+      ],
+      'contractor-manager-lifecycle': [
+        'Defect is created and assigned','Contractor opens the assigned task','Work is started',
+        'Completion evidence is submitted','Manager reviews the work','Reject and resubmit when needed','Accept and close'
+      ]
+    };
+    const title = enhancedTitles[lessonSlug]?.[index] || 'Demonstration';
+    const captionMap = scene.dataset.demoVoice || '';
+    const titleNode = document.createElement('span');
+    titleNode.hidden = true;
+    titleNode.dataset.sceneHeading = '';
+    titleNode.textContent = title;
+    scene.appendChild(titleNode);
+
+    const captionNode = document.createElement('span');
+    captionNode.hidden = true;
+    captionNode.dataset.sceneCaption = '';
+    captionNode.textContent = scene.getAttribute('data-caption') || captionMap;
+    scene.appendChild(captionNode);
+  });
+
+  document.querySelectorAll('[data-training-demo]').forEach((demo) => {
+    const first = demo.querySelector('[data-demo-scene="0"]');
+    const title = demo.querySelector('[data-demo-title]');
+    const caption = demo.querySelector('[data-demo-caption]');
+    const heading = first?.querySelector('[data-scene-heading]');
+    const cap = first?.querySelector('[data-scene-caption]');
+    if (title && heading) title.textContent = heading.textContent;
+    if (caption && cap) caption.textContent = cap.textContent;
+  });
+
+  document.querySelectorAll('[data-training-quiz]').forEach((quiz) => {
+    const questions = Array.from(quiz.querySelectorAll('[data-quiz-question]'));
+    const check = quiz.querySelector('[data-quiz-check]');
+    const score = quiz.querySelector('[data-quiz-score]');
+
+    check?.addEventListener('click', async () => {
+      let correct = 0;
+
+      questions.forEach((question) => {
+        const expected = Number(question.dataset.answer || 0);
+        const selected = question.querySelector('input[type="radio"]:checked');
+        const feedback = question.querySelector('[data-quiz-feedback]');
+        const selectedValue = selected ? Number(selected.value) : -1;
+        const ok = selectedValue === expected;
+
+        question.classList.toggle('is-correct', ok);
+        question.classList.toggle('is-incorrect', !ok);
+
+        if (ok) {
+          correct += 1;
+          if (feedback) feedback.textContent = 'Correct';
+        } else {
+          if (feedback) feedback.textContent = selected ? 'Not quite — try this question again.' : 'Choose an answer first.';
+        }
+      });
+
+      const passed = correct === questions.length && questions.length > 0;
+      if (score) {
+        score.textContent = passed
+          ? 'Passed · ' + correct + '/' + questions.length
+          : correct + '/' + questions.length + ' correct';
+        score.classList.toggle('text-success', passed);
+      }
+
+      if (passed && lesson?.dataset.schemaReady === '1') {
+        try {
+          await saveProgress('in_progress', 90, 'knowledge-check-passed');
+          const saveStatus = document.getElementById('training-save-status');
+          if (saveStatus) saveStatus.textContent = 'Knowledge check passed — ready to complete';
+        } catch (error) {}
+      }
+    });
+  });
 })();
