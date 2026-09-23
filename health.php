@@ -5,10 +5,11 @@ header('Content-Type: application/json');
 header('Cache-Control: no-store');
 
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/constants.php';
 
 $response = [
     'app' => 'Defect Tracker',
-    'version' => '3.0.0',
+    'version' => defined('APP_VERSION') ? APP_VERSION : 'unknown',
     'status' => 'error',
     'database' => 'unavailable',
 ];
