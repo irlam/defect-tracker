@@ -41,9 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         
         $output = ob_get_clean();
         
+        $success = ($cleanupSucceeded ?? false) === true;
+
         echo json_encode([
-            'success' => true,
-            'message' => 'Cleanup completed successfully',
+            'success' => $success,
+            'message' => $success ? 'Cleanup completed successfully' : 'Cleanup did not complete. Review the output below.',
             'output' => $output
         ]);
         exit();
