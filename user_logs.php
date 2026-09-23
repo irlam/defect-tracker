@@ -46,6 +46,12 @@ $offset = ($currentPage - 1) * $logsPerPage;
 // Search keyword
 $searchKeyword = trim((string)($_GET['search'] ?? ''));
 
+// Safe display defaults in case a database/log query fails.
+$totalLogs = 0;
+$totalPages = 0;
+$logs = [];
+$error_message = null;
+
 // Date range filter (in days) - default to 30
 $rangeOptions = [
     '7' => '7 Days',
@@ -71,21 +77,21 @@ if ($selectedRange !== 'all') {
 $userLogsSearchCondition = '';
 if ($searchKeyword !== '') {
     $userLogsSearchCondition = " AND (
-        u.username LIKE :search
-        OR ul.action LIKE :search
-        OR ul.details LIKE :search
-        OR ul.ip_address LIKE :search
+        u.username LIKE :userSearchUsername
+        OR ul.action LIKE :userSearchAction
+        OR ul.details LIKE :userSearchDetails
+        OR ul.ip_address LIKE :userSearchIp
     )";
 }
 
 $activityLogsSearchCondition = '';
 if ($searchKeyword !== '') {
     $activityLogsSearchCondition = " AND (
-        u.username LIKE :search
-        OR al.action LIKE :search
-        OR al.action_type LIKE :search
-        OR al.details LIKE :search
-        OR CONCAT('Defect #', al.defect_id) LIKE :search
+        u.username LIKE :activitySearchUsername
+        OR al.action LIKE :activitySearchAction
+        OR al.action_type LIKE :activitySearchType
+        OR al.details LIKE :activitySearchDetails
+        OR CONCAT('Defect #', al.defect_id) LIKE :activitySearchDefect
     )";
 }
 
@@ -96,8 +102,8 @@ try {
     // Initialize the Navbar class
     $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
 
-    $userDateCondition = $fromDate ? ' AND ul.action_at >= :fromDate' : '';
-    $activityDateCondition = $fromDate ? ' AND al.created_at >= :fromDate' : '';
+    $userDateCondition = $fromDate ? ' AND ul.action_at >= :userFromDate' : '';
+    $activityDateCondition = $fromDate ? ' AND al.created_at >= :activityFromDate' : '';
 
     // Build comprehensive query combining user_logs and activity_logs
     // First, get total count for pagination
@@ -119,10 +125,20 @@ try {
     
     $countStmt = $db->prepare($countQuery);
     if ($fromDate) {
-        $countStmt->bindValue(':fromDate', $fromDate);
+        $countStmt->bindValue(':userFromDate', $fromDate);
+        $countStmt->bindValue(':activityFromDate', $fromDate);
     }
-    if (!empty($searchKeyword)) {
-        $countStmt->bindValue(':search', '%' . $searchKeyword . '%');
+    if ($searchKeyword !== '') {
+        $searchValue = '%' . $searchKeyword . '%';
+        $countStmt->bindValue(':userSearchUsername', $searchValue);
+        $countStmt->bindValue(':userSearchAction', $searchValue);
+        $countStmt->bindValue(':userSearchDetails', $searchValue);
+        $countStmt->bindValue(':userSearchIp', $searchValue);
+        $countStmt->bindValue(':activitySearchUsername', $searchValue);
+        $countStmt->bindValue(':activitySearchAction', $searchValue);
+        $countStmt->bindValue(':activitySearchType', $searchValue);
+        $countStmt->bindValue(':activitySearchDetails', $searchValue);
+        $countStmt->bindValue(':activitySearchDefect', $searchValue);
     }
     $countStmt->execute();
     $totalLogs = (int)($countStmt->fetchColumn() ?: 0);
@@ -169,10 +185,20 @@ try {
 
     $stmt = $db->prepare($query);
     if ($fromDate) {
-        $stmt->bindValue(':fromDate', $fromDate);
+        $stmt->bindValue(':userFromDate', $fromDate);
+        $stmt->bindValue(':activityFromDate', $fromDate);
     }
-    if (!empty($searchKeyword)) {
-        $stmt->bindValue(':search', '%' . $searchKeyword . '%');
+    if ($searchKeyword !== '') {
+        $searchValue = '%' . $searchKeyword . '%';
+        $stmt->bindValue(':userSearchUsername', $searchValue);
+        $stmt->bindValue(':userSearchAction', $searchValue);
+        $stmt->bindValue(':userSearchDetails', $searchValue);
+        $stmt->bindValue(':userSearchIp', $searchValue);
+        $stmt->bindValue(':activitySearchUsername', $searchValue);
+        $stmt->bindValue(':activitySearchAction', $searchValue);
+        $stmt->bindValue(':activitySearchType', $searchValue);
+        $stmt->bindValue(':activitySearchDetails', $searchValue);
+        $stmt->bindValue(':activitySearchDefect', $searchValue);
     }
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->bindParam(':logsPerPage', $logsPerPage, PDO::PARAM_INT);
@@ -189,7 +215,7 @@ try {
 
 } catch (Exception $e) {
     error_log("User Logs Error: " . $e->getMessage());
-    $error_message = "An error occurred while loading user logs: " . $e->getMessage();
+    $error_message = "An error occurred while loading the activity logs. Please check the server log for details.";
 }
 
 // Helper function to format date to UK format
@@ -347,6 +373,12 @@ function formatLogDetails($details, $action_by_username) {
                 </div>
             </div>
         </section>
+
+        <?php if ($error_message): ?>
+            <div class="alert alert-danger" role="alert">
+                <i class='bx bx-error-circle me-2'></i><?php echo htmlspecialchars($error_message); ?>
+            </div>
+        <?php endif; ?>
 
         <section>
             <div class="card border-0">
