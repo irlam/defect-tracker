@@ -233,7 +233,12 @@ final class TrainingRepository
                  WHERE TABLE_SCHEMA = DATABASE()
                    AND TABLE_NAME IN ('training_modules','training_lessons','training_progress')"
             );
-            return (int)$stmt->fetchColumn() === 3;
+            if ((int)$stmt->fetchColumn() !== 3) {
+                return false;
+            }
+
+            $lessonCount = (int)$this->db->query("SELECT COUNT(*) FROM training_lessons WHERE is_active = 1")->fetchColumn();
+            return $lessonCount > 0;
         } catch (Throwable $e) {
             return false;
         }
