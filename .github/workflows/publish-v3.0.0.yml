@@ -1,0 +1,48 @@
+name: publish-v3.0.0
+
+on:
+  push:
+    branches:
+      - release-v3.0.0-automation
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create v3.0.0 release from approved main commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: c4c9e6f33941dc445dfb4863aa66e50556451a33
+        run: |
+          set -euo pipefail
+          if gh release view v3.0.0 --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "v3.0.0 release already exists"
+            exit 0
+          fi
+
+          gh release create v3.0.0             --repo "${GITHUB_REPOSITORY}"             --target "${TARGET_SHA}"             --title "Defect Tracker v3.0.0"             --notes "Defect Tracker v3.0.0 production release.
+
+Release highlights:
+- Project-ready PHP 8.2+ deployment baseline
+- Sanitized repository history and schema-only database baseline
+- Hardened authentication, CSRF, mail, cleanup and legacy API handling
+- Improved floor-plan pan, zoom and precise defect pin placement
+- Viewport-aware shared navigation and consolidated System Tools
+- Live System Analysis and exact database diagnostics
+- Reliable Plesk-friendly backup processing
+- Production-safe release gate and live smoke checks
+
+Release validation:
+- PHP syntax: passed
+- Configuration regression: passed
+- Functional regressions: passed
+- Defect lifecycle regressions: passed
+- Mail safety regression: passed
+- Service worker regression: passed
+- Live login smoke test: passed
+- Live application/database health check: passed
+
+Source commit: c4c9e6f33941dc445dfb4863aa66e50556451a33"
