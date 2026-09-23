@@ -27,6 +27,7 @@ function cleanDatabase(PDO $db): array {
         'defect_images','defect_comments','defect_history','defect_assignments','acceptance_history',
         'comments','notifications','notification_log','sync_conflicts','sync_devices','sync_logs','sync_queue',
         'activity_logs','system_logs','action_log','audit_logs','export_logs','maintenance_log',
+        'training_progress',
         'floor_plans','defects','projects'
     ];
 
