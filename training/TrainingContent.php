@@ -193,3 +193,114 @@ function trainingEnhancedContent(string $slug): array
 
     return $lessons[$slug] ?? [];
 }
+
+
+function trainingRenderDemoScreen(string $screen, string $focus = ''): void
+{
+    $is = static fn(string $name): string => $focus === $name ? ' is-focus' : '';
+
+    if (str_starts_with($screen, 'create-')) {
+        echo '<div class="demo-app-window">';
+        echo '<div class="demo-app-toolbar"><span class="demo-dot"></span><span class="demo-dot"></span><span class="demo-dot"></span><strong>Defect Tracker · Create Defect</strong></div>';
+
+        if ($screen === 'create-description') {
+            echo '<div class="demo-form-grid">';
+            echo '<div class="demo-field"><span class="demo-label">Title</span><div class="demo-input">Apartment 204 – scratched kitchen worktop</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Due Date</span><div class="demo-input">30/09/2026</div></div>';
+            echo '<div class="demo-field demo-field-wide' . $is('description') . '"><span class="demo-label">Defect Description</span><div class="demo-textarea">Scratch to front edge of kitchen worktop beside sink. Visible from normal standing position. Repair or replace finish so no scratch remains.</div></div>';
+            echo '</div>';
+        } elseif ($screen === 'create-evidence') {
+            echo '<div class="demo-evidence-grid">';
+            echo '<div class="demo-upload-card"><i class="bx bx-image-add"></i><strong>Photo evidence</strong><span>worktop-scratch.jpg</span><span class="demo-success"><i class="bx bx-check"></i> Attached</span></div>';
+            echo '<div class="demo-plan-mini' . $is('floorplan') . '"><div class="demo-plan-room">Kitchen<div class="demo-pin"><i class="bx bxs-map"></i></div></div><div class="demo-plan-room">Living</div><div class="demo-plan-room">Hall</div></div>';
+            echo '</div>';
+        } elseif ($screen === 'create-review') {
+            echo '<div class="demo-review-list">';
+            foreach ([['Project','Downtown Victoria North'],['Contractor','Example Joinery Ltd'],['Priority','High'],['Evidence','1 photo + floor-plan pin']] as $row) {
+                echo '<div><span>' . htmlspecialchars($row[0]) . '</span><strong>' . htmlspecialchars($row[1]) . '</strong><i class="bx bx-check-circle"></i></div>';
+            }
+            echo '</div><div class="demo-actions"><button type="button" class="demo-button demo-button-primary' . $is('submit') . '">Create Defect</button></div>';
+        } else {
+            echo '<div class="demo-form-grid">';
+            echo '<div class="demo-field' . $is('project') . '"><span class="demo-label">Project</span><div class="demo-select">Downtown Victoria North <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field' . $is('contractor') . '"><span class="demo-label">Assigned Contractor</span><div class="demo-select">Example Joinery Ltd <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field' . $is('priority') . '"><span class="demo-label">Priority</span><div class="demo-select">High (1–2 business days) <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Due Date</span><div class="demo-input">30/09/2026</div></div>';
+            echo '</div>';
+        }
+
+        echo '</div>';
+        return;
+    }
+
+    if (str_starts_with($screen, 'plan-')) {
+        $zoomed = in_array($screen, ['plan-zoom','plan-pin','plan-fine','plan-confirm'], true);
+        echo '<div class="demo-app-window">';
+        echo '<div class="demo-app-toolbar"><strong>Floor Plan Selector</strong><div class="demo-plan-tools">';
+        echo '<button type="button" class="demo-tool' . ($screen === 'plan-pan' ? ' is-active' : '') . '"><i class="bx bx-move"></i> Pan</button>';
+        echo '<button type="button" class="demo-tool' . (in_array($screen, ['plan-pin','plan-fine','plan-confirm'], true) ? ' is-active' : '') . '"><i class="bx bx-map-pin"></i> Place Pin</button>';
+        echo '<button type="button" class="demo-tool"><i class="bx bx-expand"></i> Fit</button></div></div>';
+        echo '<div class="demo-floor-canvas' . ($zoomed ? ' is-zoomed' : '') . '">';
+        echo '<div class="demo-floor-plan">';
+        echo '<div class="demo-room demo-room-a">Apartment 204</div>';
+        echo '<div class="demo-room demo-room-b">Kitchen</div>';
+        echo '<div class="demo-room demo-room-c">Living Room</div>';
+        echo '<div class="demo-room demo-room-d">Hall</div>';
+        if (in_array($screen, ['plan-pin','plan-fine','plan-confirm'], true)) {
+            echo '<div class="demo-defect-pin' . $is('pin') . '"><i class="bx bxs-map"></i><span>Defect</span></div>';
+        }
+        echo '</div>';
+        if ($screen === 'plan-pan') {
+            echo '<div class="demo-gesture"><i class="bx bx-mouse"></i><span>Drag to pan</span></div>';
+        } elseif ($screen === 'plan-zoom') {
+            echo '<div class="demo-gesture"><i class="bx bx-zoom-in"></i><span>Wheel / pinch to zoom</span></div>';
+        }
+        echo '</div>';
+        if ($screen === 'plan-confirm') {
+            echo '<div class="demo-actions"><button type="button" class="demo-button demo-button-primary' . $is('confirm') . '"><i class="bx bx-check"></i> Confirm Location</button></div>';
+        }
+        echo '</div>';
+        return;
+    }
+
+    if (str_starts_with($screen, 'life-')) {
+        $states = [
+            'life-created' => ['Created','Assigned'],
+            'life-contractor' => ['Assigned','Contractor Review'],
+            'life-progress' => ['Assigned','In Progress'],
+            'life-evidence' => ['In Progress','Pending Review'],
+            'life-review' => ['Pending Review','Manager Review'],
+            'life-reject' => ['Manager Review','Rejected'],
+            'life-accepted' => ['Manager Review','Accepted'],
+        ];
+        [$from,$to] = $states[$screen] ?? ['Created','Assigned'];
+
+        echo '<div class="demo-app-window">';
+        echo '<div class="demo-app-toolbar"><strong>Defect #1042 · Kitchen worktop damage</strong><span class="demo-status-pill">' . htmlspecialchars($to) . '</span></div>';
+        echo '<div class="demo-lifecycle">';
+        $all = ['Created','Assigned','In Progress','Pending Review','Accepted'];
+        foreach ($all as $state) {
+            $active = ($state === $from || $state === $to || ($screen === 'life-reject' && $state === 'Pending Review'));
+            echo '<div class="demo-life-node' . ($active ? ' is-active' : '') . '"><span></span><small>' . htmlspecialchars($state) . '</small></div>';
+        }
+        echo '</div>';
+
+        if ($screen === 'life-contractor') {
+            echo '<div class="demo-task-card' . $is('task') . '"><div><span class="demo-label">Assigned task</span><h4>Kitchen worktop damage</h4><p>Review description, original evidence and floor-plan pin before starting.</p></div><button type="button" class="demo-button demo-button-primary">Open Task</button></div>';
+        } elseif ($screen === 'life-progress') {
+            echo '<div class="demo-task-card"><div><span class="demo-label">Contractor action</span><h4>Ready to begin?</h4><p>Starting the task records that corrective work is underway.</p></div><button type="button" class="demo-button demo-button-primary' . $is('start') . '">Start Work</button></div>';
+        } elseif ($screen === 'life-evidence') {
+            echo '<div class="demo-evidence-grid"><div class="demo-upload-card' . $is('evidence') . '"><i class="bx bx-camera"></i><strong>Completion evidence</strong><span>repair-complete.jpg</span><span class="demo-success"><i class="bx bx-check"></i> Ready to submit</span></div><div class="demo-task-card"><div><span class="demo-label">Next status</span><h4>Pending Review</h4><p>The manager will compare this evidence with the original defect.</p></div></div></div>';
+        } elseif ($screen === 'life-review') {
+            echo '<div class="demo-compare"><div><span class="demo-label">Original</span><div class="demo-photo-placeholder"><i class="bx bx-image"></i> Damage</div></div><div><span class="demo-label">Completion</span><div class="demo-photo-placeholder is-complete"><i class="bx bx-check"></i> Repaired</div></div></div><div class="demo-actions' . $is('review') . '"><button type="button" class="demo-button demo-button-danger">Reject</button><button type="button" class="demo-button demo-button-success">Accept</button></div>';
+        } elseif ($screen === 'life-reject') {
+            echo '<div class="demo-rejection' . $is('reject') . '"><span class="demo-label">Rejection reason</span><p>Front edge is improved but the scratch remains visible beside the sink. Please complete the repair and upload a clear close-up.</p><span class="demo-status-pill is-danger">Returned for action</span></div>';
+        } elseif ($screen === 'life-accepted') {
+            echo '<div class="demo-accepted' . $is('accepted') . '"><i class="bx bx-check-shield"></i><div><h4>Completion accepted</h4><p>Evidence approved. The lifecycle is retained in the defect history.</p></div></div>';
+        } else {
+            echo '<div class="demo-task-card' . $is('created') . '"><div><span class="demo-label">Workflow event</span><h4>Defect assigned</h4><p>Example Joinery Ltd · High priority · Apartment 204 kitchen</p></div><span class="demo-status-pill">Assigned</span></div>';
+        }
+
+        echo '</div>';
+    }
+}
