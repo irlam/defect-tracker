@@ -1,0 +1,276 @@
+:root {
+  --training-blue: #4f8cff;
+  --training-cyan: #2dd4bf;
+  --training-violet: #8b5cf6;
+  --training-amber: #f59e0b;
+}
+
+.training-shell {
+  padding-top: calc(var(--app-navbar-height, 72px) + 1.5rem) !important;
+}
+
+.training-skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2000;
+}
+
+.training-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  background:
+    radial-gradient(circle at 80% 10%, rgba(79, 140, 255, .28), transparent 34%),
+    radial-gradient(circle at 20% 90%, rgba(139, 92, 246, .22), transparent 36%),
+    linear-gradient(135deg, rgba(15, 23, 42, .98), rgba(30, 41, 59, .96));
+  box-shadow: 0 28px 70px -45px rgba(15, 23, 42, .95);
+}
+
+.training-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .4rem .75rem;
+  border-radius: 999px;
+  background: rgba(79, 140, 255, .12);
+  color: #bcd0ff;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.training-progress-ring {
+  --value: 0;
+  width: 8rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(var(--training-blue) calc(var(--value) * 1%), rgba(148,163,184,.16) 0);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.training-progress-ring::before {
+  content: "";
+  width: 6.3rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #0f172a;
+  position: absolute;
+}
+
+.training-progress-ring__value {
+  position: relative;
+  z-index: 1;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.training-card,
+.training-lesson-card {
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 1.1rem;
+  background: rgba(15, 23, 42, .78);
+  box-shadow: 0 18px 38px -30px rgba(15,23,42,.95);
+}
+
+.training-module-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.training-module-card:hover,
+.training-module-card:focus-within {
+  transform: translateY(-3px);
+  border-color: rgba(79, 140, 255, .5);
+  box-shadow: 0 24px 44px -30px rgba(79,140,255,.55);
+}
+
+.training-module-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -15% -45% auto;
+  width: 9rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,140,255,.14), transparent 70%);
+  pointer-events: none;
+}
+
+.training-module-icon {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: .9rem;
+  background: rgba(79,140,255,.12);
+  color: #9fbaff;
+  font-size: 1.5rem;
+}
+
+.training-module-card[data-accent="cyan"] .training-module-icon { background: rgba(45,212,191,.12); color: #75e6d5; }
+.training-module-card[data-accent="violet"] .training-module-icon { background: rgba(139,92,246,.14); color: #bca7ff; }
+.training-module-card[data-accent="amber"] .training-module-icon { background: rgba(245,158,11,.14); color: #f9c66c; }
+
+.training-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  color: var(--bs-secondary-color);
+  font-size: .82rem;
+}
+
+.training-progress {
+  height: .55rem;
+  background: rgba(148,163,184,.14);
+}
+
+.training-progress .progress-bar {
+  background: linear-gradient(90deg, var(--training-blue), var(--training-violet));
+}
+
+.training-continue {
+  border: 1px solid rgba(79,140,255,.28);
+  background: linear-gradient(135deg, rgba(79,140,255,.12), rgba(139,92,246,.09));
+}
+
+.training-role-chip,
+.training-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border-radius: 999px;
+  padding: .35rem .65rem;
+  border: 1px solid rgba(148,163,184,.18);
+  background: rgba(148,163,184,.08);
+  font-size: .78rem;
+}
+
+.training-schema-note {
+  border-style: dashed;
+}
+
+.training-lesson-header {
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(79,140,255,.18), transparent 35%),
+    rgba(15,23,42,.8);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.training-step-list {
+  counter-reset: training-step;
+}
+
+.training-step {
+  position: relative;
+  padding: 1.15rem 1.15rem 1.15rem 4rem;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 1rem;
+  background: rgba(15,23,42,.68);
+}
+
+.training-step + .training-step {
+  margin-top: .9rem;
+}
+
+.training-step::before {
+  counter-increment: training-step;
+  content: counter(training-step);
+  position: absolute;
+  left: 1rem;
+  top: 1.05rem;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(79,140,255,.14);
+  color: #bcd0ff;
+  font-weight: 800;
+}
+
+.training-demo-stage {
+  min-height: 20rem;
+  border: 1px dashed rgba(148,163,184,.28);
+  border-radius: 1rem;
+  background:
+    linear-gradient(rgba(15,23,42,.82), rgba(15,23,42,.82)),
+    radial-gradient(circle at center, rgba(79,140,255,.18), transparent 52%);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.training-demo-stage__icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 1.2rem;
+  background: rgba(79,140,255,.12);
+  color: #9fbaff;
+  font-size: 2.2rem;
+  margin-inline: auto;
+}
+
+.training-outcome-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.training-outcome-list li {
+  display: flex;
+  gap: .65rem;
+  align-items: flex-start;
+  padding-block: .4rem;
+}
+
+.training-outcome-list i {
+  color: #5ee7b7;
+  margin-top: .2rem;
+}
+
+.training-audio-shell {
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 1rem;
+  background: rgba(2,6,23,.35);
+  padding: 1rem;
+}
+
+.training-placeholder-badge {
+  border: 1px solid rgba(245,158,11,.35);
+  background: rgba(245,158,11,.12);
+  color: #f9c66c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-module-card {
+    transition: none;
+  }
+  .training-module-card:hover,
+  .training-module-card:focus-within {
+    transform: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .training-progress-ring {
+    width: 6.5rem;
+  }
+  .training-progress-ring::before {
+    width: 5.1rem;
+  }
+  .training-step {
+    padding-left: 3.6rem;
+  }
+}
