@@ -21,6 +21,10 @@ const context = {
   },
   fetch: async () => 'network-response',
 };
+for (const registrationFile of ['../index.html', '../main.js', '../login.php', '../js/offline-defect-queue.js', '../sync/init.php']) {
+  const source = fs.readFileSync(require.resolve(registrationFile), 'utf8');
+  assert(source.includes('/service-worker.js?v=1.1.0'), `${registrationFile} must cache-bust the field worker registration`);
+}
 vm.runInNewContext(fs.readFileSync(require.resolve('../service-worker.js'), 'utf8'), context);
 async function fetchHandled(path, method = 'GET', mode = 'cors') {
   let response;

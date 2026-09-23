@@ -356,7 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         // Register the service worker so the page qualifies for installation prompts
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js').catch((error) => {
+            navigator.serviceWorker.register('/service-worker.js?v=1.1.0').catch((error) => {
                 console.error('Service worker registration failed:', error);
             });
         }
