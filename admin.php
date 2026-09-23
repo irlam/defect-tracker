@@ -237,7 +237,7 @@ $adminActionSections = [
                 'description' => 'Access system analysis, training materials, and role documentation.',
                 'links' => [
                     ['label' => 'System Analysis', 'href' => 'Site-presentation/index.php', 'icon' => 'bx-bar-chart-alt', 'variant' => 'primary'],
-                    ['label' => 'Training', 'href' => 'Site-presentation/training.php', 'icon' => 'bx-book-open', 'variant' => 'outline'],
+                    ['label' => 'Training', 'href' => '/training/', 'icon' => 'bx-book-open', 'variant' => 'outline'],
                     ['label' => 'Roles & Permissions', 'href' => 'Site-presentation/roles.php', 'icon' => 'bx-user-check', 'variant' => 'outline'],
                 ],
             ],
