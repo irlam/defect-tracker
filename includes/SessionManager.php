@@ -54,15 +54,24 @@ class SessionManager {
      * Check if session is valid (not expired)
      */
     private function isSessionValid() {
+        // Legacy/root login.php sessions pre-date SessionManager and may not
+        // contain last_activity. If the authenticated identity is present,
+        // initialise the activity timestamp instead of treating that session
+        // as logged out. This keeps nested admin/tools pages compatible with
+        // the main login flow.
         if (!isset($_SESSION['last_activity'])) {
+            if (!empty($_SESSION['username']) && !empty($_SESSION['user_id'])) {
+                $_SESSION['last_activity'] = time();
+                return true;
+            }
             return false;
         }
-        
-        if ((time() - $_SESSION['last_activity']) > $this->sessionTimeout) {
+
+        if ((time() - (int) $_SESSION['last_activity']) > $this->sessionTimeout) {
             $this->logout();
             return false;
         }
-        
+
         $_SESSION['last_activity'] = time();
         return true;
     }
