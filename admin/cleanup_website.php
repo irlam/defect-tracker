@@ -34,18 +34,31 @@ function cleanDatabase(PDO $db): array {
         $db->beginTransaction();
         $db->exec('SET FOREIGN_KEY_CHECKS=0');
 
+        $objectTypeStmt = $db->prepare("
+            SELECT TABLE_TYPE
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?
+            LIMIT 1
+        ");
+
         foreach ($deleteAll as $table) {
             if (!validateTableName($table)) throw new RuntimeException("Invalid table name: {$table}");
-            try {
-                $count = $db->exec("DELETE FROM `{$table}`");
-                $results[] = "✓ {$table}: " . (int)$count . ' rows removed';
-            } catch (PDOException $e) {
-                if ($e->getCode() === '42S02') {
-                    $results[] = "• {$table}: table not present";
-                    continue;
-                }
-                throw $e;
+
+            $objectTypeStmt->execute([$table]);
+            $objectType = $objectTypeStmt->fetchColumn();
+
+            if ($objectType === false) {
+                $results[] = "• {$table}: table not present";
+                continue;
             }
+
+            if (strtoupper((string) $objectType) !== 'BASE TABLE') {
+                $results[] = "• {$table}: " . strtolower((string) $objectType) . " skipped";
+                continue;
+            }
+
+            $count = $db->exec("DELETE FROM `{$table}`");
+            $results[] = "✓ {$table}: " . (int)$count . ' rows removed';
         }
 
         $adminIds = $db->query("SELECT id FROM users WHERE user_type = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
@@ -115,7 +128,7 @@ function cleanUploadedFiles(): array {
     return ['success'=>true,'results'=>$results];
 }
 
-function executeCleanup(): void {
+function executeCleanup(): bool {
     echo "\n" . str_repeat('=',70) . "\nPROJECT DATA CLEANUP\n" . str_repeat('=',70) . "\n";
     echo "WARNING: all project/user-generated data will be permanently removed.\n";
     echo "Administrator accounts and system configuration are preserved.\n\n";
@@ -123,19 +136,23 @@ function executeCleanup(): void {
     if (php_sapi_name() === 'cli' && !defined('CLEANUP_SKIP_CONFIRMATION')) {
         echo "Type RESET to continue: ";
         $answer = trim((string) fgets(STDIN));
-        if ($answer !== 'RESET') { echo "Cleanup cancelled.\n"; return; }
+        if ($answer !== 'RESET') { echo "Cleanup cancelled.\n"; return false; }
     }
 
     $db = (new Database())->getConnection();
-    if (!$db) { echo "✗ Database connection failed.\n"; return; }
+    if (!$db) { echo "✗ Database connection failed.\n"; return false; }
 
     $dbResult = cleanDatabase($db);
     foreach ($dbResult['results'] as $line) echo $line . "\n";
-    if (!$dbResult['success']) return;
+    if (!$dbResult['success']) return false;
 
     $fileResult = cleanUploadedFiles();
     foreach ($fileResult['results'] as $line) echo $line . "\n";
     echo "\nCleanup complete. Create and verify a fresh backup before cloning this installation.\n";
+    return true;
 }
 
-if (php_sapi_name() === 'cli' || (($_SESSION['user_type'] ?? '') === 'admin')) executeCleanup();
+$cleanupSucceeded = null;
+if (php_sapi_name() === 'cli' || (($_SESSION['user_type'] ?? '') === 'admin')) {
+    $cleanupSucceeded = executeCleanup();
+}
