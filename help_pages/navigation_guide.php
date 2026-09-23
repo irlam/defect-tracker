@@ -10,8 +10,8 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/SessionManager.php';
 require_once __DIR__ . '/../includes/navbar.php';
 
-SessionManager::start();
-if (!SessionManager::isLoggedIn()) {
+$sessionManager = new SessionManager();
+if (!$sessionManager->isAuthenticated()) {
     header('Location: /login.php');
     exit;
 }
