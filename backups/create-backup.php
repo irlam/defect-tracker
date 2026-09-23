@@ -50,6 +50,13 @@ try {
     // Get the action
     $action = $_POST['action'] ?? '';
     
+    // Authentication and CSRF checks are complete. Release the PHP session
+    // lock before long-running work or status polling so parallel AJAX status
+    // requests do not queue behind the backup process.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+
     if ($action === 'start') {
         // Start a new backup process
         $_SESSION['backup_progress'] = [
@@ -67,29 +74,51 @@ try {
         ]);
         
     } elseif ($action === 'run') {
-        // Run the actual backup process
-        // This would normally be a long-running process, so we'd break it into stages
-        
-        // For this example, we'll just create the backup directly
-        // In a real implementation, you'd want to break this into smaller steps
-        $result = $backupManager->createFullBackup();
-        
-        // Update session with final status
-        $_SESSION['backup_progress'] = [
-            'status' => $result['success'] ? 'complete' : 'failed',
-            'progress' => $result['success'] ? 100 : 0,
-            'message' => $result['message'],
-            'current_file' => '',
-            'end_time' => time(),
-            'filename' => $result['success'] ? $result['file'] : '',
-        ];
-        
-        // Return final status
-        echo json_encode([
-            'success' => $result['success'],
-            'status' => $_SESSION['backup_progress'],
-            'message' => $result['message']
-        ]);
+        $tmpDir = __DIR__ . '/tmp';
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0755, true);
+        }
+
+        // Prevent accidental concurrent full backups from exhausting the
+        // hosting account's FastCGI process pool.
+        $lockHandle = fopen($tmpDir . '/backup.lock', 'c');
+        if (!$lockHandle || !flock($lockHandle, LOCK_EX | LOCK_NB)) {
+            if ($lockHandle) fclose($lockHandle);
+            http_response_code(409);
+            echo json_encode([
+                'success' => false,
+                'message' => 'A backup is already running. Please wait for it to finish.'
+            ]);
+            exit;
+        }
+
+        try {
+            $result = $backupManager->createFullBackup();
+
+            $finalStatus = [
+                'status' => $result['success'] ? 'complete' : 'failed',
+                'progress' => $result['success'] ? 100 : 0,
+                'message' => $result['message'],
+                'current_file' => '',
+                'end_time' => time(),
+                'filename' => $result['success'] ? $result['file'] : '',
+            ];
+
+            file_put_contents(
+                $tmpDir . '/backup_progress.json',
+                json_encode($finalStatus + ['last_updated' => time()]),
+                LOCK_EX
+            );
+
+            echo json_encode([
+                'success' => $result['success'],
+                'status' => $finalStatus,
+                'message' => $result['message']
+            ]);
+        } finally {
+            flock($lockHandle, LOCK_UN);
+            fclose($lockHandle);
+        }
         
     } elseif ($action === 'status') {
         // Try to read from the progress file first (more reliable for long-running operations)
