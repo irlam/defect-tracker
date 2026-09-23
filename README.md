@@ -2,7 +2,7 @@
 
 Construction defect-management platform for project teams, contractors and clients.
 
-**Release candidate:** 3.0.0-rc1  
+**Release:** 3.0.0  
 **Runtime:** PHP 8.2+ with MySQL/MariaDB  
 **Deployment:** PHP application. Node.js is not required.
 
