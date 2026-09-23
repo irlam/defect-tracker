@@ -25,33 +25,29 @@ class BackupManager {
      * Update backup progress
      */
     private function updateProgress($status, $progress, $message, $currentFile = '') {
-        if (isset($_SESSION['backup_progress'])) {
-            $_SESSION['backup_progress'] = [
-                'status' => $status,
-                'progress' => $progress,
-                'message' => $message,
-                'current_file' => $currentFile,
-                'last_updated' => time()
-            ];
-            
-            // Force session data to be written
-            session_write_close();
-            
-            // Create or update a progress file for direct access
-            $progressFile = __DIR__ . '/tmp/backup_progress.json';
-            $progressDir = dirname($progressFile);
-            
-            if (!file_exists($progressDir)) {
-                mkdir($progressDir, 0755, true);
-            }
-            
-            file_put_contents($progressFile, json_encode($_SESSION['backup_progress']));
-            
-            // Reopen the session for next write
-            session_start();
-            
-            // Sleep briefly to allow background processing and reduce CPU usage
-            usleep(10000); // 10ms
+        $progressData = [
+            'status' => $status,
+            'progress' => $progress,
+            'message' => $message,
+            'current_file' => $currentFile,
+            'last_updated' => time()
+        ];
+
+        // The backup itself can be long-running. Persist progress to a small
+        // file instead of repeatedly closing/reopening the PHP session, which
+        // can consume FastCGI workers when the browser polls for status.
+        $progressFile = __DIR__ . '/tmp/backup_progress.json';
+        $progressDir = dirname($progressFile);
+
+        if (!is_dir($progressDir) && !mkdir($progressDir, 0755, true) && !is_dir($progressDir)) {
+            throw new RuntimeException('Unable to create backup progress directory.');
+        }
+
+        file_put_contents($progressFile, json_encode($progressData), LOCK_EX);
+
+        // Keep session state in sync only when a session is already active.
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['backup_progress'] = $progressData;
         }
     }
     
