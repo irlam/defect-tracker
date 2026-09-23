@@ -12,9 +12,9 @@ session_start();
 require_once 'config/database.php';
 date_default_timezone_set('UTC');
 
-// Set specific values as requested
-$currentUser = 'irlam';
-$currentDateTime = '2025-01-14 13:54:12';
+// Current session identity and timestamp
+$currentUser = (string)($_SESSION['username'] ?? 'system');
+$currentDateTime = gmdate('Y-m-d H:i:s');
 
 // Check authentication
 if (!isset($_SESSION['username'])) {
