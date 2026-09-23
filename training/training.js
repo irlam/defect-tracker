@@ -151,26 +151,10 @@
       });
 
       const activeScene = scenes[current];
-      const activeTitle = activeScene?.closest('[data-training-demo]') ? activeScene.parentElement?.parentElement?.querySelector('[data-demo-title]') : null;
-      const externalTitle = demo.querySelector('[data-demo-title]');
-      const rawScene = activeScene?.dataset.demoScene;
-      const sceneHeading = activeScene?.querySelector('.demo-app-toolbar strong')?.textContent?.trim();
 
       if (counter) counter.textContent = 'Step ' + (current + 1) + ' of ' + scenes.length;
-      if (externalTitle) {
-        const labels = Array.from(demo.querySelectorAll('[data-demo-go]')).map((_, i) => scenes[i]?.getAttribute('data-demo-title'));
-        const serverTitle = demo.querySelector('[data-demo-title]');
-        if (serverTitle && activeScene) {
-          const stored = activeScene.dataset.title;
-          if (stored) serverTitle.textContent = stored;
-        }
-      }
-
-      const hiddenSceneTitle = activeScene?.querySelector('[data-scene-heading]');
-      if (title && hiddenSceneTitle) title.textContent = hiddenSceneTitle.textContent;
-
-      const captionText = activeScene?.querySelector('[data-scene-caption]');
-      if (caption && captionText) caption.textContent = captionText.textContent;
+      if (title && activeScene?.dataset.demoTitle) title.textContent = activeScene.dataset.demoTitle;
+      if (caption && activeScene?.dataset.demoCaption) caption.textContent = activeScene.dataset.demoCaption;
 
       if (prev) prev.disabled = current === 0;
       if (next) {
@@ -234,48 +218,6 @@
       stopAutoPlay();
       stopSpeech();
     });
-  });
-
-  document.querySelectorAll('[data-training-demo] [data-demo-scene]').forEach((scene) => {
-    const index = Number(scene.dataset.demoScene || 0);
-    const lessonSlug = new URLSearchParams(window.location.search).get('lesson') || '';
-    const enhancedTitles = {
-      'create-a-defect': [
-        'Start a new defect','Choose project and contractor','Set priority and due date',
-        'Write a useful defect description','Add evidence and location','Review and submit'
-      ],
-      'floor-plan-location': [
-        'Open the correct drawing','Navigate in Pan mode','Zoom into the exact area',
-        'Switch to Place Pin','Fine-tune the marker','Confirm the position'
-      ],
-      'contractor-manager-lifecycle': [
-        'Defect is created and assigned','Contractor opens the assigned task','Work is started',
-        'Completion evidence is submitted','Manager reviews the work','Reject and resubmit when needed','Accept and close'
-      ]
-    };
-    const title = enhancedTitles[lessonSlug]?.[index] || 'Demonstration';
-    const captionMap = scene.dataset.demoVoice || '';
-    const titleNode = document.createElement('span');
-    titleNode.hidden = true;
-    titleNode.dataset.sceneHeading = '';
-    titleNode.textContent = title;
-    scene.appendChild(titleNode);
-
-    const captionNode = document.createElement('span');
-    captionNode.hidden = true;
-    captionNode.dataset.sceneCaption = '';
-    captionNode.textContent = scene.getAttribute('data-caption') || captionMap;
-    scene.appendChild(captionNode);
-  });
-
-  document.querySelectorAll('[data-training-demo]').forEach((demo) => {
-    const first = demo.querySelector('[data-demo-scene="0"]');
-    const title = demo.querySelector('[data-demo-title]');
-    const caption = demo.querySelector('[data-demo-caption]');
-    const heading = first?.querySelector('[data-scene-heading]');
-    const cap = first?.querySelector('[data-scene-caption]');
-    if (title && heading) title.textContent = heading.textContent;
-    if (caption && cap) caption.textContent = cap.textContent;
   });
 
   document.querySelectorAll('[data-training-quiz]').forEach((quiz) => {
