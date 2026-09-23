@@ -2,8 +2,8 @@
 // api/BaseAPI.php
 class BaseAPI {
     protected $db;
-    protected $currentUser = 'irlam';
-    protected $currentDateTime = '2025-01-15 07:52:47';
+    protected $currentUser = 'system';
+    protected $currentDateTime = '';
 
     public function __construct($db) {
         $this->db = $db;
@@ -15,6 +15,8 @@ class BaseAPI {
             $this->sendResponse(false, 'Unauthorized access', 401);
             exit();
         }
+        $this->currentUser = (string)($_SESSION['username'] ?? 'system');
+        $this->currentDateTime = gmdate('Y-m-d H:i:s');
     }
 
     protected function sendResponse($success, $message, $statusCode = 200, $data = null) {
