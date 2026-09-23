@@ -1,216 +1,127 @@
 <?php
-// functional_tests.php - Test actual functionality with mock data
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+/**
+ * Production-safe functional smoke checks.
+ * Read-only: no mock database, no seeded credentials, no writes.
+ */
+declare(strict_types=1);
 
-echo "=== Functional Tests for Defect Tracker ===\n\n";
+require_once __DIR__ . '/includes/tool_bootstrap.php';
+require_once __DIR__ . '/../config/constants.php';
 
-// Use test database
-require_once 'config/test_database.php';
-require_once 'classes/Auth.php';
-require_once 'classes/RBAC.php';
-require_once 'classes/Logger.php';
+$root = dirname(__DIR__);
+$checks = [];
 
-$database = new TestDatabase();
-$db = $database->getConnection();
-$results = [];
+function addSmokeCheck(array &$checks, string $label, bool $passed, string $detail): void {
+    $checks[] = [
+        'label' => $label,
+        'status' => $passed ? 'healthy' : 'critical',
+        'message' => $detail,
+    ];
+}
 
-function functionalTest($testName, $callable) {
-    global $results;
+addSmokeCheck(
+    $checks,
+    'PHP runtime',
+    version_compare(PHP_VERSION, '8.2.0', '>='),
+    'Running PHP ' . PHP_VERSION . '; Defect Tracker requires PHP 8.2 or newer.'
+);
+
+addSmokeCheck(
+    $checks,
+    'Application version',
+    defined('APP_VERSION') && APP_VERSION === '3.0.0',
+    'Current application version: ' . (defined('APP_VERSION') ? APP_VERSION : 'unknown')
+);
+
+$dbHealthy = $db instanceof PDO;
+if ($dbHealthy) {
     try {
-        $result = $callable();
-        $status = $result ? "✓ PASS" : "✗ FAIL";
-        $results[$testName] = $result;
-        echo sprintf("%-50s %s\n", $testName, $status);
-        return $result;
-    } catch (Exception $e) {
-        echo sprintf("%-50s ✗ FAIL - %s\n", $testName, $e->getMessage());
-        $results[$testName] = false;
-        return false;
+        $dbHealthy = (int)$db->query('SELECT 1')->fetchColumn() === 1;
+    } catch (Throwable $e) {
+        $dbHealthy = false;
     }
 }
+addSmokeCheck($checks, 'Database connectivity', $dbHealthy, $dbHealthy ? 'SELECT 1 completed successfully.' : 'Database connectivity check failed.');
 
-echo "Phase 1: Authentication Functions\n";
-echo str_repeat("=", 50) . "\n";
-
-// Test authentication
-functionalTest("Auth Class Instantiation", function() use ($db) {
-    $auth = new Auth($db);
-    return $auth instanceof Auth;
-});
-
-functionalTest("User Login Validation", function() use ($db) {
-    $auth = new Auth($db);
-    // Test with valid credentials (admin/admin123 from test data)
-    $result = $auth->login('admin', 'admin123');
-    return $result === true;
-});
-
-functionalTest("User Login Invalid Credentials", function() use ($db) {
-    $auth = new Auth($db);
-    $result = $auth->login('admin', 'wrongpassword');
-    return $result === false;
-});
-
-functionalTest("User Role Check", function() use ($db) {
-    $auth = new Auth($db);
-    // First login to set session
-    $auth->login('admin', 'admin123');
-    return $auth->hasRole('admin');
-});
-
-echo "\nPhase 2: RBAC Functions\n";
-echo str_repeat("=", 50) . "\n";
-
-functionalTest("RBAC Class Instantiation", function() use ($db) {
-    $rbac = new RBAC($db);
-    return $rbac instanceof RBAC;
-});
-
-functionalTest("RBAC Get Roles", function() use ($db) {
-    $rbac = new RBAC($db);
-    $roles = $rbac->getRoles();
-    return is_array($roles);
-});
-
-echo "\nPhase 3: Database Operations\n";
-echo str_repeat("=", 50) . "\n";
-
-functionalTest("Create New Defect", function() use ($db) {
-    $stmt = $db->prepare("
-        INSERT INTO defects (project_id, title, description, category, severity, status, created_by_user, created_by, created_at) 
-        VALUES (1, 'Test Defect', 'Test Description', 'General', 'medium', 'new', 1, 'testuser', datetime('now'))
-    ");
-    $result = $stmt->execute();
-    return $result && $db->lastInsertId() > 0;
-});
-
-functionalTest("Retrieve Defects", function() use ($db) {
-    $stmt = $db->query("SELECT * FROM defects");
-    $defects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return count($defects) > 0;
-});
-
-functionalTest("Update Defect Status", function() use ($db) {
-    $stmt = $db->prepare("UPDATE defects SET status = 'in_progress' WHERE id = 1");
-    $result = $stmt->execute();
-    
-    // Verify the update
-    $checkStmt = $db->prepare("SELECT status FROM defects WHERE id = 1");
-    $checkStmt->execute();
-    $status = $checkStmt->fetchColumn();
-    
-    return $result && $status === 'in_progress';
-});
-
-echo "\nPhase 4: File Operations\n";
-echo str_repeat("=", 50) . "\n";
-
-functionalTest("Upload Directory Writable", function() {
-    return is_writable('uploads/');
-});
-
-functionalTest("Create Test Image File", function() {
-    $testImage = imagecreate(100, 100);
-    $background = imagecolorallocate($testImage, 255, 255, 255);
-    $textColor = imagecolorallocate($testImage, 0, 0, 0);
-    imagestring($testImage, 5, 20, 40, "TEST", $textColor);
-    
-    $result = imagepng($testImage, 'uploads/test_image.png');
-    imagedestroy($testImage);
-    
-    return $result && file_exists('uploads/test_image.png');
-});
-
-functionalTest("Process Image File", function() {
-    if (!file_exists('uploads/test_image.png')) return false;
-    
-    // Test basic image processing
-    $imageInfo = getimagesize('uploads/test_image.png');
-    return $imageInfo !== false && $imageInfo[0] == 100 && $imageInfo[1] == 100;
-});
-
-echo "\nPhase 5: API-like Functions\n";
-echo str_repeat("=", 50) . "\n";
-
-functionalTest("JSON Response Formation", function() {
-    $data = [
-        'success' => true,
-        'message' => 'Test successful',
-        'data' => ['id' => 1, 'name' => 'Test']
-    ];
-    
-    $json = json_encode($data);
-    $decoded = json_decode($json, true);
-    
-    return $decoded['success'] === true && $decoded['data']['id'] === 1;
-});
-
-functionalTest("Input Validation", function() {
-    // Test various input validation scenarios
-    $testInputs = [
-        'valid_email@test.com' => filter_var('valid_email@test.com', FILTER_VALIDATE_EMAIL),
-        'invalid_email' => filter_var('invalid_email', FILTER_VALIDATE_EMAIL),
-        '123' => is_numeric('123'),
-        'abc' => is_numeric('abc')
-    ];
-    
-    return $testInputs['valid_email@test.com'] !== false && 
-           $testInputs['invalid_email'] === false &&
-           $testInputs['123'] === true &&
-           $testInputs['abc'] === false;
-});
-
-echo "\nPhase 6: System Health Functions\n";
-echo str_repeat("=", 50) . "\n";
-
-functionalTest("Database Health Check", function() use ($db) {
-    $stmt = $db->query("SELECT 1");
-    return $stmt->fetchColumn() === 1;
-});
-
-functionalTest("Required Extensions Available", function() {
-    $requiredExtensions = ['pdo', 'gd', 'json'];
-    foreach ($requiredExtensions as $ext) {
-        if (!extension_loaded($ext)) return false;
+$requiredTables = ['users','projects','defects','contractors','floor_plans','defect_images'];
+$missingTables = [];
+if ($dbHealthy && $db instanceof PDO) {
+    $stmt = $db->prepare(
+        'SELECT COUNT(*) FROM information_schema.TABLES
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table'
+    );
+    foreach ($requiredTables as $table) {
+        $stmt->execute(['table' => $table]);
+        if ((int)$stmt->fetchColumn() === 0) $missingTables[] = $table;
     }
-    return true;
-});
+} else {
+    $missingTables = $requiredTables;
+}
+addSmokeCheck(
+    $checks,
+    'Core database schema',
+    empty($missingTables),
+    empty($missingTables) ? 'All required application tables are present.' : 'Missing: ' . implode(', ', $missingTables)
+);
 
-functionalTest("Memory Usage Check", function() {
-    $memoryUsage = memory_get_usage();
-    $memoryLimit = ini_get('memory_limit');
-    return $memoryUsage > 0 && $memoryLimit !== false;
-});
+$uploads = $root . '/uploads';
+addSmokeCheck(
+    $checks,
+    'Upload storage',
+    is_dir($uploads) && is_writable($uploads),
+    is_dir($uploads) ? (is_writable($uploads) ? 'Uploads directory is writable.' : 'Uploads directory is not writable.') : 'Uploads directory is missing.'
+);
 
-// Cleanup
-if (file_exists('uploads/test_image.png')) {
-    unlink('uploads/test_image.png');
+$backupDir = $root . '/backups/backups';
+addSmokeCheck(
+    $checks,
+    'Backup storage',
+    is_dir($backupDir) && is_writable($backupDir),
+    is_dir($backupDir) ? (is_writable($backupDir) ? 'Backup directory is writable.' : 'Backup directory is not writable.') : 'Backup directory is missing.'
+);
+
+foreach ([
+    'Health endpoint' => $root . '/health.php',
+    'Defect creation' => $root . '/create_defect.php',
+    'Floor plan selector' => $root . '/floorplan_selector.php',
+    'Reporting hub' => $root . '/reports.php',
+    'System analysis' => $root . '/system-tools/system_analysis_report.php',
+] as $label => $path) {
+    addSmokeCheck($checks, $label, is_file($path) && is_readable($path), is_file($path) ? 'Application file is present and readable.' : 'Application file is missing.');
 }
 
-// Summary
-echo "\n" . str_repeat("=", 70) . "\n";
-echo "FUNCTIONAL TESTS SUMMARY\n";
-echo str_repeat("=", 70) . "\n";
+$passed = count(array_filter($checks, static fn(array $check): bool => $check['status'] === 'healthy'));
+$total = count($checks);
+$failed = $total - $passed;
 
-$totalTests = count($results);
-$passedTests = count(array_filter($results));
-$failedTests = $totalTests - $passedTests;
+tool_render_header(
+    'Functional Smoke Tests',
+    'Read-only checks against the current production deployment. No mock database or seeded test users are used.',
+    [
+        ['label' => 'Admin Dashboard', 'href' => '../admin.php'],
+        ['label' => 'System Tools', 'href' => 'index.php'],
+        ['label' => 'Functional Smoke Tests'],
+    ]
+);
 
-echo "Total Tests: $totalTests\n";
-echo "Passed: $passedTests\n";
-echo "Failed: $failedTests\n";
-echo "Success Rate: " . round(($passedTests / $totalTests) * 100, 2) . "%\n\n";
+echo '<div class="row g-3 mb-4">';
+echo '<div class="col-md-4"><div class="tool-card tool-card--success h-100"><div class="text-muted small">Passed</div><div class="fs-2 fw-semibold">' . $passed . '</div></div></div>';
+echo '<div class="col-md-4"><div class="tool-card ' . ($failed ? 'tool-card--danger' : 'tool-card--success') . ' h-100"><div class="text-muted small">Failed</div><div class="fs-2 fw-semibold">' . $failed . '</div></div></div>';
+echo '<div class="col-md-4"><div class="tool-card h-100"><div class="text-muted small">Total checks</div><div class="fs-2 fw-semibold">' . $total . '</div></div></div>';
+echo '</div>';
 
-if ($failedTests > 0) {
-    echo "FAILED TESTS:\n";
-    echo str_repeat("-", 50) . "\n";
-    foreach ($results as $test => $result) {
-        if (!$result) {
-            echo "• $test\n";
-        }
-    }
+echo '<div class="row row-cols-1 row-cols-lg-2 g-3">';
+foreach ($checks as $check) {
+    $variant = tool_status_variant($check['status']);
+    $icon = tool_status_icon($check['status']);
+    $card = 'tool-card h-100 ' . ($variant === 'success' ? 'tool-card--success' : 'tool-card--danger');
+    echo '<div class="col"><div class="' . htmlspecialchars($card, ENT_QUOTES, 'UTF-8') . '">';
+    echo '<div class="d-flex justify-content-between gap-3 align-items-start">';
+    echo '<div><h2 class="h6 mb-1">' . htmlspecialchars($check['label'], ENT_QUOTES, 'UTF-8') . '</h2>';
+    echo '<p class="text-muted small mb-0">' . htmlspecialchars($check['message'], ENT_QUOTES, 'UTF-8') . '</p></div>';
+    echo '<span class="tool-status-pill tool-status-pill-' . $variant . '"><i class="bx ' . $icon . '"></i> ' . tool_status_label($check['status']) . '</span>';
+    echo '</div></div></div>';
 }
+echo '</div>';
 
-echo "\nFunctional testing completed!\n";
-?>
+tool_render_footer();
