@@ -399,4 +399,625 @@ $navbar = new Navbar($db, $_SESSION['user_id'], $_SESSION['username']);
                 <p class="dashboard-hero__lead">Real-time insight into contractor workloads and outstanding issues.</p>
                 <ul class="dashboard-hero__meta">
                     <li><i class='bx bx-user-voice'></i><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></li>
-                    <li><i class='bx bx-label'></i><?php echo htmlspeciï½ý¶‰žËkºwµç}¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÁÉ¥µ…Éäˆ¥ô‰…ÁÁ±å½¹ÑÉ…Ñ½É¥±Ñ•ÈˆùÁÁ±ä¥±Ñ•ÉÌð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€ð½‘¥Øø(€€€€ð½‘¥Øø((€€€€ð„´´•™•ÑÌ¥±Ñ•È5½‘…°€´´ø(€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°™…‘”ˆ¥ô‰‘•™•ÑÍ¥±Ñ•É5½‘…°ˆÑ…‰¥¹‘•àôˆ´Äˆ…É¥„µ±…‰•±±•‘‰äô‰‘•™•ÑÍ¥±Ñ•É5½‘…±1…‰•°ˆ…É¥„µ¡¥‘‘•¸ô‰ÑÉÕ”ˆø(€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ‘¥…±½œˆø(€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ½¹Ñ•¹Ðˆø(€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ¡•…‘•Èˆø(€€€€€€€€€€€€€€€€€€€€ñ Ô±…ÍÌô‰µ½‘…°µÑ¥Ñ±”ˆ¥ô‰‘•™•ÑÍ¥±Ñ•É5½‘…±1…‰•°ˆù¥±Ñ•È•™•ÑÌð½ Ôø(€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸µ±½Í”ˆ‘…Ñ„µ‰Ìµ‘¥Íµ¥ÍÌô‰µ½‘…°ˆ…É¥„µ±…‰•°ô‰±½Í”ˆøð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ‰½‘äˆø(€€€€€€€€€€€€€€€€€€€€ñ™½É´¥ô‰‘•™•ÑÍ¥±Ñ•É½É´ˆø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µˆ´Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆùMÑ…ÑÕÌð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ™±•à™±•àµÝÉ…À…À´Èˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉMÑ…ÑÕÍ=Á•¸ˆÙ…±Õ”ô‰½Á•¸ˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉMÑ…ÑÕÍ=Á•¸ˆù=Á•¸ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉMÑ…ÑÕÍA•¹‘¥¹œˆÙ…±Õ”ô‰Á•¹‘¥¹œˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉMÑ…ÑÕÍA•¹‘¥¹œˆùA•¹‘¥¹œð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉMÑ…ÑÕÍ•ÁÑ•ˆÙ…±Õ”ô‰…•ÁÑ•ˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉMÑ…ÑÕÍ•ÁÑ•ˆù•ÁÑ•ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉMÑ…ÑÕÍI•©•Ñ•ˆÙ…±Õ”ô‰É•©•Ñ•ˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉMÑ…ÑÕÍI•©•Ñ•ˆùI•©•Ñ•ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µˆ´Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆùAÉ¥½É¥Ñäð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ™±•à™±•àµÝÉ…À…À´Èˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉAÉ¥½É¥Ñå!¥ ˆÙ…±Õ”ô‰¡¥ ˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉAÉ¥½É¥Ñå!¥ ˆù!¥ ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉAÉ¥½É¥Ñå5•‘¥Õ´ˆÙ…±Õ”ô‰µ•‘¥Õ´ˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉAÉ¥½É¥Ñå5•‘¥Õ´ˆù5•‘¥Õ´ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µ¡•¬™½É´µ¡•¬µ¥¹±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐ±…ÍÌô‰™½É´µ¡•¬µ¥¹ÁÕÐˆÑåÁ”ô‰¡•­‰½àˆ¥ô‰™¥±Ñ•ÉAÉ¥½É¥Ñå1½ÜˆÙ…±Õ”ô‰±½Üˆ¡•­•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ¡•¬µ±…‰•°ˆ™½Èô‰™¥±Ñ•ÉAÉ¥½É¥Ñå1½Üˆù1½Üð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µˆ´Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°™½Èô‰™¥±Ñ•É•™•Ñ½¹ÑÉ…Ñ½Èˆ±…ÍÌô‰™½É´µ±…‰•°ˆù½¹ÑÉ…Ñ½Èð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍ•±•Ð±…ÍÌô‰™½É´µÍ•±•Ðˆ¥ô‰™¥±Ñ•É•™•Ñ½¹ÑÉ…Ñ½Èˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ôˆˆù±°½¹ÑÉ…Ñ½ÉÌð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½Í•±•Ðø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µˆ´Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°™½Èô‰™¥±Ñ•É•™•ÑQ¥Ñ±”ˆ±…ÍÌô‰™½É´µ±…‰•°ˆùQ¥Ñ±”M•…É ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰Ñ•áÐˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆ¥ô‰™¥±Ñ•É•™•ÑQ¥Ñ±”ˆÁ±…•¡½±‘•Èô‰M•…É ¥¸‘•™•ÐÑ¥Ñ±•Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€ð½™½É´ø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ™½½Ñ•Èˆø(€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÍ•½¹‘…Éäˆ¥ô‰É•Í•Ñ•™•ÑÍ¥±Ñ•ÈˆùI•Í•Ð¥±Ñ•ÉÌð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÁÉ¥µ…Éäˆ¥ô‰…ÁÁ±å•™•ÑÍ¥±Ñ•ÈˆùÁÁ±ä¥±Ñ•ÉÌð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€ð½‘¥Øø(€€€€ð½‘¥Øø((€€€€ñÍÉ¥ÁÐÍÉŒô‰¡ÑÑÁÌè¼½‘¸¹©Í‘•±¥ÙÈ¹¹•Ð½¹Á´½©ÅÕ•Éå Ì¸Ø¸Ð½‘¥ÍÐ½©ÅÕ•Éä¹µ¥¸¹©Ìˆøð½ÍÉ¥ÁÐø(€€€€ñÍÉ¥ÁÐÍÉŒô‰¡ÑÑÁÌè¼½‘¸¹©Í‘•±¥ÙÈ¹¹•Ð½¹Á´½‰½½ÑÍÑÉ…Á Ô¸Ì¸È½‘¥ÍÐ½©Ì½‰½½ÑÍÑÉ…À¹‰Õ¹‘±”¹µ¥¸¹©Ìˆøð½ÍÉ¥ÁÐø((€€€€ñÍÉ¥ÁÐø(€€€€¡‘½Õµ•¹Ð¤¹É•…‘ä¡™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€ œ¹Ñ½±”µ‘•Ñ…¥±Ìœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€½¹ÍÐ‘•™•Ñ%€ô€¡Ñ¡¥Ì¤¹‘…Ñ„ ‘•™•Ðµ¥œ¤ì(€€€€€€€€€€€½¹ÍÐ‘•Ñ…¥±ÍI½Ü€ô€¡€‘•Ñ…¥±Ì´‘í‘•™•Ñ%‘õ€¤ì(€€€€€€€€€€€½¹ÍÐ½¹Ñ•¹Ð€ô‘•Ñ…¥±ÍI½Ü¹™¥¹ œ¹É½Üµ‘•Ñ…¥±Ìœ¤ì(€€€€€€€€€€€½¹ÍÐ¥½¸€ô€¡Ñ¡¥Ì¤¹™¥¹ ¤œ¤ì((€€€€€€€€€€€¥˜€¡‘•Ñ…¥±ÍI½Ü¹¥Ì œéÙ¥Í¥‰±”œ¤¤ì(€€€€€€€€€€€€€€€½¹Ñ•¹Ð¹Í±¥‘•UÀ ÄØÀ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€€€€€€€€‘•Ñ…¥±ÍI½Ü¹¡¥‘” ¤ì(€€€€€€€€€€€€€€€ô¤ì(€€€€€€€€€€€€€€€¥½¸¹É•µ½Ù•±…ÍÌ ‰àµ¡•ÙÉ½¸µÕÀœ¤¹…‘‘±…ÍÌ ‰àµ¡•ÙÉ½¸µ‘½Ý¸œ¤ì(€€€€€€€€€€€ô•±Í”ì(€€€€€€€€€€€€€€€‘•Ñ…¥±ÍI½Ü¹Í¡½Ü ¤ì(€€€€€€€€€€€€€€€½¹Ñ•¹Ð¹¡¥‘” ¤¹Í±¥‘•½Ý¸ ÄØÀ¤ì(€€€€€€€€€€€€€€€¥½¸¹É•µ½Ù•±…ÍÌ ‰àµ¡•ÙÉ½¸µ‘½Ý¸œ¤¹…‘‘±…ÍÌ ‰àµ¡•ÙÉ½¸µÕÀœ¤ì(€€€€€€€€€€€ô(€€€€€€€ô¤ì((€€€€€€€€ œ¹é½½µ…‰±”µ¥µ…”œ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€½¹ÍÐ™Õ±±%µ…•MÉŒ€ô€¡Ñ¡¥Ì¤¹‘…Ñ„ ™Õ±°µ¥µ…”œ¤ì(€€€€€€€€€€€€ œµ½‘…±%µ…”œ¤¹…ÑÑÈ ÍÉŒœ°™Õ±±%µ…•MÉŒ¤ì(€€€€€€€€€€€€ œ¥µ…•5½‘…°œ¤¹ÍÌ ‘¥ÍÁ±…äœ°€™±•àœ¤ì(€€€€€€€ô¤ì((€€€€€€€€ œ¹±½Í”µ¥µ…”µµ½‘…°œ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸¡”¤ì(€€€€€€€€€€€”¹ÍÑ½ÁAÉ½Á……Ñ¥½¸ ¤ì(€€€€€€€€€€€€ œ¥µ…•5½‘…°œ¤¹ÍÌ ‘¥ÍÁ±…äœ°€¹½¹”œ¤ì(€€€€€€€ô¤ì(€€€ô¤ì(€€€€ð½ÍÉ¥ÁÐø((€€€€ñÍÉ¥ÁÐø(€€€€¡‘½Õµ•¹Ð¤¹É•…‘ä¡™Õ¹Ñ¥½¸ ¤ì(€€€€€€€½¹ÍÐÑ½…ÍÑ!½ÍÐ€ô€ œ¹Ñ½…ÍÐµ½¹Ñ…¥¹•Èœ¤ì((€€€€€€€™Õ¹Ñ¥½¸Í¡½ÝQ½…ÍÐ¡µ•ÍÍ…”°ÑåÁ”€ô€¥¹™¼œ¤ì(€€€€€€€€€€€½¹ÍÐÑ½…ÍÑ%€ôÑ½…ÍÐ´‘í…Ñ”¹¹½Ü ¥õ€ì(€€€€€€€€€€€½¹ÍÐÑ½¹”€ôÑåÁ”€ôôô€ÍÕ•ÍÌœ€ü€ÍÕ•ÍÌœ€èÑåÁ”€ôôô€•ÉÉ½Èœ€ü€‘…¹•Èœ€è€¥¹™¼œì(€€€€€€€€€€€½¹ÍÐÑ½…ÍÑ5…É­ÕÀ€ô€¡€(€€€€€€€€€€€€€€€€ñ‘¥Ø¥ôˆ‘íÑ½…ÍÑ%‘ôˆ±…ÍÌô‰Ñ½…ÍÐ…±¥¸µ¥Ñ•µÌµ•¹Ñ•ÈÑ•áÐµ‰œµ‘…É¬‰½É‘•È´ÀˆÉ½±”ô‰…±•ÉÐˆ…É¥„µ±¥Ù”ô‰…ÍÍ•ÉÑ¥Ù”ˆ…É¥„µ…Ñ½µ¥Œô‰ÑÉÕ”ˆ‘…Ñ„µ‰Ìµ…ÕÑ½¡¥‘”ô‰ÑÉÕ”ˆ‘…Ñ„µ‰Ìµ‘•±…äôˆÌÈÀÀˆø(€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ™±•à…±¥¸µ¥Ñ•µÌµ•¹Ñ•È…À´ÌÁà´ÌÁä´Èˆø(€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµ¥¹™¼µ¥É±”Ñ•áÐ´‘íÑ½¹•ôœøð½¤ø(€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸ø‘íµ•ÍÍ…•ôð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸µ±½Í”‰Ñ¸µ±½Í”µÝ¡¥Ñ”µÌµ…ÕÑ¼ˆ‘…Ñ„µ‰Ìµ‘¥Íµ¥ÍÌô‰Ñ½…ÍÐˆ…É¥„µ±…‰•°ô‰±½Í”ˆøð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€¤ì(€€€€€€€€€€€Ñ½…ÍÑ!½ÍÐ¹…ÁÁ•¹¡Ñ½…ÍÑ5…É­ÕÀ¤ì(€€€€€€€€€€€½¹ÍÐÑ½…ÍÑ%¹ÍÑ…¹”€ô¹•Ü‰½½ÑÍÑÉ…À¹Q½…ÍÐ¡‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å%¡Ñ½…ÍÑ%¤¤ì(€€€€€€€€€€€Ñ½…ÍÑ%¹ÍÑ…¹”¹Í¡½Ü ¤ì(€€€€€€€ô((€€€€€€€½¹ÍÐ½¹ÑÉ…Ñ½ÉM•±•Ð€ô€ œ™¥±Ñ•É•™•Ñ½¹ÑÉ…Ñ½Èœ¤ì(€€€€€€€½¹ÑÉ…Ñ½É…Ñ„¹™½É… ¡½¹ÑÉ…Ñ½È€ôøì(€€€€€€€€€€€¥˜€ …½¹ÑÉ…Ñ½Èñð€…½¹ÑÉ…Ñ½È¹¹…µ”¤ì(€€€€€€€€€€€€€€€É•ÑÕÉ¸ì(€€€€€€€€€€€ô(€€€€€€€€€€€½¹ÍÐ½ÁÑ¥½¸€ô€ œñ½ÁÑ¥½¸¼øœ°ì(€€€€€€€€€€€€€€€Ù…±Õ”è½¹ÑÉ…Ñ½È¹¹…µ”¹Ñ½1½Ý•É…Í” ¤°(€€€€€€€€€€€€€€€Ñ•áÐè½¹ÑÉ…Ñ½È¹¹…µ”(€€€€€€€€€€€ô¤ì(€€€€€€€€€€€½¹ÑÉ…Ñ½ÉM•±•Ð¹…ÁÁ•¹¡½ÁÑ¥½¸¤ì(€€€€€€€ô¤ì((€€€€€€€€ œÉ•Í•Ñ½¹ÑÉ…Ñ½É¥±Ñ•Èœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€ œ™¥±Ñ•É½¹ÑÉ…Ñ½É9…µ”œ¤¹Ù…° œœ¤ì(€€€€€€€€€€€€ œ™¥±Ñ•É!…Í=Á•¹•™•ÑÌœ¤¹ÁÉ½À ¡•­•œ°ÑÉÕ”¤ì(€€€€€€€€€€€€ œ™¥±Ñ•É!…ÍA•¹‘¥¹•™•ÑÌœ¤¹ÁÉ½À ¡•­•œ°ÑÉÕ”¤ì(€€€€€€€ô¤ì((€€€€€€€€ œÉ•Í•Ñ•™•ÑÍ¥±Ñ•Èœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€ œ™¥±Ñ•É•™•ÑQ¥Ñ±”œ¤¹Ù…° œœ¤ì(€€€€€€€€€€€€ œ™¥±Ñ•É•™•Ñ½¹ÑÉ…Ñ½Èœ¤¹Ù…° œœ¤ì(€€€€€€€€€€€€ œ™¥±Ñ•ÉMÑ…ÑÕÍ=Á•¸°€™¥±Ñ•ÉMÑ…ÑÕÍA•¹‘¥¹œ°€™¥±Ñ•ÉMÑ…ÑÕÍ•ÁÑ•°€™¥±Ñ•ÉMÑ…ÑÕÍI•©•Ñ•œ¤¹ÁÉ½À ¡•­•œ°ÑÉÕ”¤ì(€€€€€€€€€€€€ œ™¥±Ñ•ÉAÉ¥½É¥Ñå!¥ °€™¥±Ñ•ÉAÉ¥½É¥Ñå5•‘¥Õ´°€™¥±Ñ•ÉAÉ¥½É¥Ñå1½Üœ¤¹ÁÉ½À ¡•­•œ°ÑÉÕ”¤ì(€€€€€€€ô¤ì((€€€€€€€€ œ…ÁÁ±å½¹ÑÉ…Ñ½É¥±Ñ•Èœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€½¹ÍÐ¹…µ•¥±Ñ•È€ô€ œ™¥±Ñ•É½¹ÑÉ…Ñ½É9…µ”œ¤¹Ù…° ¤¹Ñ½1½Ý•É…Í” ¤¹ÑÉ¥´ ¤ì(€€€€€€€€€€€½¹ÍÐÉ•ÅÕ¥É•=Á•¸€ô€ œ™¥±Ñ•É!…Í=Á•¹•™•ÑÌœ¤¹¥Ì œé¡•­•œ¤ì(€€€€€€€€€€€½¹ÍÐÉ•ÅÕ¥É•A•¹‘¥¹œ€ô€ œ™¥±Ñ•É!…ÍA•¹‘¥¹•™•ÑÌœ¤¹¥Ì œé¡•­•œ¤ì(€€€€€€€€€€€±•ÐÙ¥Í¥‰±•½Õ¹Ð€ô€Àì((€€€€€€€€€€€€ œ½¹ÑÉ…Ñ½ÉÍQ…‰±”Ñ‰½‘äÑÈœ¤¹•… ¡™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ€‘É½Ü€ô€¡Ñ¡¥Ì¤ì(€€€€€€€€€€€€€€€¥˜€ ‘É½Ü¹™¥¹ Ñœ¤¹±•¹Ñ €ðô€Ä¤ì(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€½¹ÍÐ½µÁ…¹å-•ä€ôMÑÉ¥¹œ ‘É½Ü¹‘…Ñ„ ½µÁ…¹äœ¤ñð€œœ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ½Á•¹½Õ¹Ð€ô9Õµ‰•È ‘É½Ü¹‘…Ñ„ ½Á•¸œ¤ñð€À¤ì(€€€€€€€€€€€€€€€½¹ÍÐÁ•¹‘¥¹½Õ¹Ð€ô9Õµ‰•È ‘É½Ü¹‘…Ñ„ Á•¹‘¥¹œœ¤ñð€À¤ì((€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•Í9…µ”€ô€…¹…µ•¥±Ñ•Èñð½µÁ…¹å-•ä¹¥¹±Õ‘•Ì¡¹…µ•¥±Ñ•È¤ì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•Í=Á•¸€ô€…É•ÅÕ¥É•=Á•¸ñð½Á•¹½Õ¹Ð€ø€Àì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•ÍA•¹‘¥¹œ€ô€…É•ÅÕ¥É•A•¹‘¥¹œñðÁ•¹‘¥¹½Õ¹Ð€ø€Àì((€€€€€€€€€€€€€€€¥˜€¡µ…Ñ¡•Í9…µ”€˜˜µ…Ñ¡•Í=Á•¸€˜˜µ…Ñ¡•ÍA•¹‘¥¹œ¤ì(€€€€€€€€€€€€€€€€€€€€‘É½Ü¹Í¡½Ü ¤ì(€€€€€€€€€€€€€€€€€€€Ù¥Í¥‰±•½Õ¹Ð¬¬ì(€€€€€€€€€€€€€€€ô•±Í”ì(€€€€€€€€€€€€€€€€€€€€‘É½Ü¹¡¥‘” ¤ì(€€€€€€€€€€€€€€€ô(€€€€€€€€€€€ô¤ì((€€€€€€€€€€€½¹ÍÐ½¹ÑÉ…Ñ½É5½‘…°€ô‰½½ÑÍÑÉ…À¹5½‘…°¹•Ñ%¹ÍÑ…¹”¡‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ½¹ÑÉ…Ñ½É¥±Ñ•É5½‘…°œ¤¤(€€€€€€€€€€€€€€€ñð¹•Ü‰½½ÑÍÑÉ…À¹5½‘…°¡‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ½¹ÑÉ…Ñ½É¥±Ñ•É5½‘…°œ¤¤ì(€€€€€€€€€€€½¹ÑÉ…Ñ½É5½‘…°¹¡¥‘” ¤ì((€€€€€€€€€€€Í¡½ÝQ½…ÍÐ¡¥±Ñ•ÉÌ…ÁÁ±¥•è€‘íÙ¥Í¥‰±•½Õ¹Ñô½¹ÑÉ…Ñ½È‘íÙ¥Í¥‰±•½Õ¹Ð€ôôô€Ä€ü€œœ€è€ÌôÍ¡½Ý¹€°€ÍÕ•ÍÌœ¤ì(€€€€€€€ô¤ì((€€€€€€€€ œ…ÁÁ±å•™•ÑÍ¥±Ñ•Èœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€½¹ÍÐÑ¥Ñ±•¥±Ñ•È€ô€ œ™¥±Ñ•É•™•ÑQ¥Ñ±”œ¤¹Ù…° ¤¹Ñ½1½Ý•É…Í” ¤¹ÑÉ¥´ ¤ì(€€€€€€€€€€€½¹ÍÐ½¹ÑÉ…Ñ½É¥±Ñ•È€ô€  œ™¥±Ñ•É•™•Ñ½¹ÑÉ…Ñ½Èœ¤¹Ù…° ¤ñð€œœ¤¹Ñ½1½Ý•É…Í” ¤ì((€€€€€€€€€€€½¹ÍÐÍ•±•Ñ•‘MÑ…ÑÕÍ•Ì€ômtì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉMÑ…ÑÕÍ=Á•¸œ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘MÑ…ÑÕÍ•Ì¹ÁÕÍ  ½Á•¸œ¤ì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉMÑ…ÑÕÍA•¹‘¥¹œœ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘MÑ…ÑÕÍ•Ì¹ÁÕÍ  Á•¹‘¥¹œœ¤ì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉMÑ…ÑÕÍ•ÁÑ•œ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘MÑ…ÑÕÍ•Ì¹ÁÕÍ  …•ÁÑ•œ¤ì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉMÑ…ÑÕÍI•©•Ñ•œ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘MÑ…ÑÕÍ•Ì¹ÁÕÍ  É•©•Ñ•œ¤ì((€€€€€€€€€€€½¹ÍÐÍ•±•Ñ•‘AÉ¥½É¥Ñ¥•Ì€ômtì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉAÉ¥½É¥Ñå!¥ œ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘AÉ¥½É¥Ñ¥•Ì¹ÁÕÍ  ¡¥ œ¤ì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉAÉ¥½É¥Ñå5•‘¥Õ´œ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘AÉ¥½É¥Ñ¥•Ì¹ÁÕÍ  µ•‘¥Õ´œ¤ì(€€€€€€€€€€€¥˜€  œ™¥±Ñ•ÉAÉ¥½É¥Ñå1½Üœ¤¹¥Ì œé¡•­•œ¤¤Í•±•Ñ•‘AÉ¥½É¥Ñ¥•Ì¹ÁÕÍ  ±½Üœ¤ì((€€€€€€€€€€€±•ÐÙ¥Í¥‰±•½Õ¹Ð€ô€Àì((€€€€€€€€€€€€ œÉ••¹Ñ•™•ÑÍQ…‰±”Ñ‰½‘äÑÈ¹•áÁ…¹‘…‰±”µÉ½Üœ¤¹•… ¡™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ€‘É½Ü€ô€¡Ñ¡¥Ì¤ì(€€€€€€€€€€€€€€€½¹ÍÐ‘•™•Ñ%€ô€‘É½Ü¹‘…Ñ„ ‘•™•Ðµ¥œ¤ì(€€€€€€€€€€€€€€€½¹ÍÐÑ¥Ñ±•-•ä€ôMÑÉ¥¹œ ‘É½Ü¹‘…Ñ„ Ñ¥Ñ±”œ¤ñð€œœ¤ì(€€€€€€€€€€€€€€€½¹ÍÐÍÑ…ÑÕÍ-•ä€ôMÑÉ¥¹œ ‘É½Ü¹‘…Ñ„ ÍÑ…ÑÕÌœ¤ñð€œœ¤ì(€€€€€€€€€€€€€€€½¹ÍÐÁÉ¥½É¥Ñå-•ä€ôMÑÉ¥¹œ ‘É½Ü¹‘…Ñ„ ÁÉ¥½É¥Ñäœ¤ñð€œœ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ½¹ÑÉ…Ñ½É-•ä€ôMÑÉ¥¹œ ‘É½Ü¹‘…Ñ„ ½¹ÑÉ…Ñ½Èœ¤ñð€œœ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ‘•Ñ…¥±ÍI½Ü€ô€¡€‘•Ñ…¥±Ì´‘í‘•™•Ñ%‘õ€¤ì(€€€€€€€€€€€€€€€½¹ÍÐ¥½¸€ô€‘É½Ü¹™¥¹ œ¹Ñ½±”µ‘•Ñ…¥±Ì¤œ¤ì((€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•ÍQ¥Ñ±”€ô€…Ñ¥Ñ±•¥±Ñ•ÈñðÑ¥Ñ±•-•ä¹¥¹±Õ‘•Ì¡Ñ¥Ñ±•¥±Ñ•È¤ì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•ÍMÑ…ÑÕÌ€ôÍ•±•Ñ•‘MÑ…ÑÕÍ•Ì¹±•¹Ñ €ôôô€ÀñðÍ•±•Ñ•‘MÑ…ÑÕÍ•Ì¹¥¹±Õ‘•Ì¡ÍÑ…ÑÕÍ-•ä¤ì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•ÍAÉ¥½É¥Ñä€ôÍ•±•Ñ•‘AÉ¥½É¥Ñ¥•Ì¹±•¹Ñ €ôôô€ÀñðÍ•±•Ñ•‘AÉ¥½É¥Ñ¥•Ì¹¥¹±Õ‘•Ì¡ÁÉ¥½É¥Ñå-•ä¤ì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•Í½¹ÑÉ…Ñ½È€ô€…½¹ÑÉ…Ñ½É¥±Ñ•Èñð½¹ÑÉ…Ñ½É-•ä€ôôô½¹ÑÉ…Ñ½É¥±Ñ•Èì((€€€€€€€€€€€€€€€¥˜€¡µ…Ñ¡•ÍQ¥Ñ±”€˜˜µ…Ñ¡•ÍMÑ…ÑÕÌ€˜˜µ…Ñ¡•ÍAÉ¥½É¥Ñä€˜˜µ…Ñ¡•Í½¹ÑÉ…Ñ½È¤ì(€€€€€€€€€€€€€€€€€€€€‘É½Ü¹Í¡½Ü ¤ì(€€€€€€€€€€€€€€€€€€€Ù¥Í¥‰±•½Õ¹Ð¬¬ì(€€€€€€€€€€€€€€€ô•±Í”ì(€€€€€€€€€€€€€€€€€€€€‘É½Ü¹¡¥‘” ¤ì(€€€€€€€€€€€€€€€€€€€‘•Ñ…¥±ÍI½Ü¹¡¥‘” ¤ì(€€€€€€€€€€€€€€€€€€€‘•Ñ…¥±ÍI½Ü¹™¥¹ œ¹É½Üµ‘•Ñ…¥±Ìœ¤¹¡¥‘” ¤ì(€€€€€€€€€€€€€€€€€€€¥½¸¹É•µ½Ù•±…ÍÌ ‰àµ¡•ÙÉ½¸µÕÀœ¤¹…‘‘±…ÍÌ ‰àµ¡•ÙÉ½¸µ‘½Ý¸œ¤ì(€€€€€€€€€€€€€€€ô(€€€€€€€€€€€ô¤ì((€€€€€€€€€€€½¹ÍÐ‘•™•ÑÍ5½‘…°€ô‰½½ÑÍÑÉ…À¹5½‘…°¹•Ñ%¹ÍÑ…¹”¡‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ‘•™•ÑÍ¥±Ñ•É5½‘…°œ¤¤(€€€€€€€€€€€€€€€ñð¹•Ü‰½½ÑÍÑÉ…À¹5½‘…°¡‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ‘•™•ÑÍ¥±Ñ•É5½‘…°œ¤¤ì(€€€€€€€€€€€‘•™•ÑÍ5½‘…°¹¡¥‘” ¤ì((€€€€€€€€€€€Í¡½ÝQ½…ÍÐ¡¥±Ñ•ÉÌ…ÁÁ±¥•è€‘íÙ¥Í¥‰±•½Õ¹Ñô‘•™•Ð‘íÙ¥Í¥‰±•½Õ¹Ð€ôôô€Ä€ü€œœ€è€ÌôÍ¡½Ý¹€°€ÍÕ•ÍÌœ¤ì(€€€€€€€ô¤ì((€€€€€€€€ œ•áÁ½ÉÑ½¹ÑÉ…Ñ½ÉÌœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€±•ÐÍÙ½¹Ñ•¹Ð€ô€½µÁ…¹ä±QÉ…‘”±Q½Ñ…°±=Á•¸±A•¹‘¥¹œ±•ÁÑ•±I•©•Ñ•±1…ÍÐUÁ‘…Ñ•q¸œì((€€€€€€€€€€€€ œ½¹ÑÉ…Ñ½ÉÍQ…‰±”Ñ‰½‘äÑÈéÙ¥Í¥‰±”œ¤¹•… ¡™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ€‘É½Ü€ô€¡Ñ¡¥Ì¤ì(€€€€€€€€€€€€€€€½¹ÍÐ•±±Ì€ô€‘É½Ü¹™¥¹ Ñœ¤ì(€€€€€€€€€€€€€€€¥˜€¡•±±Ì¹±•¹Ñ €„ôô€à¤ì(€€€€€€€€€€€€€€€€€€€É•ÑÕÉ¸ì(€€€€€€€€€€€€€€€ô((€€€€€€€€€€€€€€€½¹ÍÐ±•…¸€ôÙ…±Õ”€ôøMÑÉ¥¹œ¡Ù…±Õ”¤¹ÑÉ¥´ ¤¹É•Á±…” ½qÌ¬½œ°€œ€œ¤ì(€€€€€€€€€€€€€€€½¹ÍÐ½µÁ…¹ä€ô±•…¸ ¡•±±ÍlÁt¤¹Ñ•áÐ ¤¤¹É•Á±…” ¼°½œ°€œ€œ¤ì(€€€€€€€€€€€€€€€½¹ÍÐÑÉ…‘”€ô±•…¸ ¡•±±ÍlÅt¤¹Ñ•áÐ ¤¤¹É•Á±…” ¼°½œ°€œ€œ¤ì(€€€€€€€€€€€€€€€½¹ÍÐÑ½Ñ…°€ô€‘É½Ü¹‘…Ñ„ Ñ½Ñ…°œ¤€üü€¡9Õµ‰•È¡±•…¸ ¡•±±ÍlÉt¤¹Ñ•áÐ ¤¤¤ñð€À¤ì(€€€€€€€€€€€€€€€½¹ÍÐ½Á•¸€ô€‘É½Ü¹‘…Ñ„ ½Á•¸œ¤€üü€¡9Õµ‰•È¡±•…¸ ¡•±±ÍlÍt¤¹Ñ•áÐ ¤¤¤ñð€À¤ì(€€€€€€€€€€€€€€€½¹ÍÐÁ•¹‘¥¹œ€ô€‘É½Ü¹‘…Ñ„ Á•¹‘¥¹œœ¤€üü€¡9Õµ‰•È¡±•…¸ ¡•±±ÍlÑt¤¹Ñ•áÐ ¤¤¤ñð€À¤ì(€€€€€€€€€€€€€€€½¹ÍÐ…•ÁÑ•€ô€‘É½Ü¹‘…Ñ„ …•ÁÑ•œ¤€üü€¡9Õµ‰•È¡±•…¸ ¡•±±ÍlÕt¤¹Ñ•áÐ ¤¤¤ñð€À¤ì(€€€€€€€€€€€€€€€½¹ÍÐÉ•©•Ñ•€ô€‘É½Ü¹‘…Ñ„ É•©•Ñ•œ¤€üü€¡9Õµ‰•È¡±•…¸ ¡•±±ÍlÙt¤¹Ñ•áÐ ¤¤¤ñð€À¤ì(€€€€€€€€€€€€€€€½¹ÍÐ±…ÍÑUÁ‘…Ñ”€ô±•…¸ ¡•±±ÍlÝt¤¹Ñ•áÐ ¤¤¹É•Á±…” ¼°½œ°€œ€œ¤ì((€€€€€€€€€€€€€€€½¹ÍÐ±¥¹”€ôm½µÁ…¹ä°ÑÉ…‘”°Ñ½Ñ…°°½Á•¸°Á•¹‘¥¹œ°…•ÁÑ•°É•©•Ñ•°±…ÍÑUÁ‘…Ñ•t(€€€€€€€€€€€€€€€€€€€€¹µ…À¡Ù…±Õ”€ôø€ˆ‘íMÑÉ¥¹œ¡Ù…±Õ”¤¹É•Á±…” ¼ˆ½œ°€œˆˆœ¥ô‰€¤(€€€€€€€€€€€€€€€€€€€€¹©½¥¸ œ°œ¤ì(€€€€€€€€€€€€€€€ÍÙ½¹Ñ•¹Ð€¬ô€‘í±¥¹•õq¹€ì(€€€€€€€€€€€ô¤ì((€€€€€€€€€€€½¹ÍÐ‰±½ˆ€ô¹•Ü	±½ˆ¡mÍÙ½¹Ñ•¹Ñt°ìÑåÁ”è€Ñ•áÐ½ÍØí¡…ÉÍ•ÐõÕÑ˜´àìœô¤ì(€€€€€€€€€€€½¹ÍÐ‘½Ý¹±½…‘UÉ°€ôUI0¹É•…Ñ•=‰©•ÑUI0¡‰±½ˆ¤ì(€€€€€€€€€€€½¹ÍÐÑ•µÁ1¥¹¬€ô‘½Õµ•¹Ð¹É•…Ñ•±•µ•¹Ð „œ¤ì(€€€€€€€€€€€Ñ•µÁ1¥¹¬¹¡É•˜€ô‘½Ý¹±½…‘UÉ°ì(€€€€€€€€€€€Ñ•µÁ1¥¹¬¹Í•ÑÑÑÉ¥‰ÕÑ” ‘½Ý¹±½…œ°½¹ÑÉ…Ñ½É}ÍÑ…ÑÍ|‘í¹•Ü…Ñ” ¤¹Ñ½%M=MÑÉ¥¹œ ¤¹Í±¥” À°€ÄÀ¥ô¹ÍÙ€¤ì(€€€€€€€€€€€‘½Õµ•¹Ð¹‰½‘ä¹…ÁÁ•¹‘¡¥±¡Ñ•µÁ1¥¹¬¤ì(€€€€€€€€€€€Ñ•µÁ1¥¹¬¹±¥¬ ¤ì(€€€€€€€€€€€‘½Õµ•¹Ð¹‰½‘ä¹É•µ½Ù•¡¥±¡Ñ•µÁ1¥¹¬¤ì(€€€€€€€€€€€UI0¹É•Ù½­•=‰©•ÑUI0¡‘½Ý¹±½…‘UÉ°¤ì((€€€€€€€€€€€Í¡½ÝQ½…ÍÐ ½¹ÑÉ…Ñ½È‘…Ñ„•áÁ½ÉÑ•ÍÕ•ÍÍ™Õ±±äœ°€ÍÕ•ÍÌœ¤ì(€€€€€€€ô¤ì((€€€€€€€€ œÉ•™É•Í¡½¹ÑÉ…Ñ½ÉÌ°€É•™É•Í¡•™•ÑÌœ¤¹½¸ ±¥¬œ°™Õ¹Ñ¥½¸ ¤ì(€€€€€€€€€€€€¡Ñ¡¥Ì¤¹ÁÉ½À ‘¥Í…‰±•œ°ÑÉÕ”¤ì(€€€€€€€€€€€Í•ÑQ¥µ•½ÕÐ  ¤€ôøÝ¥¹‘½Ü¹±½…Ñ¥½¸¹É•±½… ¤°€ÌÀÀ¤ì(€€€€€€€ô¤ì(€€€ô¤ì(€€€€ð½ÍÉ¥ÁÐø(ð½‰½‘äø(ð½¡Ñµ°ø(
+                    <li><i class='bx bx-label'></i><?php echo htmlspecialchars($currentUserRoleSummary, ENT_QUOTES, 'UTF-8'); ?></li>
+                    <li><i class='bx bx-calendar-event'></i><?php echo htmlspecialchars($currentTimestamp, ENT_QUOTES, 'UTF-8'); ?> UK</li>
+                </ul>
+            </div>
+            <div class="dashboard-hero__actions">
+                <a class="btn btn-outline-light btn-sm" href="defects.php">
+                    <i class='bx bx-list-ol'></i>
+                    View Defects
+                </a>
+                <a class="btn btn-outline-light btn-sm" href="reports.php">
+                    <i class='bx bx-bar-chart'></i>
+                    Reports Hub
+                </a>
+            </div>
+        </header>
+
+        <section class="dashboard-launch mb-5">
+            <a class="dashboard-launch-card system-tool-card" href="create_defect.php">
+                <div class="dashboard-launch-card__icon-wrap">
+                    <span class="dashboard-launch-card__icon"><i class='bx bx-plus-circle'></i></span>
+                </div>
+                <div class="dashboard-launch-card__content">
+                    <span class="dashboard-launch-card__tag"><i class='bx bx-bolt-circle'></i>Quick capture</span>
+                    <h2 class="dashboard-launch-card__title">Log a New Defect</h2>
+                    <p class="dashboard-launch-card__lead">Open a defect in seconds with guided fields, evidence uploads, and instant contractor alerts.</p>
+                    <ul class="dashboard-launch-card__features">
+                        <li><i class='bx bx-check-shield'></i>Streamlined workflow with validation at each step</li>
+                        <li><i class='bx bx-upload'></i>Attach photos, plans, and punch-list notes on the fly</li>
+                        <li><i class='bx bx-broadcast'></i>Automatic notifications to the delivery team of choice</li>
+                    </ul>
+                </div>
+                <div class="dashboard-launch-card__cta" aria-hidden="true">
+                    <span class="dashboard-launch-card__cta-label">Start New Defect</span>
+                    <span class="dashboard-launch-card__cta-icon"><i class='bx bx-right-arrow-alt'></i></span>
+                </div>
+            </a>
+        </section>
+
+        <?php if (!empty($dashboardMetrics)): ?>
+        <section class="mb-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+                <div>
+                    <h2 class="h5 mb-1">Today's Snapshot</h2>
+                    <p class="text-muted small mb-0">Key delivery metrics pulled from the latest data sync.</p>
+                </div>
+            </div>
+            <div class="system-tools-grid">
+                <?php foreach ($dashboardMetrics as $metric): ?>
+                <article class="system-tool-card">
+                    <div class="system-tool-card__icon">
+                        <i class='bx <?php echo htmlspecialchars($metric['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i>
+                    </div>
+                    <div class="system-tool-card__body">
+                        <?php if (!empty($metric['tag'])): ?>
+                        <span class="system-tool-card__tag system-tool-card__tag--<?php echo htmlspecialchars($metric['tag'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($metric['tag_label'], ENT_QUOTES, 'UTF-8'); ?>
+                        </span>
+                        <?php endif; ?>
+                        <h3 class="system-tool-card__title"><?php echo htmlspecialchars($metric['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                        <p class="system-tool-card__stat mb-0"><?php echo number_format((int) $metric['stat']); ?></p>
+                        <p class="system-tool-card__description"><?php echo htmlspecialchars($metric['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                        <?php if (!empty($metric['action']['href'])): ?>
+                        <a class="btn btn-sm btn-outline-light system-tool-card__action" href="<?php echo htmlspecialchars($metric['action']['href'], ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php if (!empty($metric['action']['icon'])): ?><i class='bx <?php echo htmlspecialchars($metric['action']['icon'], ENT_QUOTES, 'UTF-8'); ?>'></i><?php endif; ?>
+                            <?php echo htmlspecialchars($metric['action']['label'], ENT_QUOTES, 'UTF-8'); ?>
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <section class="mb-5">
+            <div class="card border-0">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h2 class="h5 mb-1">Contractor Performance</h2>
+                        <p class="text-muted small mb-0">Track open workloads and response progress by delivery partner.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-light" id="refreshContractors">
+                            <i class='bx bx-refresh'></i>
+                            Refresh
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="filterContractors" data-bs-toggle="modal" data-bs-target="#contractorFilterModal">
+                            <i class='bx bx-filter-alt'></i>
+                            Filter
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="exportContractors">
+                            <i class='bx bx-export'></i>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="contractorsTable" class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Company</th>
+                                    <th scope="col">Trade</th>
+                                    <th scope="col" class="text-center">Total</th>
+                                    <th scope="col" class="text-center">Open</th>
+                                    <th scope="col" class="text-center">Pending</th>
+                                    <th scope="col" class="text-center">Accepted</th>
+                                    <th scope="col" class="text-center">Rejected</th>
+                                    <th scope="col">Last Update</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($contractorStats)): ?>
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">No contractor data available.</td>
+                                </tr>
+                                <?php else: ?>
+                                <?php foreach ($contractorStats as $contractor): ?>
+                                <tr
+                                    data-company="<?php echo htmlspecialchars(strtolower((string) $contractor['company_name']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-trade="<?php echo htmlspecialchars(strtolower((string) ($contractor['trade'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-total="<?php echo (int) $contractor['total_defects']; ?>"
+                                    data-open="<?php echo (int) $contractor['open_defects']; ?>"
+                                    data-pending="<?php echo (int) $contractor['pending_defects']; ?>"
+                                    data-accepted="<?php echo (int) $contractor['closed_defects']; ?>"
+                                    data-rejected="<?php echo (int) $contractor['rejected_defects']; ?>"
+                                >
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <?php if (!empty($contractor['logo'])): ?>
+                                                <img src="<?php echo htmlspecialchars(correctContractorLogoPath($contractor['logo']), ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" class="rounded-circle" width="32" height="32">
+                                            <?php else: ?>
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis"><i class='bx bx-building-house'></i></span>
+                                            <?php endif; ?>
+                                            <span class="fw-semibold"><?php echo htmlspecialchars($contractor['company_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($contractor['trade'] ?? 'N/A', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td class="text-center"><?php echo number_format((int) $contractor['total_defects']); ?></td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis fw-semibold"><?php echo (int) $contractor['open_defects']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-semibold"><?php echo (int) $contractor['pending_defects']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-success-subtle text-success-emphasis fw-semibold"><?php echo (int) $contractor['closed_defects']; ?></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis fw-semibold"><?php echo (int) $contractor['rejected_defects']; ?></span>
+                                    </td>
+                                    <td><?php echo $contractor['last_update'] !== 'N/A' ? formatUKDateTime($contractor['last_update']) : 'N/A'; ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="card border-0">
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h2 class="h5 mb-1">Recent Defects</h2>
+                        <p class="text-muted small mb-0">Latest submissions with quick access to supporting media.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-light" id="refreshDefects">
+                            <i class='bx bx-refresh'></i>
+                            Refresh
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light" id="filterDefects" data-bs-toggle="modal" data-bs-target="#defectsFilterModal">
+                            <i class='bx bx-filter-alt'></i>
+                            Filter
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="recentDefectsTable" class="table table-dark table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Priority</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Contractor</th>
+                                    <th scope="col">Created</th>
+                                    <th scope="col">Updated</th>
+                                    <th scope="col" class="text-center">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($recentDefectsList)): ?>
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">No defects available.</td>
+                                </tr>
+                                <?php else: ?>
+                                <?php foreach ($recentDefectsList as $defect): ?>
+                                <tr
+                                    class="expandable-row"
+                                    data-defect-id="<?php echo (int) $defect['id']; ?>"
+                                    data-status="<?php echo htmlspecialchars(strtolower($defect['status']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-priority="<?php echo htmlspecialchars(strtolower($defect['priority']), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-contractor="<?php echo htmlspecialchars(strtolower($defect['company_name'] ?? 'unassigned'), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-title="<?php echo htmlspecialchars(strtolower($defect['title']), ENT_QUOTES, 'UTF-8'); ?>"
+                                >
+                                    <td class="fw-semibold">#<?php echo (int) $defect['id']; ?></td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-<?php echo getStatusBadgeClass($defect['status']); ?>">
+                                            <?php echo ucfirst(htmlspecialchars($defect['status'], ENT_QUOTES, 'UTF-8')); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-<?php echo getPriorityBadgeClass($defect['priority']); ?>">
+                                            <?php echo ucfirst(htmlspecialchars($defect['priority'], ENT_QUOTES, 'UTF-8')); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($defect['title'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <?php if (!empty($defect['logo'])): ?>
+                                                <img src="<?php echo htmlspecialchars(correctContractorLogoPath($defect['logo']), ENT_QUOTES, 'UTF-8'); ?>" alt="Logo" class="rounded-circle" width="28" height="28">
+                                            <?php else: ?>
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis"><i class='bx bx-building'></i></span>
+                                            <?php endif; ?>
+                                            <span><?php echo htmlspecialchars($defect['company_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8'); ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo formatUKDateTime($defect['created_at']); ?></td>
+                                    <td><?php echo formatUKDateTime($defect['updated_at']); ?></td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-light toggle-details" data-defect-id="<?php echo (int) $defect['id']; ?>">
+                                            <i class='bx bx-chevron-down'></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr id="details-<?php echo (int) $defect['id']; ?>" class="details-row" style="display: none;">
+                                    <td colspan="8" class="p-0">
+                                        <div class="row-details">
+                                            <div class="row g-4">
+                                                <div class="col-lg-8">
+                                                    <h6 class="mb-2">Description</h6>
+                                                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($defect['description'], ENT_QUOTES, 'UTF-8')); ?></p>
+                                                    <?php if (!empty($defect['image_paths'])): ?>
+                                                    <h6 class="mb-2 mt-4">Attachments</h6>
+                                                    <div class="defect-image-gallery">
+                                                        <?php
+                                                        $image_paths = explode(',', $defect['image_paths']);
+                                                        foreach ($image_paths as $image_path):
+                                                            $trimmedPath = trim($image_path);
+                                                            if ($trimmedPath === '') {
+                                                                continue;
+                                                            }
+                                                        ?>
+                                                        <div class="defect-image-container">
+                                                            <img
+                                                                src="<?php echo htmlspecialchars(correctDefectImagePath($trimmedPath), ENT_QUOTES, 'UTF-8'); ?>"
+                                                                class="defect-thumbnail zoomable-image"
+                                                                alt="Defect Image"
+                                                                data-full-image="<?php echo htmlspecialchars(correctDefectImagePath($trimmedPath), ENT_QUOTES, 'UTF-8'); ?>"
+                                                            >
+                                                        </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div class="mb-3">
+                                                        <h6 class="mb-1">Reported By</h6>
+                                                        <p class="mb-3"><?php echo htmlspecialchars($defect['reported_by'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                                        <h6 class="mb-1">Last Updated</h6>
+                                                        <p class="mb-0"><?php echo formatUKDateTime($defect['updated_at']); ?></p>
+                                                    </div>
+                                                    <a href="view_defect.php?id=<?php echo (int) $defect['id']; ?>" class="btn btn-sm btn-outline-light">
+                                                        View Full Details
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="this.style.display='none';">
+        <span class="close-image-modal">&times;</span>
+        <div class="modal-image-content">
+            <img id="modalImage" class="modal-full-image" src="" alt="Full size image">
+        </div>
+    </div>
+
+    <!-- Contractor Filter Modal -->
+    <div class="modal fade" id="contractorFilterModal" tabindex="-1" aria-labelledby="contractorFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contractorFilterModalLabel">Filter Contractors</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="contractorFilterForm">
+                        <div class="mb-3">
+                            <label for="filterContractorName" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="filterContractorName" placeholder="Enter company name">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Defect Status</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="filterHasOpenDefects" checked>
+                                <label class="form-check-label" for="filterHasOpenDefects">Has Open Defects</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="filterHasPendingDefects" checked>
+                                <label class="form-check-label" for="filterHasPendingDefects">Has Pending Defects</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="resetContractorFilter">Reset Filters</button>
+                    <button type="button" class="btn btn-primary" id="applyContractorFilter">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defects Filter Modal -->
+    <div class="modal fade" id="defectsFilterModal" tabindex="-1" aria-labelledby="defectsFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="defectsFilterModalLabel">Filter Defects</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="defectsFilterForm">
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusOpen" value="open" checked>
+                                    <label class="form-check-label" for="filterStatusOpen">Open</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusPending" value="pending" checked>
+                                    <label class="form-check-label" for="filterStatusPending">Pending</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusAccepted" value="accepted" checked>
+                                    <label class="form-check-label" for="filterStatusAccepted">Accepted</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterStatusRejected" value="rejected" checked>
+                                    <label class="form-check-label" for="filterStatusRejected">Rejected</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Priority</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterPriorityHigh" value="high" checked>
+                                    <label class="form-check-label" for="filterPriorityHigh">High</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterPriorityMedium" value="medium" checked>
+                                    <label class="form-check-label" for="filterPriorityMedium">Medium</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="filterPriorityLow" value="low" checked>
+                                    <label class="form-check-label" for="filterPriorityLow">Low</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="filterDefectContractor" class="form-label">Contractor</label>
+                            <select class="form-select" id="filterDefectContractor">
+                                <option value="">All Contractors</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="filterDefectTitle" class="form-label">Title Search</label>
+                            <input type="text" class="form-control" id="filterDefectTitle" placeholder="Search in defect titles">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="resetDefectsFilter">Reset Filters</button>
+                    <button type="button" class="btn btn-primary" id="applyDefectsFilter">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    $(document).ready(function() {
+        $('.toggle-details').on('click', function() {
+            const defectId = $(this).data('defect-id');
+            const detailsRow = $(`#details-${defectId}`);
+            const content = detailsRow.find('.row-details');
+            const icon = $(this).find('i');
+
+            if (detailsRow.is(':visible')) {
+                content.slideUp(160, function() {
+                    detailsRow.hide();
+                });
+                icon.removeClass('bx-chevron-up').addClass('bx-chevron-down');
+            } else {
+                detailsRow.show();
+                content.hide().slideDown(160);
+                icon.removeClass('bx-chevron-down').addClass('bx-chevron-up');
+            }
+        });
+
+        $('.zoomable-image').on('click', function() {
+            const fullImageSrc = $(this).data('full-image');
+            $('#modalImage').attr('src', fullImageSrc);
+            $('#imageModal').css('display', 'flex');
+        });
+
+        $('.close-image-modal').on('click', function(e) {
+            e.stopPropagation();
+            $('#imageModal').css('display', 'none');
+        });
+    });
+    </script>
+
+    <script>
+    $(document).ready(function() {
+        const toastHost = $('.toast-container');
+
+        function showToast(message, type = 'info') {
+            const toastId = `toast-${Date.now()}`;
+            const tone = type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info';
+            const toastMarkup = $(`
+                <div id="${toastId}" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3200">
+                    <div class="d-flex align-items-center gap-3 px-3 py-2">
+                        <i class='bx bx-info-circle text-${tone}'></i>
+                        <span>${message}</span>
+                        <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `);
+            toastHost.append(toastMarkup);
+            const toastInstance = new bootstrap.Toast(document.getElementById(toastId));
+            toastInstance.show();
+        }
+
+        const contractorSelect = $('#filterDefectContractor');
+        contractorData.forEach(contractor => {
+            if (!contractor || !contractor.name) {
+                return;
+            }
+            const option = $('<option/>', {
+                value: contractor.name.toLowerCase(),
+                text: contractor.name
+            });
+            contractorSelect.append(option);
+        });
+
+        $('#resetContractorFilter').on('click', function() {
+            $('#filterContractorName').val('');
+            $('#filterHasOpenDefects').prop('checked', true);
+            $('#filterHasPendingDefects').prop('checked', true);
+        });
+
+        $('#resetDefectsFilter').on('click', function() {
+            $('#filterDefectTitle').val('');
+            $('#filterDefectContractor').val('');
+            $('#filterStatusOpen, #filterStatusPending, #filterStatusAccepted, #filterStatusRejected').prop('checked', true);
+            $('#filterPriorityHigh, #filterPriorityMedium, #filterPriorityLow').prop('checked', true);
+        });
+
+        $('#applyContractorFilter').on('click', function() {
+            const nameFilter = $('#filterContractorName').val().toLowerCase().trim();
+            const requireOpen = $('#filterHasOpenDefects').is(':checked');
+            const requirePending = $('#filterHasPendingDefects').is(':checked');
+            let visibleCount = 0;
+
+            $('#contractorsTable tbody tr').each(function() {
+                const $row = $(this);
+                if ($row.find('td').length <= 1) {
+                    return;
+                }
+
+                const companyKey = String($row.data('company') || '');
+                const openCount = Number($row.data('open') || 0);
+                const pendingCount = Number($row.data('pending') || 0);
+
+                const matchesName = !nameFilter || companyKey.includes(nameFilter);
+                const matchesOpen = !requireOpen || openCount > 0;
+                const matchesPending = !requirePending || pendingCount > 0;
+
+                if (matchesName && matchesOpen && matchesPending) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                }
+            });
+
+            const contractorModal = bootstrap.Modal.getInstance(document.getElementById('contractorFilterModal'))
+                || new bootstrap.Modal(document.getElementById('contractorFilterModal'));
+            contractorModal.hide();
+
+            showToast(`Filters applied: ${visibleCount} contractor${visibleCount === 1 ? '' : 's'} shown`, 'success');
+        });
+
+        $('#applyDefectsFilter').on('click', function() {
+            const titleFilter = $('#filterDefectTitle').val().toLowerCase().trim();
+            const contractorFilter = ($('#filterDefectContractor').val() || '').toLowerCase();
+
+            const selectedStatuses = [];
+            if ($('#filterStatusOpen').is(':checked')) selectedStatuses.push('open');
+            if ($('#filterStatusPending').is(':checked')) selectedStatuses.push('pending');
+            if ($('#filterStatusAccepted').is(':checked')) selectedStatuses.push('accepted');
+            if ($('#filterStatusRejected').is(':checked')) selectedStatuses.push('rejected');
+
+            const selectedPriorities = [];
+            if ($('#filterPriorityHigh').is(':checked')) selectedPriorities.push('high');
+            if ($('#filterPriorityMedium').is(':checked')) selectedPriorities.push('medium');
+            if ($('#filterPriorityLow').is(':checked')) selectedPriorities.push('low');
+
+            let visibleCount = 0;
+
+            $('#recentDefectsTable tbody tr.expandable-row').each(function() {
+                const $row = $(this);
+                const defectId = $row.data('defect-id');
+                const titleKey = String($row.data('title') || '');
+                const statusKey = String($row.data('status') || '');
+                const priorityKey = String($row.data('priority') || '');
+                const contractorKey = String($row.data('contractor') || '');
+                const detailsRow = $(`#details-${defectId}`);
+                const icon = $row.find('.toggle-details i');
+
+                const matchesTitle = !titleFilter || titleKey.includes(titleFilter);
+                const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(statusKey);
+                const matchesPriority = selectedPriorities.length === 0 || selectedPriorities.includes(priorityKey);
+                const matchesContractor = !contractorFilter || contractorKey === contractorFilter;
+
+                if (matchesTitle && matchesStatus && matchesPriority && matchesContractor) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                    detailsRow.hide();
+                    detailsRow.find('.row-details').hide();
+                    icon.removeClass('bx-chevron-up').addClass('bx-chevron-down');
+                }
+            });
+
+            const defectsModal = bootstrap.Modal.getInstance(document.getElementById('defectsFilterModal'))
+                || new bootstrap.Modal(document.getElementById('defectsFilterModal'));
+            defectsModal.hide();
+
+            showToast(`Filters applied: ${visibleCount} defect${visibleCount === 1 ? '' : 's'} shown`, 'success');
+        });
+
+        $('#exportContractors').on('click', function() {
+            let csvContent = 'Company,Trade,Total,Open,Pending,Accepted,Rejected,Last Update\n';
+
+            $('#contractorsTable tbody tr:visible').each(function() {
+                const $row = $(this);
+                const cells = $row.find('td');
+                if (cells.length !== 8) {
+                    return;
+                }
+
+                const clean = value => String(value).trim().replace(/\s+/g, ' ');
+                const company = clean($(cells[0]).text()).replace(/,/g, ' ');
+                const trade = clean($(cells[1]).text()).replace(/,/g, ' ');
+                const total = $row.data('total') ?? (Number(clean($(cells[2]).text())) || 0);
+                const open = $row.data('open') ?? (Number(clean($(cells[3]).text())) || 0);
+                const pending = $row.data('pending') ?? (Number(clean($(cells[4]).text())) || 0);
+                const accepted = $row.data('accepted') ?? (Number(clean($(cells[5]).text())) || 0);
+                const rejected = $row.data('rejected') ?? (Number(clean($(cells[6]).text())) || 0);
+                const lastUpdate = clean($(cells[7]).text()).replace(/,/g, ' ');
+
+                const line = [company, trade, total, open, pending, accepted, rejected, lastUpdate]
+                    .map(value => `"${String(value).replace(/"/g, '""')}"`)
+                    .join(',');
+                csvContent += `${line}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const downloadUrl = URL.createObjectURL(blob);
+            const tempLink = document.createElement('a');
+            tempLink.href = downloadUrl;
+            tempLink.setAttribute('download', `contractor_stats_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            URL.revokeObjectURL(downloadUrl);
+
+            showToast('Contractor data exported successfully', 'success');
+        });
+
+        $('#refreshContractors, #refreshDefects').on('click', function() {
+            $(this).prop('disabled', true);
+            setTimeout(() => window.location.reload(), 300);
+        });
+    });
+    </script>
+</body>
+</html>

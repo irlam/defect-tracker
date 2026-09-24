@@ -439,4 +439,347 @@ function formatProjectDeadline(?int $daysRemaining): string
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Projects Management - Defect Tracker System">
-    <meta name="author" content="<?php echo htmlspecialchars($_SESÛ~¶¶‰žËkºwµçHˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}Á¥±°ÁÉ½©•Ðµ…É‘}}Á¥±°´´ðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät¤ì€üøˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à€ðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}¥½¸t¤ì€üøœøð½¤ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ðýÁ¡À•¡¼ÕÝ½É‘Ì¡ÍÑÉ}É•Á±…” œ´œ°€œ€œ°¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät¤¤¤ì€üø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ È±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}Ñ¥Ñ±”ˆøðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•ÑlÁÉ½©•Ñ}¹…µ”t¤ì€üøð½ Èø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}…Ñ¥½¹Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÍ´‰Ñ¸µ½ÕÑ±¥¹”µ±¥¡Ðˆ‘…Ñ„µ‰ÌµÑ½±”ô‰µ½‘…°ˆ‘…Ñ„µ‰ÌµÑ…É•Ðôˆ•‘¥ÑAÉ½©•Ñ5½‘…°ðýÁ¡À•¡¼€‘ÁÉ½©•Ñl¥tì€üøˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµ•‘¥Ðµ…±Ðœøð½¤ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÍ´‰Ñ¸µ½ÕÑ±¥¹”µ‘…¹•Èˆ½¹±¥¬ô‰½¹™¥Éµ•±•Ñ•AÉ½©•Ð ðýÁ¡À•¡¼€¡¥¹Ð¤€‘ÁÉ½©•Ñl¥tì€üø¤ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµÑÉ…Í œøð½¤ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ð½¡•…‘•Èø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‰½‘äˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÀ±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘•ÍÉ¥ÁÑ¥½¸ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•Ñl‘•ÍÉ¥ÁÑ¥½¸t€üè€9¼‘•ÍÉ¥ÁÑ¥½¸ÁÉ½Ù¥‘•å•Ð¸œ¤ì€üø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½Àø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}Í¡•‘Õ±”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”µ±…‰•°ˆøñ¤±…ÍÌô‰à‰àµ…±•¹‘…Èœøð½¤ùMÑ…ÉÐð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”µÙ…±Õ”ˆøðýÁ¡À•¡¼™½Éµ…Ñ…Ñ” ‘ÁÉ½©•ÑlÍÑ…ÉÑ}‘…Ñ”t¤ì€üøð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”µ±…‰•°ˆøñ¤±…ÍÌô‰à‰àµ…±•¹‘…Èµ¡•¬œøð½¤ù½µÁ±•Ñ¥½¸ð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”µÙ…±Õ”ˆøðýÁ¡À•¡¼™½Éµ…Ñ…Ñ” ‘ÁÉ½©•Ñl•¹‘}‘…Ñ”t¤ì€üøð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”µ±…‰•°ˆøñ¤±…ÍÌô‰à‰àµÉ•™É•Í œøð½¤ùUÁ‘…Ñ•ð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘…Ñ”µÙ…±Õ”ˆøðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•ÑlÕÁ‘…Ñ•‘}É•±…Ñ¥Ù”t¤ì€üøð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}ÁÉ½É•ÍÌˆÑ¥Ñ±”ôˆðýÁ¡À•¡¼€¡¥¹Ð¤€‘ÁÉ½©•ÑlÁÉ½É•ÍÌtì€üø”½µÁ±•Ñ”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}ÁÉ½É•ÍÌµ‰…ÈˆÍÑå±”ô‰Ý¥‘Ñ è€ðýÁ¡À•¡¼€¡¥¹Ð¤€‘ÁÉ½©•ÑlÁÉ½É•ÍÌtì€üø”ˆøð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}ÁÉ½É•ÍÌµÙ…±Õ”ˆøðýÁ¡À•¡¼€¡¥¹Ð¤€‘ÁÉ½©•ÑlÁÉ½É•ÍÌtì€üø”ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•Ðµ…É‘}}‘•…‘±¥¹”ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµÑ¥µ”µ™¥Ù”œøð½¤ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍÁ…¸øðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ¡™½Éµ…ÑAÉ½©•Ñ•…‘±¥¹” ‘ÁÉ½©•Ñl‘…åÍ}É•µ…¥¹¥¹œt¤¤ì€üøð½ÍÁ…¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€ð½…ÉÑ¥±”ø(€€€€€€€€€€€€€€€€ð½‘¥Øø((€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°™…‘”ˆ¥ô‰•‘¥ÑAÉ½©•Ñ5½‘…°ðýÁ¡À•¡¼€‘ÁÉ½©•Ñl¥tì€üøˆÑ…‰¥¹‘•àôˆ´Äˆ…É¥„µ¡¥‘‘•¸ô‰ÑÉÕ”ˆø(€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ‘¥…±½œµ½‘…°µ±œµ½‘…°µ‘¥…±½œµ•¹Ñ•É•ˆø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ½¹Ñ•¹Ðˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ™½É´µ•Ñ¡½ô‰A=MPˆ±…ÍÌô‰¹••‘ÌµÙ…±¥‘…Ñ¥½¸ˆ¹½Ù…±¥‘…Ñ”ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰ÍÉ™}Ñ½­•¸ˆÙ…±Õ”ôˆðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘}MMM%=9lÍÉ™}Ñ½­•¸t°9Q}EU=QL°€UQ´àœ¤ì€üøˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰…Ñ¥½¸ˆÙ…±Õ”ô‰ÕÁ‘…Ñ•}ÁÉ½©•Ðˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰ÁÉ½©•Ñ}¥ˆÙ…±Õ”ôˆðýÁ¡À•¡¼€‘ÁÉ½©•Ñl¥tì€üøˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ¡•…‘•Èˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ Ô±…ÍÌô‰µ½‘…°µÑ¥Ñ±”ˆøñ¤±…ÍÌô‰à‰àµ•‘¥Ðµ”´Èœøð½¤ù‘¥ÐAÉ½©•Ðð½ Ôø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸µ±½Í”ˆ‘…Ñ„µ‰Ìµ‘¥Íµ¥ÍÌô‰µ½‘…°ˆ…É¥„µ±…‰•°ô‰±½Í”ˆøð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ‰½‘äˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰É½Üœ´Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°É•ÅÕ¥É•ˆùAÉ½©•Ð9…µ”ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰Ñ•áÐˆ¹…µ”ô‰ÁÉ½©•Ñ}¹…µ”ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÙ…±Õ”ôˆðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•ÑlÁÉ½©•Ñ}¹…µ”t¤ì€üøˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰¥¹Ù…±¥µ™••‘‰…¬ˆùAÉ½©•Ð¹…µ”¥ÌÉ•ÅÕ¥É•¸ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆù•ÍÉ¥ÁÑ¥½¸ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÑ•áÑ…É•„¹…µ”ô‰‘•ÍÉ¥ÁÑ¥½¸ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÉ½ÝÌôˆÌˆÁ±…•¡½±‘•Èô‰‘ÁÉ½É…µµ”¹½Ñ•Ì½ÈÍ½Á”‘•Ñ…¥±ÌˆøðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘ÁÉ½©•Ñl‘•ÍÉ¥ÁÑ¥½¸t¤ì€üøð½Ñ•áÑ…É•„ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈ½°µµ´Øˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆùMÑ…ÉÐ…Ñ”ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰‘…Ñ”ˆ¹…µ”ô‰ÍÑ…ÉÑ}‘…Ñ”ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÙ…±Õ”ôˆðýÁ¡À•¡¼‘…Ñ” dµ´µœ°ÍÑÉÑ½Ñ¥µ” ‘ÁÉ½©•ÑlÍÑ…ÉÑ}‘…Ñ”t¤¤ì€üøˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈ½°µµ´Øˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆù¹…Ñ”ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰‘…Ñ”ˆ¹…µ”ô‰•¹‘}‘…Ñ”ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÙ…±Õ”ôˆðýÁ¡À•¡¼‘…Ñ” dµ´µœ°ÍÑÉÑ½Ñ¥µ” ‘ÁÉ½©•Ñl•¹‘}‘…Ñ”t¤¤ì€üøˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈ½°µµ´Øˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆùMÑ…ÑÕÌð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍ•±•Ð¹…µ”ô‰ÍÑ…ÑÕÌˆ±…ÍÌô‰™½É´µÍ•±•ÐˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰Á•¹‘¥¹œˆ€ðýÁ¡À•¡¼€‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät€ôôô€Á•¹‘¥¹œœ€ü€Í•±•Ñ•œ€è€œœì€üøùA•¹‘¥¹œð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰…Ñ¥Ù”ˆ€ðýÁ¡À•¡¼€‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät€ôôô€…Ñ¥Ù”œ€ü€Í•±•Ñ•œ€è€œœì€üøùÑ¥Ù”ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰½µÁ±•Ñ•ˆ€ðýÁ¡À•¡¼€‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät€ôôô€½µÁ±•Ñ•œ€ü€Í•±•Ñ•œ€è€œœì€üøù½µÁ±•Ñ•ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰½¸µ¡½±ˆ€ðýÁ¡À•¡¼€‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät€ôôô€½¸µ¡½±œ€ü€Í•±•Ñ•œ€è€œœì€üøù=¸!½±ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰…É¡¥Ù•ˆ€ðýÁ¡À•¡¼€‘ÁÉ½©•ÑlÍÑ…ÑÕÍ}­•ät€ôôô€…É¡¥Ù•œ€ü€Í•±•Ñ•œ€è€œœì€üøùÉ¡¥Ù•ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½Í•±•Ðø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µÑ•áÐÑ•áÐµµÕÑ•ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµ¥¹™¼µ¥É±”µ”´Äœøð½¤ù‘©ÕÍÐ‘…Ñ•Ì…¹ÍÑ…ÑÕÌÑ¼­••ÀÁÉ½É…µµ”Ù¥Í¥‰¥±¥Ñä…ÕÉ…Ñ”¸(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ™½½Ñ•Èˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µ½ÕÑ±¥¹”µ±¥¡Ðˆ‘…Ñ„µ‰Ìµ‘¥Íµ¥ÍÌô‰µ½‘…°ˆù…¹•°ð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰ÍÕ‰µ¥Ðˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÁÉ¥µ…ÉäˆùM…Ù”¡…¹•Ìð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½™½É´ø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€ðýÁ¡À•¹‘™½É•… ì€üø(€€€€€€€€ð½Í•Ñ¥½¸ø(€€€€ðýÁ¡À•¹‘¥˜ì€üø((€€€€ñ‘¥Ø±…ÍÌô‰ÁÉ½©•ÑÌµ™½½Ñ•Èµ…Ñ¥½¹Ìµ™±•à™±•àµÝÉ…À©ÕÍÑ¥™äµ½¹Ñ•¹Ðµ‰•ÑÝ••¸…±¥¸µ¥Ñ•µÌµ•¹Ñ•È…À´ÌµÐ´Ðˆø(€€€€€€€€ñ‘¥Ø±…ÍÌô‰Ñ•áÐµµÕÑ•Íµ…±°ˆøñ¤±…ÍÌô‰à‰àµ¥¹™¼µ¥É±”µ”´Äœøð½¤ù9••Ñ¼‰Õ±¬¥µÁ½ÉÐÁÉ½©•ÑÌü½¹Ñ…ÐÍÕÁÁ½ÉÐ™½È½¹‰½…É‘¥¹œ½ÁÑ¥½¹Ì¸ð½‘¥Øø(€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µ½ÕÑ±¥¹”µ±¥¡Ðˆ‘…Ñ„µ‰ÌµÑ½±”ô‰µ½‘…°ˆ‘…Ñ„µ‰ÌµÑ…É•ÐôˆÉ•…Ñ•AÉ½©•Ñ5½‘…°ˆø(€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµÁ±ÕÌµ¥É±”µ”´Äœøð½¤ù9•ÜAÉ½©•Ð(€€€€€€€€ð½‰ÕÑÑ½¸ø(€€€€ð½‘¥Øø(ð½µ…¥¸ø((ñ‘¥Ø±…ÍÌô‰µ½‘…°™…‘”ˆ¥ô‰É•…Ñ•AÉ½©•Ñ5½‘…°ˆÑ…‰¥¹‘•àôˆ´Äˆ…É¥„µ¡¥‘‘•¸ô‰ÑÉÕ”ˆø(€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ‘¥…±½œµ½‘…°µ±œµ½‘…°µ‘¥…±½œµ•¹Ñ•É•ˆø(€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ½¹Ñ•¹Ðˆø(€€€€€€€€€€€€ñ™½É´µ•Ñ¡½ô‰A=MPˆ±…ÍÌô‰¹••‘ÌµÙ…±¥‘…Ñ¥½¸ˆ¹½Ù…±¥‘…Ñ”ø(€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰ÍÉ™}Ñ½­•¸ˆÙ…±Õ”ôˆðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘}MMM%=9lÍÉ™}Ñ½­•¸t°9Q}EU=QL°€UQ´àœ¤ì€üøˆø(€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰…Ñ¥½¸ˆÙ…±Õ”ô‰É•…Ñ•}ÁÉ½©•Ðˆø(€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ¡•…‘•Èˆø(€€€€€€€€€€€€€€€€€€€€ñ Ô±…ÍÌô‰µ½‘…°µÑ¥Ñ±”ˆøñ¤±…ÍÌô‰à‰àµ‰É¥•™…Í”µ…±Ð´Èµ”´Èœøð½¤ùÉ•…Ñ”9•ÜAÉ½©•Ðð½ Ôø(€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸µ±½Í”ˆ‘…Ñ„µ‰Ìµ‘¥Íµ¥ÍÌô‰µ½‘…°ˆ…É¥„µ±…‰•°ô‰±½Í”ˆøð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ‰½‘äˆø(€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰É½Üœ´Ìˆø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°É•ÅÕ¥É•ˆùAÉ½©•Ð9…µ”ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰Ñ•áÐˆ¹…µ”ô‰ÁÉ½©•Ñ}¹…µ”ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÁ±…•¡½±‘•Èô‰”¹œ¸A±½Ð!…¹‘½Ù•ÈAÉ½É…µµ”ˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰¥¹Ù…±¥µ™••‘‰…¬ˆùAÉ½Ù¥‘”„¹…µ”Í¼Ñ¡”Ñ•…´…¸É•½¹¥Í”Ñ¡¥ÌÁÉ½É…µµ”¸ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆù•ÍÉ¥ÁÑ¥½¸ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÑ•áÑ…É•„¹…µ”ô‰‘•ÍÉ¥ÁÑ¥½¸ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÉ½ÝÌôˆÌˆÁ±…•¡½±‘•Èô‰-•ä‘•±¥Ù•É…‰±•Ì°ÍÑ…­•¡½±‘•ÉÌ°½ÈÍ½Á”¹½Ñ•Ìˆøð½Ñ•áÑ…É•„ø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈ½°µµ´Øˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆùMÑ…ÉÐ…Ñ”ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰‘…Ñ”ˆ¹…µ”ô‰ÍÑ…ÉÑ}‘…Ñ”ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈ½°µµ´Øˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆù¹…Ñ”ð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¥¹ÁÕÐÑåÁ”ô‰‘…Ñ”ˆ¹…µ”ô‰•¹‘}‘…Ñ”ˆ±…ÍÌô‰™½É´µ½¹ÑÉ½°ˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈ½°µµ´Øˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ±…‰•°±…ÍÌô‰™½É´µ±…‰•°ˆùMÑ…ÑÕÌð½±…‰•°ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñÍ•±•Ð¹…µ”ô‰ÍÑ…ÑÕÌˆ±…ÍÌô‰™½É´µÍ•±•ÐˆÉ•ÅÕ¥É•ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰Á•¹‘¥¹œˆùA•¹‘¥¹œð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰…Ñ¥Ù”ˆùÑ¥Ù”ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰½µÁ±•Ñ•ˆù½µÁ±•Ñ•ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰½¸µ¡½±ˆù=¸!½±ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ½ÁÑ¥½¸Ù…±Õ”ô‰…É¡¥Ù•ˆùÉ¡¥Ù•ð½½ÁÑ¥½¸ø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½Í•±•Ðø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰½°´ÄÈˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰™½É´µÑ•áÐÑ•áÐµµÕÑ•ˆø(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€ñ¤±…ÍÌô‰à‰àµ…±•¹‘…ÈµÝ••¬µ”´Äœøð½¤ùM•Ð…ÕÉ…Ñ”‘…Ñ•ÌÑ¼Á½Ý•ÈÁÉ½É•ÍÌÑÉ…­¥¹œ…¹É•Á½ÉÑ¥¹œ¥¹Í¥¡ÑÌ¸(€€€€€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€€€€€ñ‘¥Ø±…ÍÌô‰µ½‘…°µ™½½Ñ•Èˆø(€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰‰ÕÑÑ½¸ˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µ½ÕÑ±¥¹”µ±¥¡Ðˆ‘…Ñ„µ‰Ìµ‘¥Íµ¥ÍÌô‰µ½‘…°ˆù…¹•°ð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€€€€€ñ‰ÕÑÑ½¸ÑåÁ”ô‰ÍÕ‰µ¥Ðˆ±…ÍÌô‰‰Ñ¸‰Ñ¸µÁÉ¥µ…ÉäˆùÉ•…Ñ”AÉ½©•Ðð½‰ÕÑÑ½¸ø(€€€€€€€€€€€€€€€€ð½‘¥Øø(€€€€€€€€€€€€ð½™½É´ø(€€€€€€€€ð½‘¥Øø(€€€€ð½‘¥Øø(ð½‘¥Øø((ñ™½É´¥ô‰‘•±•Ñ•AÉ½©•Ñ½É´ˆµ•Ñ¡½ô‰A=MPˆ±…ÍÌô‰µ¹½¹”ˆø(€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰ÍÉ™}Ñ½­•¸ˆÙ…±Õ”ôˆðýÁ¡À•¡¼¡Ñµ±ÍÁ•¥…±¡…ÉÌ ‘}MMM%=9lÍÉ™}Ñ½­•¸t°9Q}EU=QL°€UQ´àœ¤ì€üøˆø(€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰…Ñ¥½¸ˆÙ…±Õ”ô‰‘•±•Ñ•}ÁÉ½©•Ðˆø(€€€€ñ¥¹ÁÕÐÑåÁ”ô‰¡¥‘‘•¸ˆ¹…µ”ô‰ÁÉ½©•Ñ}¥ˆ¥ô‰‘•±•Ñ•AÉ½©•Ñ%ˆø(ð½™½É´ø((ñÍÉ¥ÁÐÍÉŒô‰¡ÑÑÁÌè¼½‘¸¹©Í‘•±¥ÙÈ¹¹•Ð½¹Á´½‰½½ÑÍÑÉ…Á Ô¸Ì¸È½‘¥ÍÐ½©Ì½‰½½ÑÍÑÉ…À¹‰Õ¹‘±”¹µ¥¸¹©Ìˆøð½ÍÉ¥ÁÐø(ñÍÉ¥ÁÐø(€€€‘½Õµ•¹Ð¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È =5½¹Ñ•¹Ñ1½…‘•œ°€ ¤€ôøì(€€€€€€€½¹ÍÐ™½ÉµÌ€ô‘½Õµ•¹Ð¹ÅÕ•ÉåM•±•Ñ½É±° œ¹¹••‘ÌµÙ…±¥‘…Ñ¥½¸œ¤ì(€€€€€€€ÉÉ…ä¹™É½´¡™½ÉµÌ¤¹™½É…  ¡™½É´¤€ôøì(€€€€€€€€€€€™½É´¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ÍÕ‰µ¥Ðœ°€¡•Ù•¹Ð¤€ôøì(€€€€€€€€€€€€€€€¥˜€ …™½É´¹¡•­Y…±¥‘¥Ñä ¤¤ì(€€€€€€€€€€€€€€€€€€€•Ù•¹Ð¹ÁÉ•Ù•¹Ñ•™…Õ±Ð ¤ì(€€€€€€€€€€€€€€€€€€€•Ù•¹Ð¹ÍÑ½ÁAÉ½Á……Ñ¥½¸ ¤ì(€€€€€€€€€€€€€€€ô(€€€€€€€€€€€€€€€™½É´¹±…ÍÍ1¥ÍÐ¹…‘ Ý…ÌµÙ…±¥‘…Ñ•œ¤ì(€€€€€€€€€€€ô¤ì(€€€€€€€ô¤ì((€€€€€€€½¹ÍÐÁÉ½©•Ñ%Ñ•µÌ€ô‘½Õµ•¹Ð¹ÅÕ•ÉåM•±•Ñ½É±° œ¹ÁÉ½©•ÑÌµÉ¥‘}}¥Ñ•´œ¤ì(€€€€€€€½¹ÍÐ™¥±Ñ•É	ÕÑÑ½¹Ì€ô‘½Õµ•¹Ð¹ÅÕ•ÉåM•±•Ñ½É±° œ¹ÁÉ½©•ÑÌµ™¥±Ñ•É}}‰ÕÑÑ½¸œ¤ì(€€€€€€€½¹ÍÐÍ•…É¡%¹ÁÕÐ€ô‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ÁÉ½©•ÑÍM•…É œ¤ì((€€€€€€€™Õ¹Ñ¥½¸…ÁÁ±å¥±Ñ•ÉÌ ¤ì(€€€€€€€€€€€½¹ÍÐ…Ñ¥Ù•¥±Ñ•È€ô‘½Õµ•¹Ð¹ÅÕ•ÉåM•±•Ñ½È œ¹ÁÉ½©•ÑÌµ™¥±Ñ•É}}‰ÕÑÑ½¸¹¥Ìµ…Ñ¥Ù”œ¤ü¹‘…Ñ…Í•Ð¹™¥±Ñ•È€üü€…±°œì(€€€€€€€€€€€½¹ÍÐÍ•…É¡Q•É´€ôÍ•…É¡%¹ÁÕÐ€üÍ•…É¡%¹ÁÕÐ¹Ù…±Õ”¹ÑÉ¥´ ¤¹Ñ½1½Ý•É…Í” ¤€è€œœì((€€€€€€€€€€€ÁÉ½©•Ñ%Ñ•µÌ¹™½É…  ¡¥Ñ•´¤€ôøì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•ÍMÑ…ÑÕÌ€ô…Ñ¥Ù•¥±Ñ•È€ôôô€…±°œñð¥Ñ•´¹‘…Ñ…Í•Ð¹ÁÉ½©•ÑMÑ…ÑÕÌ€ôôô…Ñ¥Ù•¥±Ñ•Èì(€€€€€€€€€€€€€€€½¹ÍÐµ…Ñ¡•ÍM•…É €ôÍ•…É¡Q•É´¹±•¹Ñ €ôôô€Àñð¥Ñ•´¹‘…Ñ…Í•Ð¹ÁÉ½©•Ñ9…µ”¹Ñ½1½Ý•É…Í” ¤¹¥¹±Õ‘•Ì¡Í•…É¡Q•É´¤ì(€€€€€€€€€€€€€€€¥Ñ•´¹ÍÑå±”¹‘¥ÍÁ±…ä€ôµ…Ñ¡•ÍMÑ…ÑÕÌ€˜˜µ…Ñ¡•ÍM•…É €ü€œœ€è€¹½¹”œì(€€€€€€€€€€€ô¤ì(€€€€€€€ô((€€€€€€€™¥±Ñ•É	ÕÑÑ½¹Ì¹™½É…  ¡‰ÕÑÑ½¸¤€ôøì(€€€€€€€€€€€‰ÕÑÑ½¸¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ±¥¬œ°€ ¤€ôøì(€€€€€€€€€€€€€€€™¥±Ñ•É	ÕÑÑ½¹Ì¹™½É…  ¡‰Ñ¸¤€ôø‰Ñ¸¹±…ÍÍ1¥ÍÐ¹É•µ½Ù” ¥Ìµ…Ñ¥Ù”œ¤¤ì(€€€€€€€€€€€€€€€‰ÕÑÑ½¸¹±…ÍÍ1¥ÍÐ¹…‘ ¥Ìµ…Ñ¥Ù”œ¤ì(€€€€€€€€€€€€€€€…ÁÁ±å¥±Ñ•ÉÌ ¤ì(€€€€€€€€€€€ô¤ì(€€€€€€€ô¤ì((€€€€€€€¥˜€¡Í•…É¡%¹ÁÕÐ¤ì(€€€€€€€€€€€Í•…É¡%¹ÁÕÐ¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ¥¹ÁÕÐœ°…ÁÁ±å¥±Ñ•ÉÌ¤ì(€€€€€€€ô((€€€€€€€Ý¥¹‘½Ü¹½¹™¥Éµ•±•Ñ•AÉ½©•Ð€ô€¡ÁÉ½©•Ñ%¤€ôøì(€€€€€€€€€€€¥˜€¡½¹™¥É´ É”å½ÔÍÕÉ”å½ÔÝ…¹ÐÑ¼‘•±•Ñ”Ñ¡¥ÌÁÉ½©•ÐüQ¡¥Ì…Ñ¥½¸…¹¹½Ð‰”Õ¹‘½¹”¸œ¤¤ì(€€€€€€€€€€€€€€€‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ‘•±•Ñ•AÉ½©•Ñ%œ¤¹Ù…±Õ”€ôÁÉ½©•Ñ%ì(€€€€€€€€€€€€€€€‘½Õµ•¹Ð¹•Ñ±•µ•¹Ñ	å% ‘•±•Ñ•AÉ½©•Ñ½É´œ¤¹ÍÕ‰µ¥Ð ¤ì(€€€€€€€€€€€ô(€€€€€€€ôì((€€€€€€€…ÁÁ±å¥±Ñ•ÉÌ ¤ì(€€€ô¤ì(ð½ÍÉ¥ÁÐø(ð½‰½‘äø(ð½¡Ñµ°ø(
+    <meta name="author" content="<?php echo htmlspecialchars($_SESSION['username']); ?>">
+    <meta name="last-modified" content="<?php echo htmlspecialchars($currentDateTime); ?>">
+    <title>Projects Management - Defect Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg" />
+    <link rel="shortcut icon" href="/favicons/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="/favicons/site.webmanifest" />
+    <link href="/css/app.css?v=20251103" rel="stylesheet">
+</head>
+<body class="tool-body projects-page-body has-app-navbar" data-bs-theme="dark">
+<?php
+try {
+    if ($navbar instanceof Navbar) {
+        $navbar->render();
+    }
+} catch (Exception $renderException) {
+    error_log('Navbar render error on projects.php: ' . $renderException->getMessage());
+    echo '<div class="alert alert-danger m-3" role="alert">Navigation failed to load. Refresh the page or contact support.</div>';
+}
+?>
+
+<div class="app-content-offset"></div>
+
+<main class="projects-page container-fluid px-4 pb-5">
+    <section class="projects-hero shadow-lg mb-4">
+        <div class="projects-hero__headline">
+            <div>
+                <span class="projects-hero__pill"><i class='bx bx-map-pin me-1'></i>Programme Delivery</span>
+                <h1 class="projects-hero__title">Projects Management</h1>
+                <p class="projects-hero__subtitle"><?php echo htmlspecialchars($heroSubtitle); ?></p>
+            </div>
+            <div class="projects-hero__actions text-end">
+                <button type="button" class="btn btn-primary btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                    <i class='bx bx-plus-circle me-2'></i>Create Project
+                </button>
+                <p class="projects-hero__timestamp mt-3">
+                    <i class='bx bx-time-five me-1'></i>Updated <?php echo htmlspecialchars($lastUpdateRelative); ?>
+                </p>
+            </div>
+        </div>
+        <div class="projects-hero__metrics">
+            <?php foreach ($projectHeroMetrics as $metric): ?>
+                <article class="projects-metric projects-metric--<?php echo htmlspecialchars($metric['variant']); ?>">
+                    <div class="projects-metric__icon"><i class='bx <?php echo htmlspecialchars($metric['icon']); ?>'></i></div>
+                    <div class="projects-metric__details">
+                        <span class="projects-metric__label"><?php echo htmlspecialchars($metric['label']); ?></span>
+                        <span class="projects-metric__value"><?php echo htmlspecialchars($metric['value_display']); ?></span>
+                        <span class="projects-metric__note"><?php echo htmlspecialchars($metric['note']); ?></span>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <?php if ($success_message): ?>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm projects-alert" role="alert">
+            <i class='bx bx-check-circle me-2'></i><?php echo htmlspecialchars($success_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error_message): ?>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm projects-alert" role="alert">
+            <i class='bx bx-error-circle me-2'></i><?php echo htmlspecialchars($error_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <section class="projects-controls row g-3 align-items-center mb-4">
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 d-flex flex-wrap gap-2 projects-controls__filters">
+            <button type="button" class="projects-filter__button is-active" data-filter="all">
+                <i class='bx bx-show me-1'></i>All
+                <span class="projects-filter__count"><?php echo number_format($totalProjects); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="active">
+                <i class='bx bx-rocket me-1'></i>Active
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['active'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="pending">
+                <i class='bx bx-hourglass me-1'></i>Pending
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['pending'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="completed">
+                <i class='bx bx-badge-check me-1'></i>Completed
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['completed'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="on-hold">
+                <i class='bx bx-pause-circle me-1'></i>On Hold
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['on-hold'] ?? 0); ?></span>
+            </button>
+            <button type="button" class="projects-filter__button" data-filter="archived">
+                <i class='bx bx-archive me-1'></i>Archived
+                <span class="projects-filter__count"><?php echo number_format($statusCounts['archived'] ?? 0); ?></span>
+            </button>
+        </div>
+    </section>
+
+    <?php if ($totalProjects === 0): ?>
+        <section class="projects-empty-state text-center py-5">
+            <div class="projects-empty-state__icon mb-3"><i class='bx bx-folder-open'></i></div>
+            <h2 class="h4 mb-3">No projects in the tracker yet</h2>
+            <p class="text-muted mb-4">Kick off your portfolio management by creating a new project. You can import milestones and deliverables once the record is created.</p>
+            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                <i class='bx bx-plus-circle me-2'></i>Create your first project
+            </button>
+        </section>
+    <?php else: ?>
+        <section class="projects-grid row g-3" id="projectsGrid">
+            <?php foreach ($projects as $project): ?>
+                <div class="col-12 col-lg-6 col-xxl-4 projects-grid__item" data-project-status="<?php echo htmlspecialchars($project['status_key']); ?>" data-project-name="<?php echo htmlspecialchars($project['project_name']); ?>">
+                    <article class="project-card">
+                        <header class="project-card__header">
+                            <div>
+                                <span class="project-card__pill project-card__pill--<?php echo htmlspecialchars($project['status_key']); ?>">
+                                    <i class='bx <?php echo htmlspecialchars($project['status_icon']); ?>'></i>
+                                    <?php echo ucwords(str_replace('-', ' ', htmlspecialchars($project['status_key']))); ?>
+                                </span>
+                                <h2 class="project-card__title"><?php echo htmlspecialchars($project['project_name']); ?></h2>
+                            </div>
+                            <div class="project-card__actions">
+                                <button type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#editProjectModal<?php echo $project['id']; ?>">
+                                    <i class='bx bx-edit-alt'></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteProject(<?php echo (int) $project['id']; ?>)">
+                                    <i class='bx bx-trash'></i>
+                                </button>
+                            </div>
+                        </header>
+                        <div class="project-card__body">
+                            <p class="project-card__description">
+                                <?php echo htmlspecialchars($project['description'] ?: 'No description provided yet.'); ?>
+                            </p>
+                            <div class="project-card__schedule">
+                                <div class="project-card__date">
+                                    <span class="project-card__date-label"><i class='bx bx-calendar'></i>Start</span>
+                                    <span class="project-card__date-value"><?php echo formatDate($project['start_date']); ?></span>
+                                </div>
+                                <div class="project-card__date">
+                                    <span class="project-card__date-label"><i class='bx bx-calendar-check'></i>Completion</span>
+                                    <span class="project-card__date-value"><?php echo formatDate($project['end_date']); ?></span>
+                                </div>
+                                <div class="project-card__date">
+                                    <span class="project-card__date-label"><i class='bx bx-refresh'></i>Updated</span>
+                                    <span class="project-card__date-value"><?php echo htmlspecialchars($project['updated_relative']); ?></span>
+                                </div>
+                            </div>
+                            <div class="project-card__progress" title="<?php echo (int) $project['progress']; ?>% complete">
+                                <div class="project-card__progress-bar" style="width: <?php echo (int) $project['progress']; ?>%"></div>
+                                <div class="project-card__progress-value"><?php echo (int) $project['progress']; ?>%</div>
+                            </div>
+                            <div class="project-card__deadline">
+                                <i class='bx bx-time-five'></i>
+                                <span><?php echo htmlspecialchars(formatProjectDeadline($project['days_remaining'])); ?></span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="modal fade" id="editProjectModal<?php echo $project['id']; ?>" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <form method="POST" class="needs-validation" novalidate>
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+                                <input type="hidden" name="action" value="update_project">
+                                <input type="hidden" name="project_id" value="<?php echo $project['id']; ?>">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class='bx bx-edit me-2'></i>Edit Project</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label required">Project Name</label>
+                                            <input type="text" name="project_name" class="form-control" value="<?php echo htmlspecialchars($project['project_name']); ?>" required>
+                                            <div class="invalid-feedback">Project name is required.</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Description</label>
+                                            <textarea name="description" class="form-control" rows="3" placeholder="Add programme notes or scope details"><?php echo htmlspecialchars($project['description']); ?></textarea>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Start Date</label>
+                                            <input type="date" name="start_date" class="form-control" value="<?php echo date('Y-m-d', strtotime($project['start_date'])); ?>" required>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">End Date</label>
+                                            <input type="date" name="end_date" class="form-control" value="<?php echo date('Y-m-d', strtotime($project['end_date'])); ?>" required>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="form-label">Status</label>
+                                            <select name="status" class="form-select" required>
+                                                <option value="pending" <?php echo $project['status_key'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                <option value="active" <?php echo $project['status_key'] === 'active' ? 'selected' : ''; ?>>Active</option>
+                                                <option value="completed" <?php echo $project['status_key'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
+                                                <option value="on-hold" <?php echo $project['status_key'] === 'on-hold' ? 'selected' : ''; ?>>On Hold</option>
+                                                <option value="archived" <?php echo $project['status_key'] === 'archived' ? 'selected' : ''; ?>>Archived</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-text text-muted">
+                                                <i class='bx bx-info-circle me-1'></i>Adjust dates and status to keep programme visibility accurate.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </section>
+    <?php endif; ?>
+
+    <div class="projects-footer-actions d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+        <div class="text-muted small"><i class='bx bx-info-circle me-1'></i>Need to bulk import projects? Contact support for onboarding options.</div>
+        <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+            <i class='bx bx-plus-circle me-1'></i>New Project
+        </button>
+    </div>
+</main>
+
+<div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" class="needs-validation" novalidate>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="action" value="create_project">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class='bx bx-briefcase-alt-2 me-2'></i>Create New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label required">Project Name</label>
+                            <input type="text" name="project_name" class="form-control" placeholder="e.g. Plot Handover Programme" required>
+                            <div class="invalid-feedback">Provide a name so the team can recognise this programme.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Key deliverables, stakeholders, or scope notes"></textarea>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" name="start_date" class="form-control" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">End Date</label>
+                            <input type="date" name="end_date" class="form-control" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="pending">Pending</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="on-hold">On Hold</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-text text-muted">
+                                <i class='bx bx-calendar-week me-1'></i>Set accurate dates to power progress tracking and reporting insights.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<form id="deleteProjectForm" method="POST" class="d-none">
+    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+    <input type="hidden" name="action" value="delete_project">
+    <input type="hidden" name="project_id" id="deleteProjectId">
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach((form) => {
+            form.addEventListener('submit', (event) => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+
+        const projectItems = document.querySelectorAll('.projects-grid__item');
+        const filterButtons = document.querySelectorAll('.projects-filter__button');
+        const searchInput = document.getElementById('projectsSearch');
+
+        function applyFilters() {
+            const activeFilter = document.querySelector('.projects-filter__button.is-active')?.dataset.filter ?? 'all';
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            projectItems.forEach((item) => {
+                const matchesStatus = activeFilter === 'all' || item.dataset.projectStatus === activeFilter;
+                const matchesSearch = searchTerm.length === 0 || item.dataset.projectName.toLowerCase().includes(searchTerm);
+                item.style.display = matchesStatus && matchesSearch ? '' : 'none';
+            });
+        }
+
+        filterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach((btn) => btn.classList.remove('is-active'));
+                button.classList.add('is-active');
+                applyFilters();
+            });
+        });
+
+        if (searchInput) {
+            searchInput.addEventListener('input', applyFilters);
+        }
+
+        window.confirmDeleteProject = (projectId) => {
+            if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                document.getElementById('deleteProjectId').value = projectId;
+                document.getElementById('deleteProjectForm').submit();
+            }
+        };
+
+        applyFilters();
+    });
+</script>
+</body>
+</html>
