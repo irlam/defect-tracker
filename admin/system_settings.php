@@ -17,9 +17,12 @@ $logger = new Logger($db, $actor, $nowUtc);
 $systemHealth = new SystemHealth($db);
 $backupManager = new BackupManager($db);
 
-// Check admin privileges
-if (!$rbac->hasPermission($_SESSION['user_id'], 'manage_system')) {
-    header('Location: ../dashboard.php');
+// Check admin privileges.
+// The legacy RBAC permission "manage_system" is not guaranteed to exist in
+// production role_permissions, which previously caused valid admin users to
+// be silently redirected back to the dashboard.
+if (($_SESSION['user_type'] ?? '') !== 'admin') {
+    header('Location: ../dashboard.php?error=unauthorized');
     exit();
 }
 
