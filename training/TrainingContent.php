@@ -189,6 +189,71 @@ function trainingEnhancedContent(string $slug): array
                 ['question'=>'Who makes the review decision in this workflow?', 'options'=>['The manager/reviewer','Any anonymous visitor','The database automatically'], 'answer'=>0],
             ],
         ],
+        'admin-users' => [
+            'intro' => 'Manage user access deliberately: create accounts with the right identity and user type, link contractor users to the correct active contractor, then use User Management to review, edit, activate or deactivate access with an auditable history.',
+            'demo' => [
+                [
+                    'title' => 'Open User Management',
+                    'caption' => 'Admins and managers can review registered users, search by identity, and see user type, account status, contractor association and recent login information.',
+                    'voice' => 'Open User Management to review the people who can access Defect Tracker. Check identity, user type, status and contractor association before making changes.',
+                    'screen' => 'admin-users-overview',
+                    'focus' => 'users',
+                ],
+                [
+                    'title' => 'Create a new user',
+                    'caption' => 'Use Add New User and enter a unique username, valid email address, first and last name, password and the required user type.',
+                    'voice' => 'Choose Add New User. Enter the person’s identity details, a unique username, valid email address, password and the user type they actually need.',
+                    'screen' => 'admin-user-create',
+                    'focus' => 'form',
+                ],
+                [
+                    'title' => 'Choose the correct user type',
+                    'caption' => 'User type controls what the account can access. Assign the least privilege that lets the person do their job rather than giving broader access by default.',
+                    'voice' => 'Choose the user type carefully. Give the account only the level of access needed for the person’s actual role.',
+                    'screen' => 'admin-role',
+                    'focus' => 'role',
+                ],
+                [
+                    'title' => 'Link contractor users correctly',
+                    'caption' => 'A Contractor user must be associated with an active contractor record. Manager accounts may also carry a contractor association where appropriate.',
+                    'voice' => 'If the account is a contractor user, select the correct active contractor. This association controls which contractor identity the user works under.',
+                    'screen' => 'admin-contractor',
+                    'focus' => 'contractor',
+                ],
+                [
+                    'title' => 'Review and save the account',
+                    'caption' => 'Check name, username, email, user type and contractor association before creating the account. User creation is logged for audit purposes.',
+                    'voice' => 'Review the account before saving. Check the identity, access level and contractor association because these settings affect what the user can see and do.',
+                    'screen' => 'admin-review',
+                    'focus' => 'save',
+                ],
+                [
+                    'title' => 'Maintain existing users',
+                    'caption' => 'User Management supports editing user details, changing user type and contractor association, and activating or deactivating accounts without creating duplicates.',
+                    'voice' => 'For an existing user, update the current account rather than creating a duplicate. You can edit details, change access and activate or deactivate the account.',
+                    'screen' => 'admin-maintain',
+                    'focus' => 'actions',
+                ],
+                [
+                    'title' => 'Deactivate access when it is no longer needed',
+                    'caption' => 'Use account status to remove access while preserving the user record and audit history. Significant user-management actions are written to the user log.',
+                    'voice' => 'When someone no longer needs access, deactivate the account instead of reusing it for another person. This keeps identity and audit history intact.',
+                    'screen' => 'admin-audit',
+                    'focus' => 'audit',
+                ],
+            ],
+            'tips' => [
+                ['title'=>'Use least privilege','body'=>'Do not make someone an admin simply because it is convenient. Choose the lowest user type that supports the work they actually need to perform.'],
+                ['title'=>'Never share or recycle accounts','body'=>'Each person should have their own account. If someone leaves or changes role, update or deactivate that account rather than giving it to another user.'],
+                ['title'=>'Check contractor association','body'=>'For contractor users, verify the selected contractor is the correct active company before saving. A wrong association can route access and workload incorrectly.'],
+            ],
+            'knowledge' => [
+                ['question'=>'What is the safest approach when choosing a user type?', 'options'=>['Give every user administrator access','Choose the least access needed for the person’s job','Use the same user type for everyone'], 'answer'=>1],
+                ['question'=>'What is required when creating a Contractor user?', 'options'=>['An association with the correct active contractor','A second administrator account','No contractor information'], 'answer'=>0],
+                ['question'=>'What should you normally do when a person no longer needs access?', 'options'=>['Reuse their account for the next person','Deactivate their account so identity and audit history are preserved','Delete all user logs'], 'answer'=>1],
+            ],
+        ],
+
         'mobile-pwa' => [
             'intro' => 'Use Defect Tracker like an installed app on site, prepare the device while online, then capture field defects safely when reception drops and allow the saved reports to sync when connectivity returns.',
             'demo' => [
