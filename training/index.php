@@ -139,6 +139,7 @@ trainingRenderHeader(
                         'reports-exports' => 'reports-exports',
                         'projects-setup' => 'projects-setup',
                         'mobile-pwa' => 'mobile-pwa',
+                        'admin-users' => 'admin-users',
                         default => null,
                     };
                     ?>
