@@ -11,8 +11,8 @@
  * Created: 2025-02-26 19:27:55
  * Author: irlam
  */
-require_once 'config.php';
-require_once 'functions.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/functions.php';
 
 class BackupManager {
     private $excludePaths;
