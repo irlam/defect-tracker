@@ -189,6 +189,63 @@ function trainingEnhancedContent(string $slug): array
                 ['question'=>'Who makes the review decision in this workflow?', 'options'=>['The manager/reviewer','Any anonymous visitor','The database automatically'], 'answer'=>0],
             ],
         ],
+        'reports-exports' => [
+            'intro' => 'Use the Reports Dashboard to choose the right reporting period, read the live defect and contractor metrics, then export the same filtered view to CSV or PDF for issue, review or record keeping.',
+            'demo' => [
+                [
+                    'title' => 'Open Performance & Reporting',
+                    'caption' => 'Open the Reports Hub. The dashboard defaults to a reporting period and summarises defect activity, overdue work, closed items and active contractors.',
+                    'voice' => 'Open Performance and Reporting from the Reports menu. The dashboard summarises defect activity for the selected reporting period.',
+                    'screen' => 'report-overview',
+                    'focus' => 'metrics',
+                ],
+                [
+                    'title' => 'Set the reporting period',
+                    'caption' => 'Choose the start and end dates before interpreting the figures. Every metric and contractor result should be read in the context of that selected period.',
+                    'voice' => 'Set the start and end dates first. The dashboard statistics and contractor performance are calculated for the selected reporting period.',
+                    'screen' => 'report-filter',
+                    'focus' => 'dates',
+                ],
+                [
+                    'title' => 'Read the key defect metrics',
+                    'caption' => 'Use Total, Open, Pending, Overdue, Rejected and Closed to understand workload and closeout position at a glance.',
+                    'voice' => 'Read the headline cards together. Open and pending show active workload, overdue highlights items past their due date, while rejected and closed show review and completion outcomes.',
+                    'screen' => 'report-metrics',
+                    'focus' => 'metrics',
+                ],
+                [
+                    'title' => 'Review contractor performance',
+                    'caption' => 'The contractor table brings together defect totals, open and pending work, overdue and rejected items, closed defects, resolution rate and average resolution time.',
+                    'voice' => 'Move down to contractor performance. Compare totals with open, pending, overdue, rejected and closed defects rather than relying on one figure in isolation.',
+                    'screen' => 'report-contractors',
+                    'focus' => 'contractors',
+                ],
+                [
+                    'title' => 'Use trends for context',
+                    'caption' => 'Trend charts help show how defect volume changes through the selected period and which users are reporting activity.',
+                    'voice' => 'Use the trend charts for context. They help show how defect creation changes across the period and provide a broader view than a single headline number.',
+                    'screen' => 'report-trends',
+                    'focus' => 'trends',
+                ],
+                [
+                    'title' => 'Export the filtered report',
+                    'caption' => 'Use Export CSV for spreadsheet analysis or Export PDF for a shareable report. The export should reflect the same reporting period currently selected.',
+                    'voice' => 'When the reporting period is correct, choose CSV for further spreadsheet analysis or PDF for a presentable report. Check the dates before exporting.',
+                    'screen' => 'report-export',
+                    'focus' => 'export',
+                ],
+            ],
+            'tips' => [
+                ['title'=>'Set dates before judging performance','body'=>'A short reporting window and a long reporting window are not directly comparable. Confirm the start and end dates before discussing the numbers.'],
+                ['title'=>'Read metrics together','body'=>'High defect totals do not automatically mean poor performance. Look at open, overdue, rejected, closed and resolution measures together for context.'],
+                ['title'=>'Export only after filtering','body'=>'Apply the required reporting period first, then export. This helps ensure the CSV or PDF matches what was reviewed on screen.'],
+            ],
+            'knowledge' => [
+                ['question'=>'What should you check before interpreting the report figures?', 'options'=>['The selected start and end dates','The browser colour theme','The user password'], 'answer'=>0],
+                ['question'=>'Which export is most suitable for further spreadsheet analysis?', 'options'=>['CSV','PDF only','A screenshot'], 'answer'=>0],
+                ['question'=>'How should contractor performance be assessed from the dashboard?', 'options'=>['Using only total defects','Using several measures such as open, overdue, rejected, closed and resolution data','By contractor name alone'], 'answer'=>1],
+            ],
+        ],
     ];
 
     return $lessons[$slug] ?? [];
