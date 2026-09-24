@@ -262,6 +262,7 @@ final class TrainingRepository
             ['id'=>3,'slug'=>'defect-lifecycle','title'=>'Contractor & Manager Workflow','description'=>'Follow a defect from assignment through evidence, review, rejection, acceptance and closeout.','icon'=>'bx-transfer-alt','accent'=>'violet','sort_order'=>30,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>4,'slug'=>'reports-exports','title'=>'Reports & Exports','description'=>'Filter the reporting dashboard, interpret performance metrics and export the selected view to CSV or PDF.','icon'=>'bx-bar-chart-alt-2','accent'=>'amber','sort_order'=>40,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>5,'slug'=>'projects-setup','title'=>'Projects & Setup','description'=>'Create project records, maintain programme dates and status, and attach clearly labelled floor plans ready for defect use.','icon'=>'bx-buildings','accent'=>'cyan','sort_order'=>50,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
+            ['id'=>6,'slug'=>'mobile-pwa','title'=>'Mobile & PWA','description'=>'Install Defect Tracker on a device, prepare Field Mode and safely capture and sync defects when reception is unreliable.','icon'=>'bx-mobile-alt','accent'=>'blue','sort_order'=>60,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
         ];
     }
 
@@ -337,6 +338,21 @@ final class TrainingRepository
                         ['title'=>'Verify the floor-plan library','body'=>'Check that the drawing is clearly named, linked to the right project and available for defect location.'],
                     ],
                     'try_url'=>'/projects.php'
+                ]
+            ],
+            [
+                'id'=>6,'slug'=>'mobile-pwa','title'=>'Mobile & PWA','description'=>'Learn to install Defect Tracker on a device, prepare offline Field Mode and safely sync saved field reports.','estimated_minutes'=>10,'difficulty'=>'Beginner','role_scope'=>'all','module_title'=>'Mobile & PWA','module_slug'=>'mobile-pwa','module_icon'=>'bx-mobile-alt','module_accent'=>'blue',
+                'content'=>[
+                    'outcomes'=>['Install or add Defect Tracker to a device home screen','Prepare Field Mode while connected','Capture a defect when reception is unavailable','Check saved reports and confirm they sync when connectivity returns'],
+                    'steps'=>[
+                        ['title'=>'Open Defect Tracker online','body'=>'Open the app securely on the phone or tablet while connected and sign in.'],
+                        ['title'=>'Install or add to the home screen','body'=>'Use the browser install option or Add to Home Screen so Defect Tracker can launch like an app.'],
+                        ['title'=>'Prepare Field Mode','body'=>'Open Field Mode online first so project, contractor and floor-plan reference data is available on the device.'],
+                        ['title'=>'Capture an offline field defect','body'=>'Complete the defect details, select the floor plan, place the location pin and attach site photos.'],
+                        ['title'=>'Save to the device outbox','body'=>'Save the report locally when offline and confirm it appears in the pending queue.'],
+                        ['title'=>'Reconnect and sync','body'=>'When reception returns, remain signed in and confirm queued reports upload or retry any report needing attention.'],
+                    ],
+                    'try_url'=>'/offline-field.html'
                 ]
             ],
         ];
