@@ -189,6 +189,64 @@ function trainingEnhancedContent(string $slug): array
                 ['question'=>'Who makes the review decision in this workflow?', 'options'=>['The manager/reviewer','Any anonymous visitor','The database automatically'], 'answer'=>0],
             ],
         ],
+        'projects-setup' => [
+            'intro' => 'Set a project up correctly before defects are raised: create the project record, define programme dates and status, then upload and label the floor plans that will be used for defect location.',
+            'demo' => [
+                [
+                    'title' => 'Open Projects Management',
+                    'caption' => 'Projects Management gives admins and managers a portfolio view of active, pending, completed, on-hold and archived projects, plus upcoming deadlines and overall programme progress.',
+                    'voice' => 'Open Projects Management. This is where admins and managers create and maintain the project records used across Defect Tracker.',
+                    'screen' => 'project-overview',
+                    'focus' => 'portfolio',
+                ],
+                [
+                    'title' => 'Create the project record',
+                    'caption' => 'Choose Create Project and enter a clear project name, description, start date, end date and initial status.',
+                    'voice' => 'Create the project record first. Use a clear project name and description, then enter realistic start and end dates and the correct initial status.',
+                    'screen' => 'project-create',
+                    'focus' => 'form',
+                ],
+                [
+                    'title' => 'Set dates and status carefully',
+                    'caption' => 'Project dates drive programme progress and overdue indicators. Status should reflect the real project state, such as Pending, Active, Completed, On Hold or Archived.',
+                    'voice' => 'Check the programme dates and project status carefully. These values drive progress and deadline information shown on the Projects page.',
+                    'screen' => 'project-dates',
+                    'focus' => 'dates',
+                ],
+                [
+                    'title' => 'Review the project in the portfolio',
+                    'caption' => 'Once saved, confirm the project appears in the portfolio with the expected status, progress and deadline information.',
+                    'voice' => 'After saving, review the project in the portfolio. Confirm the name, status, programme dates and progress information are correct before moving on.',
+                    'screen' => 'project-card',
+                    'focus' => 'card',
+                ],
+                [
+                    'title' => 'Upload the first floor plan',
+                    'caption' => 'Open Floor Plans and upload a drawing against the correct active project. Add a meaningful floor name and level, then select the source file.',
+                    'voice' => 'Next, upload the project floor plan. Select the correct active project, give the drawing a useful floor name and level, and then choose the file.',
+                    'screen' => 'project-plan-upload',
+                    'focus' => 'upload',
+                ],
+                [
+                    'title' => 'Check the floor-plan library',
+                    'caption' => 'Confirm the uploaded plan is listed against the right project and level, has a usable preview, and is clearly named for future defect placement.',
+                    'voice' => 'Finally, check the floor plan library. Make sure the plan is linked to the right project, clearly named and easy to identify when users create defects.',
+                    'screen' => 'project-plan-library',
+                    'focus' => 'library',
+                ],
+            ],
+            'tips' => [
+                ['title'=>'Use consistent project names','body'=>'Use the name the delivery team recognises. Avoid shortened or temporary labels that could make project selection ambiguous later.'],
+                ['title'=>'Programme dates affect dashboard signals','body'=>'Start and end dates are used for progress and deadline indicators, so keep them realistic and update them when the programme changes.'],
+                ['title'=>'Name floor plans for site use','body'=>'Use practical names such as “Level 02 – Apartments” rather than filenames alone. The user placing a defect should be able to choose the correct drawing immediately.'],
+            ],
+            'knowledge' => [
+                ['question'=>'Which users can manage project records from Projects Management?', 'options'=>['Admin and manager users','Any unauthenticated visitor','Contractors only'], 'answer'=>0],
+                ['question'=>'Why are project start and end dates important?', 'options'=>['They only change the page colour','They feed progress and deadline indicators','They create contractor passwords'], 'answer'=>1],
+                ['question'=>'What should you verify after uploading a floor plan?', 'options'=>['That it is linked to the correct project and clearly named','Only that the filename contains PDF','Nothing; the upload is always enough'], 'answer'=>0],
+            ],
+        ],
+
         'reports-exports' => [
             'intro' => 'Use the Reports Dashboard to choose the right reporting period, read the live defect and contractor metrics, then export the same filtered view to CSV or PDF for issue, review or record keeping.',
             'demo' => [
