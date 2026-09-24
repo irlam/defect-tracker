@@ -4,6 +4,7 @@
 -- Existing rows are preserved. Every schema operation is guarded for re-import.
 
 SET NAMES utf8mb4;
+USE `k87747_defecttracker`;
 
 -- ---------------------------------------------------------------------------
 -- Helper: execute a DDL statement only when the supplied information_schema
@@ -198,7 +199,7 @@ FROM information_schema.TABLES
 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'notification_recipients'
 UNION ALL
 SELECT 'projects-setup module', COUNT(*)
-FROM `training_modules` WHERE `slug` = 'projects-setup'
+FROM `k87747_defecttracker`.`training_modules` WHERE `slug` = 'projects-setup'
 UNION ALL
 SELECT 'projects-setup lesson', COUNT(*)
-FROM `training_lessons` WHERE `slug` = 'projects-setup';
+FROM `k87747_defecttracker`.`training_lessons` WHERE `slug` = 'projects-setup';
