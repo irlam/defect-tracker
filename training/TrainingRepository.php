@@ -260,6 +260,7 @@ final class TrainingRepository
             ['id'=>1,'slug'=>'defect-creation','title'=>'Defect Creation','description'=>'Raise clear, complete defects with the right project, contractor, evidence and priority.','icon'=>'bx-error-circle','accent'=>'blue','sort_order'=>10,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>2,'slug'=>'floor-plans','title'=>'Floor Plans','description'=>'Navigate drawings, zoom precisely and place a defect pin at the correct location.','icon'=>'bx-map-alt','accent'=>'cyan','sort_order'=>20,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>3,'slug'=>'defect-lifecycle','title'=>'Contractor & Manager Workflow','description'=>'Follow a defect from assignment through evidence, review, rejection, acceptance and closeout.','icon'=>'bx-transfer-alt','accent'=>'violet','sort_order'=>30,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
+            ['id'=>4,'slug'=>'reports-exports','title'=>'Reports & Exports','description'=>'Filter the reporting dashboard, interpret performance metrics and export the selected view to CSV or PDF.','icon'=>'bx-bar-chart-alt-2','accent'=>'amber','sort_order'=>40,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
         ];
     }
 
@@ -305,6 +306,21 @@ final class TrainingRepository
                         ['title'=>'Close or reopen','body'=>'Accepted defects can be closed, while defects requiring additional action can be reopened.'],
                     ],
                     'try_url'=>'/defects.php'
+                ]
+            ],
+            [
+                'id'=>4,'slug'=>'reports-exports','title'=>'Reports & Exports','description'=>'Learn to filter the Reports Dashboard, interpret key metrics and export the selected reporting view.','estimated_minutes'=>8,'difficulty'=>'Beginner','role_scope'=>'admin,manager','module_title'=>'Reports & Exports','module_slug'=>'reports-exports','module_icon'=>'bx-bar-chart-alt-2','module_accent'=>'amber',
+                'content'=>[
+                    'outcomes'=>['Set the reporting date range','Interpret defect and contractor metrics','Use trend charts for context','Export the filtered report to CSV or PDF'],
+                    'steps'=>[
+                        ['title'=>'Open Reports Hub','body'=>'Open Performance & Reporting from the Reports menu.'],
+                        ['title'=>'Set the reporting period','body'=>'Choose start and end dates before interpreting dashboard figures.'],
+                        ['title'=>'Read headline metrics','body'=>'Review total, open, pending, overdue, rejected and closed defects together.'],
+                        ['title'=>'Review contractor performance','body'=>'Compare defect workload, overdue items, rejected work, closed work and resolution measures.'],
+                        ['title'=>'Use trends for context','body'=>'Use charts to understand changes across the selected reporting period.'],
+                        ['title'=>'Export the filtered view','body'=>'Export CSV for further analysis or PDF for a shareable report after confirming the reporting period.'],
+                    ],
+                    'try_url'=>'/reports.php'
                 ]
             ],
         ];
