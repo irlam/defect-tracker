@@ -189,6 +189,71 @@ function trainingEnhancedContent(string $slug): array
                 ['question'=>'Who makes the review decision in this workflow?', 'options'=>['The manager/reviewer','Any anonymous visitor','The database automatically'], 'answer'=>0],
             ],
         ],
+        'mobile-pwa' => [
+            'intro' => 'Use Defect Tracker like an installed app on site, prepare the device while online, then capture field defects safely when reception drops and allow the saved reports to sync when connectivity returns.',
+            'demo' => [
+                [
+                    'title' => 'Open Defect Tracker on the device',
+                    'caption' => 'Use the browser on the phone or tablet to open Defect Tracker over HTTPS. The PWA manifest and service worker provide the installed-app and offline features.',
+                    'voice' => 'Start by opening Defect Tracker on the device while you have a reliable connection. The app uses its web app manifest and service worker to support installed and offline use.',
+                    'screen' => 'pwa-open',
+                    'focus' => 'browser',
+                ],
+                [
+                    'title' => 'Install or add it to the home screen',
+                    'caption' => 'Use the browser installation option when offered. On devices that use Add to Home Screen, add Defect Tracker from the browser menu so it can open in a standalone app-style window.',
+                    'voice' => 'Install Defect Tracker from the browser when the install option is available. On devices that use Add to Home Screen, add it from the browser menu.',
+                    'screen' => 'pwa-install',
+                    'focus' => 'install',
+                ],
+                [
+                    'title' => 'Prepare Field Mode while online',
+                    'caption' => 'Sign in online before relying on offline use. Field Mode refreshes project, contractor and floor-plan reference data and can cache floor-plan previews for the device.',
+                    'voice' => 'Before going into a poor signal area, sign in while online and prepare Field Mode. This stores the reference data the device needs for offline defect capture.',
+                    'screen' => 'pwa-prepare',
+                    'focus' => 'prepare',
+                ],
+                [
+                    'title' => 'Capture a defect with no reception',
+                    'caption' => 'In Field Mode, complete the title, project, contractor, priority, description, floor plan and photos. The connection indicator shows when the device is offline.',
+                    'voice' => 'When reception drops, use Field Mode to complete the defect details, choose the floor plan, place the location pin and attach site photos.',
+                    'screen' => 'pwa-offline',
+                    'focus' => 'offline',
+                ],
+                [
+                    'title' => 'Save the report safely on the device',
+                    'caption' => 'The report, including photos and pin coordinates, is stored in the device outbox. Pending reports remain visible until they upload successfully or need attention.',
+                    'voice' => 'Save the field report. Defect Tracker stores it safely on the device and shows it in the local queue while it is waiting to upload.',
+                    'screen' => 'pwa-queue',
+                    'focus' => 'queue',
+                ],
+                [
+                    'title' => 'Reconnect and sync',
+                    'caption' => 'When the device is online again and the correct user is signed in, queued reports can upload automatically. Failed reports remain visible so they can be retried or removed deliberately.',
+                    'voice' => 'When reception returns, keep the correct user signed in. Queued reports will sync, while any report that needs attention stays visible for retry.',
+                    'screen' => 'pwa-sync',
+                    'focus' => 'sync',
+                ],
+                [
+                    'title' => 'Use notifications to return to work',
+                    'caption' => 'Where browser notification permission is enabled, Defect Tracker can show push notifications and open the relevant defect when the notification is selected.',
+                    'voice' => 'If notifications are enabled for the app, Defect Tracker can alert you to updates and take you back to the relevant defect from the notification.',
+                    'screen' => 'pwa-notify',
+                    'focus' => 'notification',
+                ],
+            ],
+            'tips' => [
+                ['title'=>'Prepare before entering poor signal areas','body'=>'Sign in and open Field Mode while online first. Offline capture depends on reference data already being stored on that device.'],
+                ['title'=>'Do not clear site data with reports waiting','body'=>'Pending field reports are stored locally on the device. Clearing browser/app storage before they sync can remove that local copy.'],
+                ['title'=>'Check the queue after reconnecting','body'=>'Wait for pending reports to disappear or show as synced. If a report needs attention, retry it from Field Mode rather than assuming it reached the server.'],
+            ],
+            'knowledge' => [
+                ['question'=>'What should you do before relying on Field Mode offline?', 'options'=>['Sign in online and prepare the device first','Turn the phone off immediately','Clear all browser storage'], 'answer'=>0],
+                ['question'=>'Where is an offline field report kept before it reaches the server?', 'options'=>['Only in an email draft','In the device local outbox until it syncs','Nowhere; it is discarded'], 'answer'=>1],
+                ['question'=>'What should you do after reception returns?', 'options'=>['Check that queued reports sync and retry any that need attention','Delete the app immediately','Create the same defect repeatedly'], 'answer'=>0],
+            ],
+        ],
+
         'projects-setup' => [
             'intro' => 'Set a project up correctly before defects are raised: create the project record, define programme dates and status, then upload and label the floor plans that will be used for defect location.',
             'demo' => [
