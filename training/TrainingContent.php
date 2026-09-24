@@ -320,6 +320,66 @@ function trainingRenderDemoScreen(string $screen, string $focus = ''): void
         return;
     }
 
+    if (str_starts_with($screen, 'report-')) {
+        echo '<div class="demo-app-window">';
+        echo '<div class="demo-app-toolbar"><strong>Performance &amp; Reporting</strong><span class="demo-status-pill">Reports Hub</span></div>';
+
+        if ($screen === 'report-filter') {
+            echo '<div class="demo-report-toolbar' . $is('dates') . '">';
+            echo '<div><span class="demo-label">Start</span><div class="demo-input">01/09/2026</div></div>';
+            echo '<div><span class="demo-label">End</span><div class="demo-input">24/09/2026</div></div>';
+            echo '<button type="button" class="demo-button demo-button-primary"><i class="bx bx-filter-alt"></i> Apply</button>';
+            echo '</div>';
+        }
+
+        if (in_array($screen, ['report-overview','report-filter','report-metrics'], true)) {
+            echo '<div class="demo-report-metrics' . $is('metrics') . '">';
+            $cards = [
+                ['Total Defects','84','bx-list-check'],
+                ['Open','21','bx-error-circle'],
+                ['Pending','11','bx-time-five'],
+                ['Overdue','7','bx-alarm-exclamation'],
+                ['Rejected','4','bx-x-circle'],
+                ['Closed','41','bx-check-double'],
+            ];
+            foreach ($cards as $card) {
+                echo '<div class="demo-report-card"><i class="bx ' . htmlspecialchars($card[2]) . '"></i><span>' . htmlspecialchars($card[0]) . '</span><strong>' . htmlspecialchars($card[1]) . '</strong></div>';
+            }
+            echo '</div>';
+        } elseif ($screen === 'report-contractors') {
+            echo '<div class="demo-report-table-wrap' . $is('contractors') . '"><table class="demo-report-table"><thead><tr><th>Contractor</th><th>Total</th><th>Open</th><th>Overdue</th><th>Rejected</th><th>Closed</th><th>Resolution</th></tr></thead><tbody>';
+            foreach ([
+                ['Example Joinery Ltd','26','4','1','1','20','76.9%'],
+                ['Northern MEP Services','21','7','3','1','10','47.6%'],
+                ['Premier Finishes','18','3','1','0','14','77.8%'],
+            ] as $row) {
+                echo '<tr>';
+                foreach ($row as $cell) echo '<td>' . htmlspecialchars($cell) . '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table></div>';
+        } elseif ($screen === 'report-trends') {
+            echo '<div class="demo-report-charts' . $is('trends') . '">';
+            echo '<div class="demo-chart-card"><span class="demo-label">Defect trend</span><div class="demo-bars">';
+            foreach ([35,52,44,68,58,76,61,84,70,91] as $h) echo '<span style="height:' . $h . '%"></span>';
+            echo '</div><div class="demo-chart-axis"><span>01 Sep</span><span>24 Sep</span></div></div>';
+            echo '<div class="demo-chart-card"><span class="demo-label">Reported defects by user</span><div class="demo-user-bars"><div><span>Manager A</span><b style="width:82%"></b></div><div><span>Inspector B</span><b style="width:64%"></b></div><div><span>Manager C</span><b style="width:49%"></b></div></div></div>';
+            echo '</div>';
+        } elseif ($screen === 'report-export') {
+            echo '<div class="demo-export-panel' . $is('export') . '">';
+            echo '<div><span class="demo-label">Current reporting period</span><h4>01/09/2026 – 24/09/2026</h4><p>Export the same filtered reporting view currently shown on screen.</p></div>';
+            echo '<div class="demo-export-actions"><button type="button" class="demo-button"><i class="bx bx-download"></i> Export CSV</button><button type="button" class="demo-button demo-button-primary"><i class="bx bx-export"></i> Export PDF</button></div>';
+            echo '</div>';
+        }
+
+        if ($screen === 'report-overview') {
+            echo '<div class="demo-report-summary"><span><i class="bx bx-buildings"></i> 9 active contractors</span><span><i class="bx bx-calendar"></i> Selected period: 30 days</span></div>';
+        }
+
+        echo '</div>';
+        return;
+    }
+
     if (str_starts_with($screen, 'life-')) {
         $states = [
             'life-created' => ['Created','Assigned'],
