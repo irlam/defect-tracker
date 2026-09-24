@@ -54,4 +54,17 @@ check(str_contains($visualizer, 'name="floor_plan_id"'), 'Visualizer floor-plan 
 check(!str_contains($visualizer, 'floorplan_selector.php'), 'Visualizer still links to the broken selector route.');
 check(str_contains($visualizer, "NULLIF(f.image_path, '')"), 'Visualizer does not prefer the preview image.');
 
-echo "PASS: functional regressions 1-5 are covered.\n";
+$legacyDelete = source('api/delete_defect.php');
+check(str_contains($legacyDelete, "LOWER(r.name) = 'admin'"), 'Legacy defect deletion does not enforce the admin role.');
+check(!str_contains($legacyDelete, '"Error: " . $e->getMessage()'), 'Legacy defect deletion exposes database errors.');
+
+$secureDelete = source('api/delete-defect.php');
+check(str_contains($secureDelete, "http_response_code(403)"), 'Defect deletion has no forbidden response.');
+check(str_contains($secureDelete, "hash_equals"), 'Defect deletion has no CSRF enforcement.');
+
+$viewDefect = source('view_defect.php');
+check(str_contains($viewDefect, "fetch('/api/delete-defect.php'"), 'Defect detail deletion targets the wrong route.');
+check(str_contains($viewDefect, "formData.append('csrf_token', CSRF_TOKEN)"), 'Defect detail deletion omits its CSRF token.');
+check(!str_contains($viewDefect, 'function handleFormSubmit'), 'Defect status form is still wired to delete the defect.');
+
+echo "PASS: functional and defect deletion regressions are covered.\n";

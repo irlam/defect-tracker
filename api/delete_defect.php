@@ -2,7 +2,7 @@
 // api/delete_defect.php
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/../logs/error.log');
 
@@ -18,6 +18,36 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
 
 require_once '../config/database.php';
 require_once '../includes/functions.php';
+
+// Defect deletion is an administrative operation. Do not rely on whether the
+// UI happened to render a delete button: enforce the permission here.
+$isAdmin = strtolower((string)($_SESSION['user_type'] ?? '')) === 'admin';
+if (!$isAdmin) {
+    try {
+        $authorizationDb = (new Database())->getConnection();
+        $roleStatement = $authorizationDb->prepare(
+            "SELECT 1
+             FROM user_roles ur
+             JOIN roles r ON r.id = ur.role_id
+             WHERE ur.user_id = :user_id
+               AND LOWER(r.name) = 'admin'
+               AND ur.deleted_at IS NULL
+             LIMIT 1"
+        );
+        $roleStatement->execute([':user_id' => (int)$_SESSION['user_id']]);
+        $isAdmin = (bool)$roleStatement->fetchColumn();
+    } catch (Throwable $authorizationError) {
+        error_log('Delete defect authorization failed: ' . $authorizationError->getMessage());
+        $isAdmin = false;
+    }
+}
+
+if (!$isAdmin) {
+    http_response_code(403);
+    $_SESSION['error_message'] = 'You do not have permission to delete defects.';
+    header('Location: ../defects.php');
+    exit();
+}
 
 // Check CSRF token
 if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -52,7 +82,7 @@ try {
 
 } catch (Exception $e) {
     error_log("Delete Defect Error: " . $e->getMessage());
-    $_SESSION['error_message'] = "Error: " . $e->getMessage();
+    $_SESSION['error_message'] = 'Unable to delete the defect.';
 }
 
 header("Location: ../defects.php");

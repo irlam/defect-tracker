@@ -4,7 +4,7 @@
 // Current User's Login: irlam
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/error.log');
 
@@ -630,77 +630,7 @@ $quickLinks = [
 		}
 
 		.user-help-list li {
-			display: flex;
-			align-items: flex-start;
-			gap: 0.6rem;
-			margin-bottom: 0.75rem;
-			color: rgba(203, 213, 225, 0.85);
-		}
-
-		.user-help-list i {
-			color: rgba(96, 165, 250, 0.9);
-			font-size: 1.25rem;
-			margin-top: 0.1rem;
-		}
-
-		.user-help-links {
-			display: grid;
-			gap: 0.6rem;
-		}
-
-		.user-help-link {
-			display: inline-flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 0.75rem 1rem;
-			border-radius: var(--bs-border-radius-lg);
-			border: 1px solid rgba(148, 163, 184, 0.2);
-			color: rgba(226, 232, 240, 0.9);
-			text-decoration: none;
-			transition: transform 0.2s ease, border-color 0.2s ease;
-			background: rgba(15, 23, 42, 0.85);
-		}
-
-		.user-help-link:hover {
-			transform: translateY(-2px);
-			border-color: rgba(59, 130, 246, 0.6);
-			color: rgba(226, 232, 240, 1);
-		}
-
-		.btn {
-			border-radius: 0.65rem;
-			font-weight: 500;
-			padding: 0.65rem 1.4rem;
-		}
-
-		.btn-primary {
-			background: linear-gradient(135deg, #2563eb, #4f46e5);
-			border: none;
-		}
-
-		.btn-primary:hover {
-			background: linear-gradient(135deg, #1d4ed8, #4338ca);
-		}
-
-		.btn-outline-light {
-			border-color: rgba(148, 163, 184, 0.45);
-			color: rgba(226, 232, 240, 0.9);
-		}
-
-		.btn-outline-light:hover {
-			background: rgba(148, 163, 184, 0.15);
-			color: rgba(226, 232, 240, 1);
-		}
-
-		.user-admin-alert {
-			border: 1px solid rgba(34, 197, 94, 0.35);
-			background: rgba(16, 185, 129, 0.12);
-			color: rgba(190, 242, 100, 0.95);
-		}
-
-		.user-admin-alert.alert-danger {
-			border-color: rgba(248, 113, 113, 0.4);
-			background: rgba(248, 113, 113, 0.12);
+			disÁ_m¢Gß≤⁄Óù∆≠y–rgba(248, 113, 113, 0.12);
 			color: rgba(254, 202, 202, 0.95);
 		}
 
