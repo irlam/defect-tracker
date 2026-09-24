@@ -378,6 +378,53 @@ function trainingRenderDemoScreen(string $screen, string $focus = ''): void
         return;
     }
 
+    if (str_starts_with($screen, 'project-')) {
+        echo '<div class="demo-app-window">';
+        echo '<div class="demo-app-toolbar"><strong>Projects &amp; Setup</strong><span class="demo-status-pill">Project Admin</span></div>';
+
+        if ($screen === 'project-overview') {
+            echo '<div class="demo-project-metrics' . $is('portfolio') . '">';
+            foreach ([['Active Projects','6','bx-rocket'],['Due Within 14 Days','2','bx-calendar-event'],['Average Progress','63%','bx-line-chart'],['Overdue Projects','1','bx-error-circle']] as $m) {
+                echo '<div class="demo-project-metric"><i class="bx ' . htmlspecialchars($m[2]) . '"></i><span>' . htmlspecialchars($m[0]) . '</span><strong>' . htmlspecialchars($m[1]) . '</strong></div>';
+            }
+            echo '</div>';
+            echo '<div class="demo-project-list"><div><strong>Downtown Victoria North</strong><span>Active · 78% complete</span></div><div><strong>Etihad North Stand</strong><span>Active · 61% complete</span></div><div><strong>Apartment Fit-Out Phase 2</strong><span>Pending · 0% complete</span></div></div>';
+        } elseif ($screen === 'project-create' || $screen === 'project-dates') {
+            echo '<div class="demo-project-form' . $is('form') . '">';
+            echo '<div class="demo-field"><span class="demo-label">Project Name</span><div class="demo-input">Downtown Victoria North</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Status</span><div class="demo-select">Active <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field demo-field-wide"><span class="demo-label">Description</span><div class="demo-textarea">Residential development defect management and closeout.</div></div>';
+            echo '<div class="demo-field' . $is('dates') . '"><span class="demo-label">Start Date</span><div class="demo-input">01/09/2026</div></div>';
+            echo '<div class="demo-field' . $is('dates') . '"><span class="demo-label">End Date</span><div class="demo-input">30/06/2027</div></div>';
+            echo '<div class="demo-actions demo-field-wide"><button type="button" class="demo-button">Cancel</button><button type="button" class="demo-button demo-button-primary">Create Project</button></div>';
+            echo '</div>';
+        } elseif ($screen === 'project-card') {
+            echo '<div class="demo-project-card' . $is('card') . '">';
+            echo '<div class="demo-project-card__head"><div><span class="demo-label">Project</span><h4>Downtown Victoria North</h4></div><span class="demo-status-pill">Active</span></div>';
+            echo '<div class="demo-project-progress"><div><span>Programme progress</span><strong>63%</strong></div><div class="demo-progress-track"><span style="width:63%"></span></div></div>';
+            echo '<div class="demo-project-details"><span><i class="bx bx-calendar"></i> 01 Sep 2026</span><span><i class="bx bx-flag"></i> 30 Jun 2027</span><span><i class="bx bx-time-five"></i> 279 days remaining</span></div>';
+            echo '</div>';
+        } elseif ($screen === 'project-plan-upload') {
+            echo '<div class="demo-plan-upload' . $is('upload') . '">';
+            echo '<div class="demo-form-grid">';
+            echo '<div class="demo-field"><span class="demo-label">Project</span><div class="demo-select">Downtown Victoria North <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Floor Name</span><div class="demo-input">Level 02 – Apartments</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Level</span><div class="demo-input">L02</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Description</span><div class="demo-input">Apartment floor plan</div></div>';
+            echo '</div>';
+            echo '<div class="demo-upload-card"><i class="bx bx-cloud-upload"></i><strong>Floor Plan File</strong><span>level-02-apartments.pdf</span><small>JPG, PNG, GIF or PDF · max 10MB</small><span class="demo-success"><i class="bx bx-check"></i> Ready to upload</span></div>';
+            echo '</div>';
+        } elseif ($screen === 'project-plan-library') {
+            echo '<div class="demo-plan-library' . $is('library') . '">';
+            echo '<div class="demo-plan-library__preview"><div class="demo-plan-sheet"><div class="demo-plan-room">Apartment 201</div><div class="demo-plan-room">Apartment 202</div><div class="demo-plan-room">Corridor</div></div></div>';
+            echo '<div class="demo-plan-library__details"><span class="demo-label">Floor Plan</span><h4>Level 02 – Apartments</h4><p>Downtown Victoria North · L02</p><div class="demo-success"><i class="bx bx-check-circle"></i> Preview available and linked to project</div></div>';
+            echo '</div>';
+        }
+
+        echo '</div>';
+        return;
+    }
+
     if (str_starts_with($screen, 'report-')) {
         echo '<div class="demo-app-window">';
         echo '<div class="demo-app-toolbar"><strong>Performance &amp; Reporting</strong><span class="demo-status-pill">Reports Hub</span></div>';
