@@ -261,6 +261,7 @@ final class TrainingRepository
             ['id'=>2,'slug'=>'floor-plans','title'=>'Floor Plans','description'=>'Navigate drawings, zoom precisely and place a defect pin at the correct location.','icon'=>'bx-map-alt','accent'=>'cyan','sort_order'=>20,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>3,'slug'=>'defect-lifecycle','title'=>'Contractor & Manager Workflow','description'=>'Follow a defect from assignment through evidence, review, rejection, acceptance and closeout.','icon'=>'bx-transfer-alt','accent'=>'violet','sort_order'=>30,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>4,'slug'=>'reports-exports','title'=>'Reports & Exports','description'=>'Filter the reporting dashboard, interpret performance metrics and export the selected view to CSV or PDF.','icon'=>'bx-bar-chart-alt-2','accent'=>'amber','sort_order'=>40,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
+            ['id'=>5,'slug'=>'projects-setup','title'=>'Projects & Setup','description'=>'Create project records, maintain programme dates and status, and attach clearly labelled floor plans ready for defect use.','icon'=>'bx-buildings','accent'=>'cyan','sort_order'=>50,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
         ];
     }
 
@@ -321,6 +322,21 @@ final class TrainingRepository
                         ['title'=>'Export the filtered view','body'=>'Export CSV for further analysis or PDF for a shareable report after confirming the reporting period.'],
                     ],
                     'try_url'=>'/reports.php'
+                ]
+            ],
+            [
+                'id'=>5,'slug'=>'projects-setup','title'=>'Projects & Setup','description'=>'Learn to create a project, maintain programme information and prepare floor plans for defect use.','estimated_minutes'=>9,'difficulty'=>'Beginner','role_scope'=>'admin,manager','module_title'=>'Projects & Setup','module_slug'=>'projects-setup','module_icon'=>'bx-buildings','module_accent'=>'cyan',
+                'content'=>[
+                    'outcomes'=>['Create a project with clear programme information','Set project dates and status correctly','Review the project portfolio after setup','Upload and verify a floor plan against the correct project'],
+                    'steps'=>[
+                        ['title'=>'Open Projects Management','body'=>'Open the Projects directory and review the portfolio dashboard.'],
+                        ['title'=>'Create the project','body'=>'Enter the project name, description, start date, end date and status.'],
+                        ['title'=>'Check programme information','body'=>'Confirm dates and status reflect the real project programme because they drive progress and deadline indicators.'],
+                        ['title'=>'Review the saved project','body'=>'Confirm the project appears in the portfolio with the expected status and programme information.'],
+                        ['title'=>'Upload a floor plan','body'=>'Select the project, enter a meaningful floor name and level, then upload a supported drawing file.'],
+                        ['title'=>'Verify the floor-plan library','body'=>'Check that the drawing is clearly named, linked to the right project and available for defect location.'],
+                    ],
+                    'try_url'=>'/projects.php'
                 ]
             ],
         ];
