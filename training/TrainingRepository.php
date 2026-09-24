@@ -263,6 +263,7 @@ final class TrainingRepository
             ['id'=>4,'slug'=>'reports-exports','title'=>'Reports & Exports','description'=>'Filter the reporting dashboard, interpret performance metrics and export the selected view to CSV or PDF.','icon'=>'bx-bar-chart-alt-2','accent'=>'amber','sort_order'=>40,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>5,'slug'=>'projects-setup','title'=>'Projects & Setup','description'=>'Create project records, maintain programme dates and status, and attach clearly labelled floor plans ready for defect use.','icon'=>'bx-buildings','accent'=>'cyan','sort_order'=>50,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>6,'slug'=>'mobile-pwa','title'=>'Mobile & PWA','description'=>'Install Defect Tracker on a device, prepare Field Mode and safely capture and sync defects when reception is unreliable.','icon'=>'bx-mobile-alt','accent'=>'blue','sort_order'=>60,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
+            ['id'=>7,'slug'=>'admin-users','title'=>'Admin & Users','description'=>'Create and maintain user accounts, choose appropriate access levels, manage contractor links and preserve an auditable access history.','icon'=>'bx-user-check','accent'=>'violet','sort_order'=>70,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
         ];
     }
 
@@ -353,6 +354,21 @@ final class TrainingRepository
                         ['title'=>'Reconnect and sync','body'=>'When reception returns, remain signed in and confirm queued reports upload or retry any report needing attention.'],
                     ],
                     'try_url'=>'/offline-field.html'
+                ]
+            ],
+            [
+                'id'=>7,'slug'=>'admin-users','title'=>'Admin & Users','description'=>'Learn to create and maintain user accounts, assign appropriate access and manage contractor associations safely.','estimated_minutes'=>10,'difficulty'=>'Intermediate','role_scope'=>'admin,manager','module_title'=>'Admin & Users','module_slug'=>'admin-users','module_icon'=>'bx-user-check','module_accent'=>'violet',
+                'content'=>[
+                    'outcomes'=>['Review existing users and account status','Create a new user with valid identity information','Choose an appropriate user type and contractor association','Edit or deactivate existing accounts while preserving audit history'],
+                    'steps'=>[
+                        ['title'=>'Open User Management','body'=>'Review registered users, their type, status, contractor association and recent login information.'],
+                        ['title'=>'Create a new user','body'=>'Enter the person’s name, username, email, password and required user type.'],
+                        ['title'=>'Choose access carefully','body'=>'Use the least privileged user type that supports the person’s real responsibilities.'],
+                        ['title'=>'Link contractor users','body'=>'Contractor users must be associated with the correct active contractor.'],
+                        ['title'=>'Review and save','body'=>'Check identity, access level and contractor association before creating the account.'],
+                        ['title'=>'Maintain existing users','body'=>'Edit the existing account, change its type or deactivate it rather than creating duplicate or shared accounts.'],
+                    ],
+                    'try_url'=>'/user_management.php'
                 ]
             ],
         ];
