@@ -443,6 +443,30 @@ function trainingRenderDemoScreen(string $screen, string $focus = ''): void
         return;
     }
 
+    if (str_starts_with($screen, 'pwa-')) {
+        echo '<div class="demo-app-window demo-phone-window">';
+        echo '<div class="demo-app-toolbar"><strong>Defect Tracker · Mobile / PWA</strong><span class="demo-status-pill">Field Ready</span></div>';
+
+        if ($screen === 'pwa-open') {
+            echo '<div class="demo-pwa-browser' . $is('browser') . '"><div class="demo-pwa-address"><i class="bx bx-lock-alt"></i><span>mcgoff.defecttracker.uk</span><i class="bx bx-dots-vertical-rounded"></i></div><div class="demo-pwa-screen"><i class="bx bx-layer"></i><h4>Defect Tracker</h4><p>Open securely in the browser while online.</p></div></div>';
+        } elseif ($screen === 'pwa-install') {
+            echo '<div class="demo-pwa-install' . $is('install') . '"><div class="demo-pwa-appicon"><i class="bx bx-layer"></i></div><div><span class="demo-label">Browser app menu</span><h4>Install Defect Tracker</h4><p>Add the app to the home screen or install it when the browser offers the option.</p></div><button type="button" class="demo-button demo-button-primary"><i class="bx bx-download"></i> Install / Add</button></div>';
+        } elseif ($screen === 'pwa-prepare') {
+            echo '<div class="demo-pwa-field-card' . $is('prepare') . '"><div class="demo-pwa-connection is-online"><span></span>Online</div><h4>Prepare Field Mode</h4><p>Signed in as Site Manager</p><div class="demo-pwa-checks"><span><i class="bx bx-check-circle"></i> Projects refreshed</span><span><i class="bx bx-check-circle"></i> Contractors refreshed</span><span><i class="bx bx-check-circle"></i> Floor plans available</span><span><i class="bx bx-check-circle"></i> Device storage ready</span></div><button type="button" class="demo-button demo-button-primary">Open Field Mode</button></div>';
+        } elseif ($screen === 'pwa-offline') {
+            echo '<div class="demo-pwa-field-card' . $is('offline') . '"><div class="demo-pwa-connection is-offline"><span></span>Offline</div><div class="demo-pwa-mini-form"><div><span>Title</span><strong>Damaged door frame</strong></div><div><span>Project</span><strong>Downtown Victoria North</strong></div><div><span>Priority</span><strong>High</strong></div><div><span>Floor plan</span><strong>Level 02 – Apartments</strong></div></div><div class="demo-pwa-photo"><i class="bx bx-camera"></i><span>2 site photos attached</span></div><button type="button" class="demo-button demo-button-primary">Save field report</button></div>';
+        } elseif ($screen === 'pwa-queue') {
+            echo '<div class="demo-pwa-queue' . $is('queue') . '"><h4>Reports stored on this device</h4><div class="demo-pwa-queue-item"><div><strong>Damaged door frame</strong><span>Waiting to upload · saved 07:41</span></div><span class="demo-status-pill">Pending</span></div><div class="demo-pwa-queue-item"><div><strong>Kitchen sealant incomplete</strong><span>Waiting to upload · saved 07:43</span></div><span class="demo-status-pill">Pending</span></div><p><i class="bx bx-shield-quarter"></i> Reports remain on this device until successfully uploaded.</p></div>';
+        } elseif ($screen === 'pwa-sync') {
+            echo '<div class="demo-pwa-sync' . $is('sync') . '"><div class="demo-pwa-connection is-online"><span></span>Back online</div><div class="demo-pwa-sync-item"><i class="bx bx-loader-alt bx-spin"></i><div><strong>Uploading saved reports</strong><span>1 of 2 complete</span></div></div><div class="demo-pwa-sync-item is-done"><i class="bx bx-check-circle"></i><div><strong>Damaged door frame</strong><span>Uploaded successfully</span></div></div><div class="demo-pwa-sync-item is-attention"><i class="bx bx-error-circle"></i><div><strong>Kitchen sealant incomplete</strong><span>Needs attention · Retry available</span></div></div></div>';
+        } elseif ($screen === 'pwa-notify') {
+            echo '<div class="demo-pwa-notification' . $is('notification') . '"><div class="demo-pwa-appicon"><i class="bx bx-layer"></i></div><div><span class="demo-label">Defect Tracker</span><h4>Defect #1042 updated</h4><p>Completion evidence has been submitted for review.</p></div><button type="button" class="demo-button">View Defect</button></div>';
+        }
+
+        echo '</div>';
+        return;
+    }
+
     if (str_starts_with($screen, 'project-')) {
         echo '<div class="demo-app-window">';
         echo '<div class="demo-app-toolbar"><strong>Projects &amp; Setup</strong><span class="demo-status-pill">Project Admin</span></div>';
