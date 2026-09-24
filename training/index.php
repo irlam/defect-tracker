@@ -137,6 +137,7 @@ trainingRenderHeader(
                         'floor-plans' => 'floor-plan-location',
                         'defect-lifecycle' => 'contractor-manager-lifecycle',
                         'reports-exports' => 'reports-exports',
+                        'projects-setup' => 'projects-setup',
                         default => null,
                     };
                     ?>
