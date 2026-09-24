@@ -104,7 +104,7 @@ trainingRenderHeader(
         <div>
             <span class="training-eyebrow"><i class="bx bx-grid-alt"></i> Learning modules</span>
             <h2 id="modules-heading" class="h3 mt-2 mb-1">Start with the core workflow</h2>
-            <p class="text-muted mb-0">Phase 1 launches the first three flagship modules and the reusable lesson engine.</p>
+            <p class="text-muted mb-0">Core operational training plus reporting and export guidance, all using the reusable interactive lesson engine.</p>
         </div>
     </div>
 
@@ -136,6 +136,7 @@ trainingRenderHeader(
                         'defect-creation' => 'create-a-defect',
                         'floor-plans' => 'floor-plan-location',
                         'defect-lifecycle' => 'contractor-manager-lifecycle',
+                        'reports-exports' => 'reports-exports',
                         default => null,
                     };
                     ?>
