@@ -508,6 +508,63 @@ function trainingRenderDemoScreen(string $screen, string $focus = ''): void
         return;
     }
 
+    if (str_starts_with($screen, 'admin-')) {
+        echo '<div class="demo-app-window">';
+        echo '<div class="demo-app-toolbar"><strong>Administration · Users</strong><span class="demo-status-pill">Access Control</span></div>';
+
+        if ($screen === 'admin-users-overview') {
+            echo '<div class="demo-admin-toolbar"><div class="demo-input"><i class="bx bx-search"></i> Search users</div><button type="button" class="demo-button demo-button-primary"><i class="bx bx-user-plus"></i> Add New User</button></div>';
+            echo '<div class="demo-admin-table-wrap' . $is('users') . '"><table class="demo-admin-table"><thead><tr><th>User</th><th>Email</th><th>Type</th><th>Status</th><th>Contractor</th><th>Last Login</th></tr></thead><tbody>';
+            foreach ([
+                ['A. Manager','a.manager@example.com','Manager','Active','—','Today 07:32'],
+                ['J. Smith','j.smith@example.com','Contractor','Active','Example Joinery Ltd','Yesterday 16:18'],
+                ['Site Viewer','viewer@example.com','Viewer','Inactive','—','18/09/2026'],
+            ] as $row) {
+                echo '<tr>';
+                foreach ($row as $i => $cell) {
+                    $class = ($i === 3 && $cell === 'Active') ? ' class="demo-admin-status-active"' : (($i === 3 && $cell === 'Inactive') ? ' class="demo-admin-status-inactive"' : '');
+                    echo '<td' . $class . '>' . htmlspecialchars($cell) . '</td>';
+                }
+                echo '</tr>';
+            }
+            echo '</tbody></table></div>';
+        } elseif ($screen === 'admin-user-create' || $screen === 'admin-role' || $screen === 'admin-contractor') {
+            echo '<div class="demo-admin-form' . $is('form') . '">';
+            echo '<div class="demo-field"><span class="demo-label">First Name</span><div class="demo-input">Jordan</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Last Name</span><div class="demo-input">Smith</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Username</span><div class="demo-input">jsmith</div></div>';
+            echo '<div class="demo-field"><span class="demo-label">Email</span><div class="demo-input">j.smith@example.com</div></div>';
+            echo '<div class="demo-field' . $is('role') . '"><span class="demo-label">User Type</span><div class="demo-select">Contractor <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field' . $is('contractor') . '"><span class="demo-label">Contractor</span><div class="demo-select">Example Joinery Ltd <i class="bx bx-chevron-down"></i></div></div>';
+            echo '<div class="demo-field demo-field-wide"><span class="demo-label">Password</span><div class="demo-input">••••••••••••</div></div>';
+            echo '</div>';
+            if ($screen === 'admin-role') {
+                echo '<div class="demo-admin-role-grid">';
+                foreach ([['Admin','Full system administration'],['Manager','Manage projects, users and workflows'],['Contractor','Work assigned contractor defects'],['Viewer','Read-only / limited access']] as $r) {
+                    echo '<div' . ($r[0] === 'Contractor' ? ' class="is-selected"' : '') . '><strong>' . htmlspecialchars($r[0]) . '</strong><span>' . htmlspecialchars($r[1]) . '</span></div>';
+                }
+                echo '</div>';
+            }
+            if ($screen === 'admin-contractor') {
+                echo '<div class="demo-admin-note"><i class="bx bx-buildings"></i><div><strong>Contractor association required</strong><span>Contractor users must be linked to an active contractor record.</span></div></div>';
+            }
+        } elseif ($screen === 'admin-review') {
+            echo '<div class="demo-admin-review">';
+            foreach ([['Name','Jordan Smith'],['Username','jsmith'],['Email','j.smith@example.com'],['User Type','Contractor'],['Contractor','Example Joinery Ltd']] as $row) {
+                echo '<div><span>' . htmlspecialchars($row[0]) . '</span><strong>' . htmlspecialchars($row[1]) . '</strong><i class="bx bx-check-circle"></i></div>';
+            }
+            echo '</div><div class="demo-actions"><button type="button" class="demo-button">Cancel</button><button type="button" class="demo-button demo-button-primary' . $is('save') . '"><i class="bx bx-user-plus"></i> Create User</button></div>';
+        } elseif ($screen === 'admin-maintain') {
+            echo '<div class="demo-admin-profile' . $is('actions') . '"><div class="demo-admin-avatar">JS</div><div class="demo-admin-profile__main"><span class="demo-label">User account</span><h4>Jordan Smith</h4><p>jsmith · Contractor · Example Joinery Ltd</p></div><span class="demo-status-pill">Active</span></div>';
+            echo '<div class="demo-admin-actions"><button type="button" class="demo-button"><i class="bx bx-edit"></i><span>Edit details</span></button><button type="button" class="demo-button"><i class="bx bx-shield-quarter"></i><span>Change type</span></button><button type="button" class="demo-button demo-button-danger"><i class="bx bx-user-x"></i><span>Deactivate</span></button></div>';
+        } elseif ($screen === 'admin-audit') {
+            echo '<div class="demo-admin-audit' . $is('audit') . '"><div class="demo-admin-audit__event"><i class="bx bx-user-x"></i><div><strong>Account deactivated</strong><span>Jordan Smith · performed by Site Admin · 24/09/2026 08:12</span></div></div><div class="demo-admin-audit__event"><i class="bx bx-shield"></i><div><strong>User type changed</strong><span>Viewer → Contractor · contractor linked: Example Joinery Ltd</span></div></div><div class="demo-admin-audit__event"><i class="bx bx-user-plus"></i><div><strong>User created</strong><span>Identity and access settings recorded in user log</span></div></div></div>';
+        }
+
+        echo '</div>';
+        return;
+    }
+
     if (str_starts_with($screen, 'pwa-')) {
         echo '<div class="demo-app-window demo-phone-window">';
         echo '<div class="demo-app-toolbar"><strong>Defect Tracker · Mobile / PWA</strong><span class="demo-status-pill">Field Ready</span></div>';
