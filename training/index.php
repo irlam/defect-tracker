@@ -138,6 +138,7 @@ trainingRenderHeader(
                         'defect-lifecycle' => 'contractor-manager-lifecycle',
                         'reports-exports' => 'reports-exports',
                         'projects-setup' => 'projects-setup',
+                        'mobile-pwa' => 'mobile-pwa',
                         default => null,
                     };
                     ?>
