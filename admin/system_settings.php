@@ -1,17 +1,19 @@
 <?php
 // admin/system_settings.php
-require_once '../config/database.php';
-require_once '../includes/session.php';
-require_once '../classes/RBAC.php';
-require_once '../classes/Logger.php';
-require_once '../classes/SystemHealth.php';
-require_once '../classes/BackupManager.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/session.php';
+require_once __DIR__ . '/../classes/RBAC.php';
+require_once __DIR__ . '/../classes/Logger.php';
+require_once __DIR__ . '/../classes/SystemHealth.php';
+require_once __DIR__ . '/../classes/BackupManager.php';
 
 // Initialize required objects
 $database = new Database();
 $db = $database->getConnection();
-$rbac = new RBAC($db, 'irlam', '2025-01-14 21:35:47');
-$logger = new Logger($db, 'irlam', '2025-01-14 21:35:47');
+$actor = (string)($_SESSION['username'] ?? 'system');
+$nowUtc = gmdate('Y-m-d H:i:s');
+$rbac = new RBAC($db, $actor, $nowUtc);
+$logger = new Logger($db, $actor, $nowUtc);
 $systemHealth = new SystemHealth($db);
 $backupManager = new BackupManager($db);
 
