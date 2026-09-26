@@ -993,6 +993,12 @@ body.has-app-navbar .app-content-offset {
   object-fit: contain;
 }
 
+.app-navbar__company-logo--guardian {
+  width: clamp(150px, 19vw, 212px);
+  max-height: 48px;
+  filter: drop-shadow(0 8px 22px rgba(34, 211, 238, 0.15));
+}
+
 .app-navbar .nav-link {
   color: rgba(203, 213, 225, 0.88);
   font-weight: 500;
@@ -2117,6 +2123,12 @@ body.has-app-navbar .app-content-offset {
   margin: 0 auto var(--spacing-md);
   max-width: min(110px, 25vw);
   filter: drop-shadow(0 12px 30px rgba(34, 211, 238, 0.25));
+}
+
+.login-logo--guardian {
+  width: min(310px, 82vw);
+  max-width: min(310px, 82vw);
+  max-height: 104px;
 }
 
 .login-title {

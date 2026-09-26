@@ -1,4 +1,4 @@
-/* Presentation Styles - McGoff Defect Tracker */
+/* Presentation Styles - Defect Guardian */
 
 :root {
     --primary-color: #2563eb;
@@ -43,6 +43,16 @@ body {
     font-weight: 700;
     font-size: 1.5rem;
     color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.presentation-brand-mark {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 18px rgba(34, 211, 238, 0.2));
 }
 
 .nav-link {
@@ -969,4 +979,10 @@ body {
     .stat-explanation-card {
         padding: 1.5rem;
     }
+}
+
+.hero-brand-logo {
+    display: block;
+    width: min(520px, 100%);
+    height: auto;
 }

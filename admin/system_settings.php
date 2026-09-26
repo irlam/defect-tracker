@@ -92,7 +92,7 @@ function systemSettingsBytes(int $bytes): string
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>System Settings · Defect Tracker</title>
+    <title>System Settings · Defect Guardian</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link href="/css/app.css" rel="stylesheet">
@@ -310,7 +310,7 @@ function systemSettingsBytes(int $bytes): string
     <div class="container-fluid">
         <div class="row">
             <div class="col text-center">
-                <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Construction Defect Tracker. All rights reserved.</p>
+                <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Defect Guardian. All rights reserved.</p>
             </div>
         </div>
     </div>

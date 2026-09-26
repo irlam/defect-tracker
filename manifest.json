@@ -1,11 +1,11 @@
 {
-  "name": "Defect Tracker",
-  "short_name": "Defects",
+  "name": "Defect Guardian",
+  "short_name": "Guardian",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0b1220",
   "theme_color": "#2563eb",
-  "description": "Track and manage site defects, including offline field capture and automatic upload.",
+  "description": "Protect site quality with reliable defect capture, tracking and offline field reporting.",
   "shortcuts": [
     {
       "name": "New field report",

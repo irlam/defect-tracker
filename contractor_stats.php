@@ -171,7 +171,7 @@ $heroMetrics = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Defect Tracker</title>
-    <meta name="description" content="Portfolio-wide contractor performance metrics for the McGoff Defect Tracker.">
+    <meta name="description" content="Portfolio-wide contractor performance metrics for Defect Guardian.">
     <meta name="author" content="<?php echo htmlspecialchars($_SESSION['username'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="last-modified" content="<?php echo htmlspecialchars(date('c'), ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />

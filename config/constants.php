@@ -32,7 +32,7 @@ if (!defined('ALLOWED_MIME_TYPES')) {
 
 // Additional application constants
 if (!defined('APP_NAME')) {
-    define('APP_NAME', 'McGoff Defect Tracker');
+    define('APP_NAME', Environment::get('APP_NAME', 'Defect Guardian'));
 }
 
 if (!defined('APP_VERSION')) {

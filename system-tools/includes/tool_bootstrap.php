@@ -180,7 +180,7 @@ if (!function_exists('tool_render_footer')) {
         echo '  </main>';
         echo '  <footer class="tool-footer py-3 mt-auto">';
         echo '    <div class="container-xl text-center text-muted small">';
-        echo '      <span>McGoff Construction Defect Tracker &mdash; System Tools Suite</span>';
+        echo '      <span>Defect Guardian &mdash; System Tools Suite</span>';
         echo '    </div>';
         echo '  </footer>';
         echo '  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>';

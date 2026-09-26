@@ -77,7 +77,7 @@ $pageTitle = "Website Cleanup";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?> - McGoff Defect Tracker</title>
+    <title><?php echo $pageTitle; ?> - Defect Guardian</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
@@ -117,7 +117,10 @@ $pageTitle = "Website Cleanup";
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="../dashboard.php">McGoff Defect Tracker</a>
+            <a class="navbar-brand d-inline-flex align-items-center gap-2" href="../dashboard.php">
+                <img src="../assets/brand/defect-guardian-mark.svg" width="36" height="36" alt="">
+                <span>Defect Guardian</span>
+            </a>
             <span class="navbar-text text-white">
                 <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['username']); ?>
             </span>

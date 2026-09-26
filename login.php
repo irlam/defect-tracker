@@ -81,6 +81,17 @@ $username = ''; // Variable to pre-fill the username field if login fails.
 // Include configuration files.
 require_once 'config/constants.php';
 require_once 'config/database.php'; // Contains the Database class definition.
+require_once 'includes/branding.php';
+
+$db = null;
+$loginBrand = defectTrackerDefaultBranding();
+try {
+    $database = new Database();
+    $db = $database->getConnection();
+    $loginBrand = defectTrackerResolveBranding($db instanceof PDO ? $db : null);
+} catch (Throwable $brandingError) {
+    error_log('Login branding lookup failed: ' . $brandingError->getMessage());
+}
 
 // --- Login Form Processing (Handles POST requests) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -100,8 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // --- Database Interaction ---
         // Initialize database connection.
-        $database = new Database();
-        $db = $database->getConnection(); // Get PDO connection object.
+        if (!$db instanceof PDO) {
+            $database = new Database();
+            $db = $database->getConnection();
+        }
         if (!$db) {
             throw new Exception('Sign-in is temporarily unavailable. Please try again later.');
         }
@@ -203,13 +216,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php // --- HTML Head --- ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Construction Defect Tracker</title>
+    <title>Sign in - <?php echo htmlspecialchars($loginBrand['name'], ENT_QUOTES, 'UTF-8'); ?></title>
 
     <?php // --- CSS Includes --- ?>
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/favicons/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="shortcut icon" href="/favicons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <link href="css/app.css?v=20251102" rel="stylesheet">
+    <link href="/css/app.css?v=<?php echo rawurlencode((string) (filemtime(__DIR__ . '/css/app.css') ?: '1')); ?>" rel="stylesheet">
     <style>
         .install-app-cta {
             margin-top: 1.5rem;
@@ -223,10 +240,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         #installPwaInstructions {
             color: var(--text-muted-color);
-        }
-
-        img[alt="Defect Tracker"] {
-            display: none !important;
         }
 
         .install-app-cta .btn {
@@ -287,9 +300,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="login-card__layout">
                 <section class="login-card__hero text-center">
                     <span class="login-badge">Welcome back</span>
-                    <img src="https://mcgoff.defecttracker.uk/mcgoff.png" alt="Logo" class="login-logo" loading="lazy">
-                    <h1 class="login-title">Construction Defect Tracker</h1>
-                    <p class="login-subtitle">Spot, track, and close defects with confidence.</p>
+                    <img src="<?php echo htmlspecialchars($loginBrand['logo'], ENT_QUOTES, 'UTF-8'); ?>"
+                         alt="<?php echo htmlspecialchars($loginBrand['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                         class="login-logo<?php echo empty($loginBrand['is_custom']) ? ' login-logo--guardian' : ''; ?>">
+                    <?php if (!empty($loginBrand['is_custom'])): ?>
+                        <h1 class="login-title"><?php echo htmlspecialchars($loginBrand['name'], ENT_QUOTES, 'UTF-8'); ?></h1>
+                    <?php endif; ?>
+                    <p class="login-subtitle"><?php echo htmlspecialchars($loginBrand['tagline'], ENT_QUOTES, 'UTF-8'); ?></p>
 
                     <div class="install-app-cta">
                         <button type="button" id="installPwaButton" class="btn btn-outline-info install-pwa-button" hidden>
@@ -356,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         // Register the service worker so the page qualifies for installation prompts
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js?v=1.2.0').catch((error) => {
+            navigator.serviceWorker.register('/service-worker.js?v=1.3.0').catch((error) => {
                 console.error('Service worker registration failed:', error);
             });
         }

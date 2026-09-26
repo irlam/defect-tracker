@@ -272,7 +272,7 @@ $current_time = date('d-m-Y H:i:s');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - McGoff Construction Defect Tracker</title>
+    <title>Admin Dashboard - Defect Guardian</title>
     
     <!-- Link to external CSS files -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -390,7 +390,7 @@ $current_time = date('d-m-Y H:i:s');
         <div class="container-fluid">
             <div class="row">
                 <div class="col text-center">
-                    <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Construction Defect Tracker. All rights reserved.</p>
+                    <p class="mb-0 text-muted">&copy; <?php echo date('Y'); ?> Defect Guardian. All rights reserved.</p>
                 </div>
             </div>
         </div>

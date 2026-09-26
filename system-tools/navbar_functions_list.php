@@ -250,7 +250,7 @@ $missingCount = $totalCount - $existingCount;
                         <i class='bx bx-list-check'></i> Complete Navbar Functions Reference
                     </h1>
                     <p class="text-muted mb-0">
-                        Comprehensive list of all functions available in the McGoff Defect Tracker
+                        Comprehensive list of all functions available in Defect Guardian
                     </p>
                 </div>
                 <div class="no-print">
@@ -418,7 +418,7 @@ $missingCount = $totalCount - $existingCount;
                 </div>
                 <div class="card-body">
                     <p>
-                        This page provides a complete reference of all navigation functions available in the McGoff Defect Tracker.
+                        This page provides a complete reference of all navigation functions available in Defect Guardian.
                         Functions are organized by user role, showing exactly which features each type of user can access.
                     </p>
                     <h3 class="h6 mt-3">User Roles:</h3>
@@ -441,7 +441,7 @@ $missingCount = $totalCount - $existingCount;
 
         <div class="no-print text-center">
             <p class="text-muted small">
-                Generated on <?php echo date('Y-m-d H:i:s'); ?> | McGoff Defect Tracker
+                Generated on <?php echo date('Y-m-d H:i:s'); ?> | Defect Guardian
             </p>
         </div>
     </div>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 190" role="img" aria-labelledby="title desc">
+  <title id="title">Defect Guardian</title>
+  <desc id="desc">Defect Guardian logo: a shield and check mark beside the product name.</desc>
+  <defs>
+    <linearGradient id="bg" x1="16" y1="10" x2="180" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#13294B"/><stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="47" y1="30" x2="153" y2="167" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/><stop offset="0.52" stop-color="#3B82F6"/><stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+    <linearGradient id="word" x1="220" y1="40" x2="765" y2="160" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/><stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="174" height="174" rx="45" fill="url(#bg)"/>
+  <path d="M95 27 154 49v45c0 39-23 67-59 83-36-16-59-44-59-83V49l59-22Z" fill="#071827" stroke="url(#shield)" stroke-width="12" stroke-linejoin="round"/>
+  <path d="m61 103 23 22 46-51" fill="none" stroke="#6EE7B7" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="138" cy="56" r="14" fill="#F59E0B" stroke="#FDE68A" stroke-width="4"/>
+  <text x="220" y="91" fill="url(#word)" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="63" font-weight="760" letter-spacing="-2">Defect</text>
+  <text x="220" y="151" fill="#67E8F9" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="63" font-weight="760" letter-spacing="-2">Guardian</text>
+  <text x="624" y="151" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="3">SITE QUALITY</text>
+</svg>

@@ -96,7 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$companyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLogo() : null;
+$customCompanyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLogo() : null;
+$companyLogo = $customCompanyLogo ?: DEFECT_GUARDIAN_LOGO;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -104,7 +105,7 @@ $companyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLog
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logo Management - Defect Tracker</title>
-    <meta name="description" content="Manage company and contractor brand assets for McGoff Defect Tracker.">
+    <meta name="description" content="Manage company and contractor brand assets for Defect Guardian.">
     <meta name="author" content="<?php echo htmlspecialchars($_SESSION['username'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="last-modified" content="<?php echo htmlspecialchars(date('c'), ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
@@ -293,7 +294,7 @@ $companyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLog
                 <p class="text-muted small mb-0">Primary logo used across the application header and PDFs.</p>
             </div>
             <div class="px-4 py-4">
-                <?php if ($companyLogo): ?>
+                <?php if ($customCompanyLogo): ?>
                     <div class="logo-preview-frame mb-3">
                         <img src="<?php echo htmlspecialchars($companyLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="Company logo preview">
                     </div>
@@ -305,8 +306,9 @@ $companyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLog
                     </form>
                 <?php else: ?>
                     <div class="logo-preview-frame mb-3">
-                        <span class="text-muted">No company logo uploaded yet.</span>
+                        <img src="<?php echo htmlspecialchars($companyLogo, ENT_QUOTES, 'UTF-8'); ?>" alt="Defect Guardian default logo">
                     </div>
+                    <p class="text-muted small mb-0"><i class='bx bx-shield-quarter me-1'></i>Using the Defect Guardian default. Upload a company logo above to replace it for this installation.</p>
                 <?php endif; ?>
             </div>
         </section>

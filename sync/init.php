@@ -40,7 +40,7 @@ function sync_init_client() {
     echo '<script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("/service-worker.js?v=1.2.0")
+                navigator.serviceWorker.register("/service-worker.js?v=1.3.0")
                     .then(reg => console.log("Service worker registered: ", reg.scope))
                     .catch(err => console.error("Service worker registration failed: ", err));
             });

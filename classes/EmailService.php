@@ -9,7 +9,7 @@ class EmailService {
         // Initialize PHPMailer
         $this->mailer = new PHPMailer(true);
         $this->fromEmail = 'noreply@constructiondefecttracker.com';
-        $this->fromName = 'Construction Defect Tracker';
+        $this->fromName = defined('APP_NAME') ? APP_NAME : 'Defect Guardian';
         
         // Configure SMTP settings
         $this->mailer->isSMTP();
@@ -56,7 +56,7 @@ class EmailService {
                         </a>
                     </p>
                     <p>This link will expire in 1 hour.</p>
-                    <p>Best regards,<br>Construction Defect Tracker Team</p>
+                    <p>Best regards,<br>Defect Guardian Team</p>
                 </div>
             </body>
             </html>

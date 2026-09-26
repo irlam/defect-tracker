@@ -28,6 +28,7 @@
 if (file_exists(__DIR__ . '/../config/constants.php')) {
     require_once __DIR__ . '/../config/constants.php';
 }
+require_once __DIR__ . '/branding.php';
 
 // Ensure PDO class is available. If your DB connection setup is in another file, require it here.
 // require_once('path/to/your/db_connection.php'); // Example: Adjust path as necessary
@@ -62,7 +63,13 @@ class Navbar {
     /**
      * @var string The path to the company logo/brandmark image, or an empty string if not set.
      */
-    private $companyLogo = '';
+    private $companyLogo = DEFECT_GUARDIAN_LOGO;
+
+    /** @var string Accessible tenant or fallback product name. */
+    private $brandName = DEFECT_GUARDIAN_NAME;
+
+    /** @var bool Whether the installation supplied its own company logo. */
+    private $hasCustomBrand = false;
 
     /**
      * Navbar Constructor.
@@ -161,47 +168,10 @@ class Navbar {
      * Updates the $this->companyLogo property with the normalized logo path.
      */
     private function setCompanyLogo() {
-        try {
-            // First try the system configuration store
-            $configLogo = $this->fetchConfigValue('company_logo_path');
-            if (!empty($configLogo)) {
-                $this->companyLogo = $this->buildLogoPath($configLogo);
-                return;
-            }
-
-            // Legacy fallback to contractors table for backwards compatibility
-            $companyId = defined('COMPANY_CONTRACTOR_ID') ? COMPANY_CONTRACTOR_ID : 1;
-            $query = "SELECT logo FROM contractors WHERE id = :company_id LIMIT 1";
-            $stmt = $this->db->prepare($query);
-            $stmt->bindParam(':company_id', $companyId, PDO::PARAM_INT);
-            $stmt->execute();
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($result && !empty($result['logo'])) {
-                $this->companyLogo = $this->buildLogoPath($result['logo']);
-            }
-        } catch (PDOException $e) {
-            // Log database errors but don't expose to user
-            error_log("Navbar PDOException in setCompanyLogo: " . $e->getMessage());
-        } catch (Exception $e) {
-            error_log("Navbar General Exception in setCompanyLogo: " . $e->getMessage());
-        }
-    }
-
-    private function fetchConfigValue(string $key): ?string
-    {
-        try {
-            $stmt = $this->db->prepare('SELECT config_value FROM system_configurations WHERE config_key = :key LIMIT 1');
-            $stmt->execute([':key' => $key]);
-            $value = $stmt->fetchColumn();
-            if ($value === false || $value === null || $value === '') {
-                return null;
-            }
-            return (string) $value;
-        } catch (PDOException $e) {
-            error_log('Navbar configuration lookup failed: ' . $e->getMessage());
-            return null;
-        }
+        $brand = defectTrackerResolveBranding($this->db);
+        $this->companyLogo = (string) $brand['logo'];
+        $this->brandName = (string) $brand['name'];
+        $this->hasCustomBrand = (bool) $brand['is_custom'];
     }
 
     private function buildLogoPath($path)
@@ -281,12 +251,9 @@ class Navbar {
             <div class="container-xxl">
                 <div class="d-flex align-items-center w-100 gap-3">
                     <a class="navbar-brand" href="/dashboard.php">
-                        <?php if (!empty($this->companyLogo)): ?>
-                            <img src="<?php echo $this->companyLogo; ?>" alt="Company Logo" class="app-navbar__company-logo">
-                        <?php else: ?>
-                            <span class="app-navbar__brand-icon"><i class="fas fa-layer-group"></i></span>
-                            <span>McGoff Defect Tracker</span>
-                        <?php endif; ?>
+                        <img src="<?php echo htmlspecialchars($this->companyLogo, ENT_QUOTES, 'UTF-8'); ?>"
+                             alt="<?php echo htmlspecialchars($this->brandName, ENT_QUOTES, 'UTF-8'); ?>"
+                             class="app-navbar__company-logo<?php echo $this->hasCustomBrand ? '' : ' app-navbar__company-logo--guardian'; ?>">
                     </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>

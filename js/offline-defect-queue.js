@@ -447,7 +447,7 @@
     async function initialise() {
         await openDatabase();
         if (navigator.serviceWorker) {
-            navigator.serviceWorker.register('/service-worker.js?v=1.2.0').catch(error => {
+            navigator.serviceWorker.register('/service-worker.js?v=1.3.0').catch(error => {
                 console.warn('Offline field worker registration deferred:', error);
             });
         }

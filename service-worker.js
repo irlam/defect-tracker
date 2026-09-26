@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.2.0';
+const CACHE_VERSION = 'v1.3.0';
 const CACHE_NAME = `defect-tracker-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 const OFFLINE_FIELD_URL = '/offline-field.html';
@@ -13,7 +13,10 @@ const STATIC_ASSETS = [
   '/offline-field.html',
   '/js/offline-defect-queue.js',
   '/js/offline-field.js',
-  '/favicons/favicon-96x96.png'
+  '/favicons/favicon-96x96.png',
+  '/favicons/favicon.svg',
+  '/assets/brand/defect-guardian-logo.svg',
+  '/assets/brand/defect-guardian-mark.svg'
 ];
 
 self.addEventListener('install', event => {
