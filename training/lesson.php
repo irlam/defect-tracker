@@ -280,7 +280,7 @@ trainingRenderHeader(
     <div class="d-flex flex-wrap justify-content-between gap-2 mt-4">
         <a class="btn btn-outline-light" href="/training/"><i class="bx bx-left-arrow-alt me-1"></i>Training Hub</a>
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="text-muted small" id="training-save-status" aria-live="polite">Phase 1 lesson engine</span>
+            <span class="text-muted small" id="training-save-status" aria-live="polite"><?php echo $training->isReady() ? 'Progress saves automatically' : 'Preview mode'; ?></span>
             <?php if ($training->isReady()): ?>
                 <button type="button" class="btn btn-success" data-training-complete>
                     <i class="bx bx-check-circle me-1"></i>Mark lesson complete

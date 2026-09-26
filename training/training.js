@@ -23,6 +23,48 @@
     document.documentElement.classList.add('training-reduced-motion');
   }
 
+  document.querySelectorAll('[data-training-catalogue]').forEach((catalogue) => {
+    const search = catalogue.querySelector('[data-training-search]');
+    const filters = Array.from(catalogue.querySelectorAll('[data-training-filter]'));
+    const items = Array.from(catalogue.querySelectorAll('[data-training-item]'));
+    const empty = catalogue.querySelector('[data-training-no-results]');
+    let audience = 'all';
+
+    const appliesToAudience = (roles) => {
+      if (audience === 'all' || roles.includes('all')) return true;
+      if (audience === 'site') return roles.includes('inspector') || roles.includes('manager') || roles.includes('admin');
+      return roles.includes(audience);
+    };
+
+    const updateCatalogue = () => {
+      const query = String(search?.value || '').trim().toLowerCase();
+      let visible = 0;
+
+      items.forEach((item) => {
+        const haystack = String(item.dataset.trainingSearchText || '');
+        const roles = String(item.dataset.trainingRoles || 'all').toLowerCase();
+        const show = (!query || haystack.includes(query)) && appliesToAudience(roles);
+        item.hidden = !show;
+        if (show) visible += 1;
+      });
+
+      if (empty) empty.hidden = visible !== 0;
+    };
+
+    search?.addEventListener('input', updateCatalogue);
+    filters.forEach((filter) => {
+      filter.addEventListener('click', () => {
+        audience = String(filter.dataset.trainingFilter || 'all');
+        filters.forEach((item) => {
+          const active = item === filter;
+          item.classList.toggle('is-active', active);
+          item.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        updateCatalogue();
+      });
+    });
+  });
+
   const lesson = document.querySelector('[data-training-lesson]');
   let saveProgress = async () => ({success: false});
 

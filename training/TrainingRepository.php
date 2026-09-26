@@ -20,7 +20,7 @@ final class TrainingRepository
     public function getModulesForUser(int $userId, string $role): array
     {
         if (!$this->schemaReady || !$this->db) {
-            return $this->fallbackModules();
+            return $this->fallbackModules($role);
         }
 
         $stmt = $this->db->prepare(
@@ -48,6 +48,7 @@ final class TrainingRepository
                AND p.user_id = :user_id
              WHERE m.is_active = 1
              GROUP BY m.id, m.slug, m.title, m.description, m.icon, m.accent, m.sort_order, m.updated_at
+             HAVING COUNT(l.id) > 0
              ORDER BY m.sort_order, m.title"
         );
         $stmt->execute(['role' => $role, 'user_id' => $userId]);
@@ -74,6 +75,66 @@ final class TrainingRepository
             'completed_lessons' => $completed,
             'percent' => $lessons > 0 ? (int)round(($completed / $lessons) * 100) : 0,
         ];
+    }
+
+    /**
+     * Return the role-filtered lesson catalogue used by the training matrix.
+     * This deliberately includes completion state so the hub can be the single
+     * place an end user plans, starts and resumes their learning.
+     */
+    public function getLessonsForUser(int $userId, string $role): array
+    {
+        if (!$this->schemaReady || !$this->db) {
+            $lessons = array_values(array_filter(
+                $this->fallbackLessons(),
+                static function (array $lesson) use ($role): bool {
+                    $scope = strtolower((string)($lesson['role_scope'] ?? 'all'));
+                    return $scope === 'all' || in_array($role, array_map('trim', explode(',', $scope)), true);
+                }
+            ));
+
+            foreach ($lessons as &$lesson) {
+                $lesson['progress_status'] = 'not_started';
+                $lesson['progress_percent'] = 0;
+            }
+            unset($lesson);
+
+            return $lessons;
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT
+                l.id,
+                l.slug,
+                l.title,
+                l.description,
+                l.estimated_minutes,
+                l.difficulty,
+                l.role_scope,
+                l.sort_order,
+                m.title AS module_title,
+                m.slug AS module_slug,
+                m.icon AS module_icon,
+                m.accent AS module_accent,
+                m.sort_order AS module_sort_order,
+                COALESCE(p.status, 'not_started') AS progress_status,
+                COALESCE(p.progress_percent, 0) AS progress_percent
+             FROM training_lessons l
+             INNER JOIN training_modules m ON m.id = l.module_id
+             LEFT JOIN training_progress p
+                ON p.lesson_id = l.id
+               AND p.user_id = :user_id
+             WHERE l.is_active = 1
+               AND m.is_active = 1
+               AND (
+                    l.role_scope = 'all'
+                    OR FIND_IN_SET(:role, l.role_scope) > 0
+               )
+             ORDER BY m.sort_order, l.sort_order, l.title"
+        );
+        $stmt->execute(['user_id' => $userId, 'role' => $role]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getContinueLesson(int $userId, string $role): ?array
@@ -254,9 +315,9 @@ final class TrainingRepository
         return is_array($content) ? $content : [];
     }
 
-    private function fallbackModules(): array
+    private function fallbackModules(string $role): array
     {
-        return [
+        $modules = [
             ['id'=>1,'slug'=>'defect-creation','title'=>'Defect Creation','description'=>'Raise clear, complete defects with the right project, contractor, evidence and priority.','icon'=>'bx-error-circle','accent'=>'blue','sort_order'=>10,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>2,'slug'=>'floor-plans','title'=>'Floor Plans','description'=>'Navigate drawings, zoom precisely and place a defect pin at the correct location.','icon'=>'bx-map-alt','accent'=>'cyan','sort_order'=>20,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>3,'slug'=>'defect-lifecycle','title'=>'Contractor & Manager Workflow','description'=>'Follow a defect from assignment through evidence, review, rejection, acceptance and closeout.','icon'=>'bx-transfer-alt','accent'=>'violet','sort_order'=>30,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
@@ -265,6 +326,28 @@ final class TrainingRepository
             ['id'=>6,'slug'=>'mobile-pwa','title'=>'Mobile & PWA','description'=>'Install Defect Tracker on a device, prepare Field Mode and safely capture and sync defects when reception is unreliable.','icon'=>'bx-mobile-alt','accent'=>'blue','sort_order'=>60,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
             ['id'=>7,'slug'=>'admin-users','title'=>'Admin & Users','description'=>'Create and maintain user accounts, choose appropriate access levels, manage contractor links and preserve an auditable access history.','icon'=>'bx-user-check','accent'=>'violet','sort_order'=>70,'lesson_count'=>1,'completed_lessons'=>0,'progress_percent'=>0],
         ];
+
+        $lessonCounts = [];
+        foreach ($this->fallbackLessons() as $lesson) {
+            $scope = strtolower((string)($lesson['role_scope'] ?? 'all'));
+            $roles = array_map('trim', explode(',', $scope));
+            if ($scope !== 'all' && !in_array($role, $roles, true)) {
+                continue;
+            }
+            $moduleSlug = (string)($lesson['module_slug'] ?? '');
+            $lessonCounts[$moduleSlug] = ($lessonCounts[$moduleSlug] ?? 0) + 1;
+        }
+
+        $modules = array_values(array_filter(
+            $modules,
+            static fn(array $module): bool => isset($lessonCounts[(string)$module['slug']])
+        ));
+        foreach ($modules as &$module) {
+            $module['lesson_count'] = $lessonCounts[(string)$module['slug']];
+        }
+        unset($module);
+
+        return $modules;
     }
 
     private function fallbackLessons(): array
