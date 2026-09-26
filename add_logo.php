@@ -96,8 +96,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$customCompanyLogo = $logoManager instanceof LogoManager ? $logoManager->getCompanyLogo() : null;
-$companyLogo = $customCompanyLogo ?: DEFECT_GUARDIAN_LOGO;
+$resolvedCompanyBrand = defectTrackerResolveBranding(isset($db) && $db instanceof PDO ? $db : null);
+$customCompanyLogo = !empty($resolvedCompanyBrand['is_custom']) ? $resolvedCompanyBrand['logo'] : null;
+$companyLogo = $resolvedCompanyBrand['logo'];
 ?>
 <!DOCTYPE html>
 <html lang="en">

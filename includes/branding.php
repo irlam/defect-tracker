@@ -34,6 +34,28 @@ function defectTrackerNormaliseBrandLogo(?string $path): ?string
     return '/uploads/logos/' . $path;
 }
 
+function defectTrackerBrandLogoAvailable(?string $publicPath): bool
+{
+    $publicPath = trim((string) $publicPath);
+    if ($publicPath === '') {
+        return false;
+    }
+    if (preg_match('#^https?://#i', $publicPath)) {
+        return true;
+    }
+
+    $urlPath = parse_url($publicPath, PHP_URL_PATH);
+    if (!is_string($urlPath) || $urlPath === '' || str_contains($urlPath, '..')) {
+        return false;
+    }
+    $root = realpath(dirname(__DIR__));
+    if ($root === false) {
+        return false;
+    }
+    $candidate = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, ltrim($urlPath, '/'));
+    return is_file($candidate) && filesize($candidate) > 0;
+}
+
 /**
  * Resolve branding for this installation. Each subdomain normally has its own
  * database/configuration, so an uploaded company logo remains tenant-specific.
@@ -57,9 +79,11 @@ function defectTrackerResolveBranding(?PDO $db): array
         }
 
         $configuredLogo = defectTrackerNormaliseBrandLogo($configuration['company_logo_path'] ?? null);
-        if ($configuredLogo !== null) {
+        if ($configuredLogo !== null && defectTrackerBrandLogoAvailable($configuredLogo)) {
             $brand['logo'] = $configuredLogo;
             $brand['is_custom'] = true;
+        } elseif ($configuredLogo !== null) {
+            error_log('Configured company logo is missing; using the Defect Guardian fallback: ' . $configuredLogo);
         }
         $displayName = trim((string) ($configuration['company_display_name'] ?? ''));
         if ($displayName !== '') {
@@ -78,7 +102,7 @@ function defectTrackerResolveBranding(?PDO $db): array
         $statement = $db->prepare('SELECT logo FROM contractors WHERE id = :company_id LIMIT 1');
         $statement->execute([':company_id' => $companyId]);
         $legacyLogo = defectTrackerNormaliseBrandLogo($statement->fetchColumn() ?: null);
-        if ($legacyLogo !== null) {
+        if ($legacyLogo !== null && defectTrackerBrandLogoAvailable($legacyLogo)) {
             $brand['logo'] = $legacyLogo;
             $brand['is_custom'] = true;
         }

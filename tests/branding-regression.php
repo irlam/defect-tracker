@@ -25,6 +25,8 @@ $default = defectTrackerDefaultBranding();
 brandCheck($default['name'] === 'Defect Guardian', 'Default product name is incorrect.');
 brandCheck($default['logo'] === '/assets/brand/defect-guardian-logo.svg', 'Default logo is not the Defect Guardian lockup.');
 brandCheck($default['is_custom'] === false, 'Default branding is incorrectly marked as tenant branding.');
+brandCheck(defectTrackerBrandLogoAvailable($default['logo']), 'Bundled Guardian logo is missing.');
+brandCheck(!defectTrackerBrandLogoAvailable('/uploads/logos/missing-company-logo.png'), 'Missing tenant logo is incorrectly considered available.');
 
 $navbar = brandSource('includes/navbar.php');
 brandCheck(str_contains($navbar, 'defectTrackerResolveBranding'), 'Navbar does not resolve tenant-aware branding.');
