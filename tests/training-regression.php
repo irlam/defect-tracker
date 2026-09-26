@@ -49,6 +49,20 @@ foreach ($adminLessons as $lesson) {
 }
 trainingAssert($narrationCount === 45, 'The Academy should contain all 45 VoxCPM2 narration clips.');
 
+$voiceReference = __DIR__ . '/../assets/training/voice/defect-guardian-narrator-reference.mp3';
+$voiceGeneratorSource = file_get_contents(__DIR__ . '/../scripts/generate_training_voiceovers.py') ?: '';
+trainingAssert(is_file($voiceReference), 'The approved Academy narrator reference must be versioned with the application.');
+trainingAssert((int)@filesize($voiceReference) > 10000, 'The approved Academy narrator reference must not be empty.');
+trainingAssert(
+    hash_file('sha256', $voiceReference) === '8c4a7b5f5144fcc69f29b3b274a04e93537d8044028df35c4629f61bb740949f',
+    'The approved Academy narrator reference must not change accidentally.'
+);
+trainingAssert(
+    str_contains($voiceGeneratorSource, 'DEFAULT_REFERENCE_AUDIO')
+        && str_contains($voiceGeneratorSource, 'reference_wav_path=str(reference_audio)'),
+    'Future lesson narration must clone the approved Academy narrator reference.'
+);
+
 $indexSource = file_get_contents(__DIR__ . '/../training/index.php') ?: '';
 $scriptSource = file_get_contents(__DIR__ . '/../training/training.js') ?: '';
 $styleSource = file_get_contents(__DIR__ . '/../training/training.css') ?: '';

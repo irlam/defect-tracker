@@ -18,11 +18,7 @@ import torch
 from voxcpm import VoxCPM
 
 
-VOICE_CONTROL = (
-    "Professional British English male narrator, mid thirties, warm and trustworthy, "
-    "clear construction training voice, measured pace, natural conversational delivery, "
-    "confident but not theatrical"
-)
+DEFAULT_REFERENCE_AUDIO = Path("assets/training/voice/defect-guardian-narrator-reference.mp3")
 
 
 def load_manifest(repo_root: Path) -> list[dict[str, object]]:
@@ -55,12 +51,28 @@ def main() -> int:
     parser.add_argument("--model", default="openbmb/VoxCPM2")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--cache-dir", type=Path)
+    parser.add_argument(
+        "--reference-audio",
+        type=Path,
+        default=DEFAULT_REFERENCE_AUDIO,
+        help="Stable VoxCPM2 voice reference, relative to the repository unless absolute.",
+    )
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--skip", type=int, default=0, help="Skip the first N manifest entries.")
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args()
 
     repo_root = args.repo.resolve()
+    reference_audio = args.reference_audio
+    if not reference_audio.is_absolute():
+        reference_audio = repo_root / reference_audio
+    reference_audio = reference_audio.resolve()
+    if not reference_audio.is_file():
+        parser.error(f"Voice reference does not exist: {reference_audio}")
+
     items = load_manifest(repo_root)
+    if args.skip > 0:
+        items = items[args.skip :]
     if args.limit > 0:
         items = items[: args.limit]
 
@@ -80,7 +92,6 @@ def main() -> int:
 
     for position, item in enumerate(pending, start=1):
         output = repo_root / str(item["output"])
-        text = f"({VOICE_CONTROL}){item['text']}"
         print(f"[{position}/{len(pending)}] {item['lesson']} scene {item['scene']}: {item['title']}")
         random.seed(240926)
         np.random.seed(240926)
@@ -88,7 +99,8 @@ def main() -> int:
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(240926)
         wav = model.generate(
-            text=text,
+            text=str(item["text"]),
+            reference_wav_path=str(reference_audio),
             cfg_value=2.0,
             inference_timesteps=10,
             # The English normalizer currently fails on some typographic

@@ -22,6 +22,8 @@ tmp/
 temp/
 cache/
 *.cache
+__pycache__/
+*.py[cod]
 
 # Backups and database data
 backups/*.sql
