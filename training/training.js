@@ -129,16 +129,13 @@
     const narrate = demo.querySelector('[data-demo-narrate]');
     const dots = Array.from(demo.querySelectorAll('[data-demo-go]'));
     const cursor = demo.querySelector('[data-demo-cursor]');
+    const recordedAudio = new Audio();
+    recordedAudio.preload = 'none';
 
     let current = 0;
     let timer = null;
     let speaking = false;
-
-    const sceneTitle = (index) => {
-      const scene = scenes[index];
-      const heading = scene?.querySelector('h4, h3, strong');
-      return heading?.textContent?.trim() || 'Demonstration';
-    };
+    let autoPlaying = false;
 
     const animateCursor = () => {
       if (!cursor || reduceMotion) return;
@@ -147,38 +144,78 @@
       cursor.classList.add('is-moving');
     };
 
-    const stopSpeech = () => {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      speaking = false;
-      if (narrate) {
-        narrate.setAttribute('aria-pressed', 'false');
-        narrate.innerHTML = '<i class="bx bx-volume-full me-1"></i>Read aloud';
-      }
+    const updateNarrationButton = (active = false) => {
+      if (!narrate) return;
+      narrate.setAttribute('aria-pressed', active ? 'true' : 'false');
+      narrate.innerHTML = active
+        ? '<i class="bx bx-stop-circle me-1"></i>Stop narration'
+        : '<i class="bx bx-volume-full me-1"></i>Play narration';
     };
 
-    const speakCurrent = () => {
-      if (!('speechSynthesis' in window) || !narrate) return;
-      if (speaking) {
-        stopSpeech();
-        return;
-      }
-      stopSpeech();
+    const stopNarration = () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      recordedAudio.pause();
+      recordedAudio.removeAttribute('src');
+      recordedAudio.load();
+      recordedAudio.onended = null;
+      recordedAudio.onerror = null;
+      speaking = false;
+      updateNarrationButton(false);
+    };
+
+    const narrateCurrent = (onComplete = null) => {
+      stopNarration();
       const text = scenes[current]?.dataset.demoVoice || caption?.textContent || '';
       if (!text) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.96;
-      utterance.pitch = 1;
-      utterance.onend = stopSpeech;
-      utterance.onerror = stopSpeech;
-      speaking = true;
-      narrate.setAttribute('aria-pressed', 'true');
-      narrate.innerHTML = '<i class="bx bx-stop-circle me-1"></i>Stop narration';
-      window.speechSynthesis.speak(utterance);
+
+      const complete = () => {
+        speaking = false;
+        updateNarrationButton(false);
+        if (typeof onComplete === 'function') onComplete();
+      };
+
+      const speakWithBrowser = () => {
+        if (!('speechSynthesis' in window)) {
+          timer = window.setTimeout(complete, reduceMotion ? 6500 : 5000);
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.96;
+        utterance.pitch = 1;
+        utterance.onend = complete;
+        utterance.onerror = complete;
+        speaking = true;
+        updateNarrationButton(true);
+        window.speechSynthesis.speak(utterance);
+      };
+
+      const audioUrl = scenes[current]?.dataset.demoAudio || '';
+      if (audioUrl) {
+        recordedAudio.src = audioUrl;
+        recordedAudio.currentTime = 0;
+        recordedAudio.onended = complete;
+        recordedAudio.onerror = speakWithBrowser;
+        speaking = true;
+        updateNarrationButton(true);
+        recordedAudio.play().catch(speakWithBrowser);
+        return;
+      }
+
+      speakWithBrowser();
+    };
+
+    const toggleNarration = () => {
+      if (speaking) {
+        stopNarration();
+        return;
+      }
+      if (autoPlaying) stopAutoPlay();
+      narrateCurrent();
     };
 
     const showScene = (index, userInitiated = true) => {
       current = Math.max(0, Math.min(scenes.length - 1, index));
-      stopSpeech();
+      stopNarration();
 
       scenes.forEach((scene, i) => {
         const active = i === current;
@@ -213,52 +250,68 @@
       }
     };
 
-    prev?.addEventListener('click', () => showScene(current - 1));
-    next?.addEventListener('click', () => showScene(current === scenes.length - 1 ? 0 : current + 1));
-    dots.forEach((dot) => dot.addEventListener('click', () => showScene(Number(dot.dataset.demoGo || 0))));
-    narrate?.addEventListener('click', speakCurrent);
-
-    const stopAutoPlay = () => {
-      if (timer) window.clearInterval(timer);
+    function stopAutoPlay() {
+      if (timer) window.clearTimeout(timer);
       timer = null;
+      autoPlaying = false;
+      stopNarration();
       if (play) {
         play.setAttribute('aria-pressed', 'false');
         play.innerHTML = '<i class="bx bx-play me-1"></i>Auto play';
       }
-    };
+    }
 
-    play?.addEventListener('click', () => {
-      if (timer) {
-        stopAutoPlay();
-        return;
-      }
-      play.setAttribute('aria-pressed', 'true');
-      play.innerHTML = '<i class="bx bx-pause me-1"></i>Pause';
-      timer = window.setInterval(() => {
-        const nextIndex = current + 1;
-        if (nextIndex >= scenes.length) {
+    const playSequence = () => {
+      if (!autoPlaying) return;
+      narrateCurrent(() => {
+        if (!autoPlaying) return;
+        if (current >= scenes.length - 1) {
           stopAutoPlay();
           return;
         }
-        showScene(nextIndex, true);
-      }, reduceMotion ? 6500 : 5000);
+        timer = window.setTimeout(() => {
+          showScene(current + 1, true);
+          playSequence();
+        }, 650);
+      });
+    };
+
+    const chooseScene = (index) => {
+      stopAutoPlay();
+      showScene(index);
+    };
+
+    prev?.addEventListener('click', () => chooseScene(current - 1));
+    next?.addEventListener('click', () => chooseScene(current === scenes.length - 1 ? 0 : current + 1));
+    dots.forEach((dot) => dot.addEventListener('click', () => chooseScene(Number(dot.dataset.demoGo || 0))));
+    narrate?.addEventListener('click', toggleNarration);
+
+    play?.addEventListener('click', () => {
+      if (autoPlaying) {
+        stopAutoPlay();
+        return;
+      }
+      autoPlaying = true;
+      play.setAttribute('aria-pressed', 'true');
+      play.innerHTML = '<i class="bx bx-pause me-1"></i>Pause';
+      playSequence();
     });
 
     demo.tabIndex = 0;
     demo.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowRight') {
         event.preventDefault();
-        showScene(current === scenes.length - 1 ? current : current + 1);
+        chooseScene(current === scenes.length - 1 ? current : current + 1);
       }
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
-        showScene(current === 0 ? current : current - 1);
+        chooseScene(current === 0 ? current : current - 1);
       }
     });
 
     window.addEventListener('beforeunload', () => {
       stopAutoPlay();
-      stopSpeech();
+      stopNarration();
     });
   });
 

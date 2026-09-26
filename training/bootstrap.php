@@ -49,6 +49,8 @@ function trainingRenderHeader(string $title, string $subtitle = ''): void
 {
     global $navbar;
 
+    $styleVersion = (string)(@filemtime(__DIR__ . '/training.css') ?: '1');
+
     echo '<!DOCTYPE html><html lang="en"><head>';
     echo '<meta charset="UTF-8">';
     echo '<meta name="viewport" content="width=device-width, initial-scale=1.0">';
@@ -57,7 +59,7 @@ function trainingRenderHeader(string $title, string $subtitle = ''): void
     echo '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">';
     echo '<link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">';
     echo '<link href="/css/app.css" rel="stylesheet">';
-    echo '<link href="/training/training.css" rel="stylesheet">';
+    echo '<link href="/training/training.css?v=' . rawurlencode($styleVersion) . '" rel="stylesheet">';
     echo '</head><body class="tool-body has-app-navbar" data-bs-theme="dark">';
 
     if ($navbar) {
@@ -77,8 +79,10 @@ function trainingRenderHeader(string $title, string $subtitle = ''): void
 
 function trainingRenderFooter(): void
 {
+    $scriptVersion = (string)(@filemtime(__DIR__ . '/training.js') ?: '1');
+
     echo '</main>';
     echo '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>';
-    echo '<script src="/training/training.js"></script>';
+    echo '<script src="/training/training.js?v=' . rawurlencode($scriptVersion) . '"></script>';
     echo '</body></html>';
 }

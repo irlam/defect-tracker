@@ -98,7 +98,7 @@ trainingRenderHeader(
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-light" data-demo-narrate aria-pressed="false">
-                                    <i class="bx bx-volume-full me-1"></i>Read aloud
+                                    <i class="bx bx-volume-full me-1"></i>Play narration
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-light" data-demo-play aria-pressed="false">
                                     <i class="bx bx-play me-1"></i>Auto play
@@ -108,12 +108,18 @@ trainingRenderHeader(
 
                         <div class="training-demo__viewport" aria-live="polite">
                             <?php foreach ($demoScenes as $index => $scene): ?>
+                                <?php
+                                $sceneAudioUrl = sprintf('/assets/training/audio/%s/scene-%02d.mp3', $slug, $index + 1);
+                                $sceneAudioFile = dirname(__DIR__) . str_replace('/', DIRECTORY_SEPARATOR, $sceneAudioUrl);
+                                $sceneHasAudio = is_file($sceneAudioFile);
+                                ?>
                                 <article
                                     class="training-demo__scene<?php echo $index === 0 ? ' is-active' : ''; ?>"
                                     data-demo-scene="<?php echo $index; ?>"
                                     data-demo-title="<?php echo trainingEsc($scene['title'] ?? 'Demonstration'); ?>"
                                     data-demo-caption="<?php echo trainingEsc($scene['caption'] ?? ''); ?>"
                                     data-demo-voice="<?php echo trainingEsc($scene['voice'] ?? $scene['caption'] ?? ''); ?>"
+                                    <?php echo $sceneHasAudio ? 'data-demo-audio="' . trainingEsc($sceneAudioUrl) . '"' : ''; ?>
                                     <?php echo $index === 0 ? '' : 'hidden'; ?>
                                 >
                                     <?php trainingRenderDemoScreen((string)($scene['screen'] ?? ''), (string)($scene['focus'] ?? '')); ?>
@@ -246,7 +252,7 @@ trainingRenderHeader(
                     </div>
                 <?php else: ?>
                     <div class="training-audio-shell mt-3 text-muted small">
-                        Use <strong>Read aloud</strong> in the interactive demonstration for browser narration. A recorded voice track can still be added later without changing the lesson layout.
+                        Use <strong>Play narration</strong> in the interactive demonstration for the recorded Defect Guardian Academy voice. Browser narration remains available as a fallback.
                     </div>
                 <?php endif; ?>
 
