@@ -2,7 +2,7 @@
 /**
  * Navbar Class (navbar.php)
  *
- * Purpose: Generates the main navigation bar for the McGoff Defect Tracker application.
+ * Purpose: Generates the main navigation bar for the Defect Notice application.
  *
  * Functionality:
  * - Establishes context based on the logged-in user's ID and username (provided during instantiation).

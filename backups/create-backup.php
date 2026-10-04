@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - AJAX Backup Handler
+ * Defect Notice Backup Manager - AJAX Backup Handler
  * 
  * This file handles the AJAX requests for backup creation and progress tracking.
  * It provides real-time progress updates during the backup process and handles

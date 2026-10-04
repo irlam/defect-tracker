@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Progress Bar Fix
+ * Defect Notice Backup Manager - Progress Bar Fix
  * 
  * This file fixes issues with the backup progress bar not showing updates
  * during the backup process.

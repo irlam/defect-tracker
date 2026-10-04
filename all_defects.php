@@ -135,7 +135,7 @@ function formatDate($date) {
 
 function getImageUrl($imagePath) {
     // Base URL for the images
-    $baseUrl = 'https://mcgoff.defecttracker.uk';
+    $baseUrl = 'https://defectnotice.site';
     
     // If the path already starts with http/https, return it as is
     if (strpos($imagePath, 'http') === 0) {

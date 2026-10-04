@@ -1,4 +1,4 @@
-// Presentation JavaScript - McGoff Defect Tracker
+// Presentation JavaScript - Defect Notice
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all presentation features

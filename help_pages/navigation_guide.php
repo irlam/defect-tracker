@@ -3,7 +3,7 @@
  * Navigation Guide
  * 
  * Comprehensive guide to the navigation structure and role-based access
- * in the McGoff Defect Tracker application.
+ * in the Defect Notice application.
  */
 
 require_once __DIR__ . '/../config/database.php';

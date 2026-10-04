@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Restore Function Fix
+ * Defect Notice Backup Manager - Restore Function Fix
  * 
  * This file adds the missing restoreFile() method to the BackupManager class.
  * 

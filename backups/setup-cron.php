@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Cron Job Setup Helper
+ * Defect Notice Backup Manager - Cron Job Setup Helper
  * 
  * This file helps users configure the cron job needed to run scheduled backups.
  * It provides instructions and the exact cron command needed for their server.
@@ -30,7 +30,7 @@ $scheduledBackups = get_scheduled_backups();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cron Setup - McGoff Backup Manager</title>
+    <title>Cron Setup - Defect Notice Backup Manager</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>

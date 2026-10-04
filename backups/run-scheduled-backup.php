@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Scheduled Backup Runner
+ * Defect Notice Backup Manager - Scheduled Backup Runner
  * 
  * This script is called by the cron job to check for and execute scheduled backups.
  * It should be set up to run frequently (e.g., every 5-15 minutes) to check if any

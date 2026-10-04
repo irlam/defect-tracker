@@ -219,7 +219,7 @@ try {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form action="https://mcgoff.defecttracker.uk/api/delete_defect.php" method="POST" style="display:inline;">
+                    <form action="https://defectnotice.site/api/delete_defect.php" method="POST" style="display:inline;">
                         <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                         <input type="hidden" name="id" value="<?php echo $defectId; ?>">
                         <button type="submit" class="btn btn-danger">Delete Defect</button>

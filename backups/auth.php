@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Authentication Handler
+ * Defect Notice Backup Manager - Authentication Handler
  * 
  * This file checks for an existing authenticated session from the main application
  * and ensures the user has appropriate permissions (admin or manager role).

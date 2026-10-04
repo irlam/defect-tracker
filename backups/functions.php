@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 /**
- * McGoff Backup Manager - Helper Functions
+ * Defect Notice Backup Manager - Helper Functions
  * 
  * This file contains utility functions used throughout the backup system for operations
  * like date formatting, security tokens, file size formatting, and backup management.

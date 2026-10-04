@@ -4,7 +4,7 @@
  * 
  * This file handles the autoloading of the Google API PHP Client and its dependencies.
  * 
- * Required file path: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/google_upload/google-api-php-client/autoload.php
+ * Required file path: /var/www/vhosts/hosting215226.ae97b.netcup.net/defectnotice.site/httpdocs/google_upload/google-api-php-client/autoload.php
  */
 
 spl_autoload_register(function ($class) {

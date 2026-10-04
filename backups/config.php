@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Configuration File
+ * Defect Notice Backup Manager - Configuration File
  * 
  * This file contains all configuration settings for the backup system including
  * database credentials, file paths, backup settings, and authentication information.
@@ -18,7 +18,7 @@ define('PASSWORD', Environment::get('BACKUP_PASSWORD', ''));
 // Backup Settings
 define('BACKUP_DIR', __DIR__ . '/backups');
 define('MAX_BACKUPS', 10); // Maximum number of backups to keep
-define('BACKUP_NAME_PREFIX', 'mcgoff-backup');
+define('BACKUP_NAME_PREFIX', 'defectnotice-backup');
 
 // Website Files to Backup
 define('WEBSITE_ROOT', realpath(dirname(__DIR__)) ?: dirname(__DIR__));

@@ -3,7 +3,7 @@
  * Navbar Functions List - Complete Reference
  * 
  * This script generates a comprehensive list of all functions available
- * in the McGoff Defect Tracker navbar across all user roles.
+ * in the Defect Notice navbar across all user roles.
  * 
  * Created: 2025-11-04
  * Purpose: Document all system functions and their URLs

@@ -390,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 
     <footer class="tool-footer py-3 mt-auto">
         <div class="container-xl text-center text-muted small">
-            <span>McGoff Construction Defect Tracker &mdash; Backup Manager</span>
+            <span>Defect Notice &mdash; Backup Manager</span>
         </div>
     </footer>
 

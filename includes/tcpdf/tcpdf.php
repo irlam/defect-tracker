@@ -10,7 +10,7 @@ define('K_PATH_MAIN', realpath(dirname(__FILE__)) . '/');
 
 // Update the fonts path to be within your allowed open_basedir paths.
 // In this example, we point to the fonts folder under httpdocs.
-define('K_PATH_FONTS', '/var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/includes/tcpdf/fonts/');
+define('K_PATH_FONTS', __DIR__ . '/fonts/');
 
 // Other configuration settings can remain as default
 define('K_PATH_URL', '');

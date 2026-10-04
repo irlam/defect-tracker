@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Restore Path Fix
+ * Defect Notice Backup Manager - Restore Path Fix
  * 
  * This file fixes the issue with the restore.php file where the backup file path
  * is not being correctly identified, resulting in "Backup file not found" errors.

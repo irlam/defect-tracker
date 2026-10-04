@@ -1,6 +1,6 @@
 <?php
 /**
- * McGoff Backup Manager - Scheduled Backup Manager
+ * Defect Notice Backup Manager - Scheduled Backup Manager
  * 
  * This file manages the scheduled backup functionality, allowing users to create,
  * view, edit, and delete scheduled backup jobs. The actual execution of scheduled

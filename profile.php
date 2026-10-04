@@ -35,7 +35,7 @@ try {
 
     // Fetch user details from the users table
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             u.id,
             u.username,
             u.email,
@@ -61,7 +61,7 @@ try {
     if (!$user) {
         throw new Exception("User not found");
     }
-    
+
     // Fetch contractor details using the contractor_id from the users table.
     // This query retrieves the contractor logo and company details.
     $contractor = null;
@@ -73,7 +73,7 @@ try {
 
     // Fetch recent activity
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             d.id,
             d.title,
             d.status,
@@ -117,7 +117,7 @@ try {
             // Update the user's password
             $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
             $stmt = $db->prepare("
-                UPDATE users 
+                UPDATE users
                 SET password = ?,
                     updated_at = UTC_TIMESTAMP(),
                     updated_by = ?
@@ -253,7 +253,7 @@ try {
                                         }
                                     ?>
                                     <div style="margin-left: auto;">
-                                        <img src="https://mcgoff.defecttracker.uk/uploads/logos/<?php echo htmlspecialchars($logoFilename); ?>" 
+                                        <img src="https://defectnotice.site/uploads/logos/<?php echo htmlspecialchars($logoFilename); ?>"
                                              alt="<?php echo htmlspecialchars($contractor['company_name']); ?> Logo"
                                              style="max-height: 50px;">
                                     </div>

@@ -17,7 +17,7 @@ header('Content-Type: application/json');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
-header('Access-Control-Allow-Origin: https://mcgoff.defecttracker.uk');
+header('Access-Control-Allow-Origin: https://defectnotice.site');
 header('Access-Control-Allow-Credentials: true');
 
 // Start session if not started

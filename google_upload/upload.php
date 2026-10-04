@@ -5,7 +5,7 @@
  * This file handles the file upload process to Google Drive.
  * It uses the access token to authenticate and upload files to the user's Google Drive.
  * 
- * Required file path: /var/www/vhosts/hosting215226.ae97b.netcup.net/mcgoff.defecttracker.uk/httpdocs/google_upload/upload.php
+ * Required file path: /var/www/vhosts/hosting215226.ae97b.netcup.net/defectnotice.site/httpdocs/google_upload/upload.php
  */
 
 session_start();

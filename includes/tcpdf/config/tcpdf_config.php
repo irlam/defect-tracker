@@ -24,12 +24,12 @@
 /**
  * Installation path (/var/www/tcpdf/).
  */
-define ('K_PATH_MAIN', '/home/dvntrack/mcgoff.defecttracker.uk/includes/TCPDF/');
+define ('K_PATH_MAIN', dirname(__DIR__) . '/');
 
 /**
  * URL path to tcpdf installation folder (http://localhost/tcpdf/).
  */
-define ('K_PATH_URL', 'http://mcgoff.defecttracker.uk/includes/TCPDF/');
+define ('K_PATH_URL', 'https://defectnotice.site/includes/tcpdf/');
 
 /**
  * Path for PDF fonts.
@@ -55,7 +55,7 @@ define ('PDF_HEADER_LOGO_WIDTH', 0);
 /**
  * Cache directory for temporary files (full path).
  */
-define ('K_PATH_CACHE', '/home/dvntrack/mcgoff.defecttracker.uk/uploads/temp/');
+define ('K_PATH_CACHE', dirname(__DIR__, 3) . '/uploads/temp/');
 
 /**
  * Generic name for a blank image.

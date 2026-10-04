@@ -63,7 +63,7 @@ function defectTrackerBrandLogoAvailable(?string $publicPath): bool
 function defectTrackerResolveBranding(?PDO $db): array
 {
     $brand = defectTrackerDefaultBranding();
-    if (!$db) {
+    if (!$db || (class_exists('Environment') && Environment::get('APP_CUSTOM_BRANDING', 'true') === 'false')) {
         return $brand;
     }
 

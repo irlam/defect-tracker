@@ -570,7 +570,7 @@ function trainingRenderDemoScreen(string $screen, string $focus = ''): void
         echo '<div class="demo-app-toolbar"><strong>Defect Tracker · Mobile / PWA</strong><span class="demo-status-pill">Field Ready</span></div>';
 
         if ($screen === 'pwa-open') {
-            echo '<div class="demo-pwa-browser' . $is('browser') . '"><div class="demo-pwa-address"><i class="bx bx-lock-alt"></i><span>mcgoff.defecttracker.uk</span><i class="bx bx-dots-vertical-rounded"></i></div><div class="demo-pwa-screen"><i class="bx bx-layer"></i><h4>Defect Tracker</h4><p>Open securely in the browser while online.</p></div></div>';
+            echo '<div class="demo-pwa-browser' . $is('browser') . '"><div class="demo-pwa-address"><i class="bx bx-lock-alt"></i><span>defectnotice.site</span><i class="bx bx-dots-vertical-rounded"></i></div><div class="demo-pwa-screen"><i class="bx bx-layer"></i><h4>Defect Tracker</h4><p>Open securely in the browser while online.</p></div></div>';
         } elseif ($screen === 'pwa-install') {
             echo '<div class="demo-pwa-install' . $is('install') . '"><div class="demo-pwa-appicon"><i class="bx bx-layer"></i></div><div><span class="demo-label">Browser app menu</span><h4>Install Defect Tracker</h4><p>Add the app to the home screen or install it when the browser offers the option.</p></div><button type="button" class="demo-button demo-button-primary"><i class="bx bx-download"></i> Install / Add</button></div>';
         } elseif ($screen === 'pwa-prepare') {
