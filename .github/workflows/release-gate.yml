@@ -33,6 +33,12 @@ jobs:
         run: php tests/functional-regressions.php
       - name: Defect lifecycle regressions
         run: php tests/defect-lifecycle-regression.php
+      - name: Offline outbox and auto-sync regression
+        run: php tests/offline-field-regression.php
+      - name: Training catalogue and access regression
+        run: php tests/training-regression.php
+      - name: Tenant branding regression
+        run: php tests/branding-regression.php
       - name: Mail safety regression
         run: php tests/site-mail.php
       - name: Service worker regression
@@ -45,7 +51,7 @@ jobs:
       - name: Check live login page
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error --location --max-time 20             https://mcgoff.defecttracker.uk/login.php -o /tmp/login.html
+          curl --fail --silent --show-error --location --max-time 20             https://defectnotice.site/login.php -o /tmp/login.html
           if grep -Eiq 'Fatal error|Parse error|Warning:|Uncaught (Error|Exception)' /tmp/login.html; then
             echo "Live login page contains a PHP/runtime error."
             exit 1
@@ -57,7 +63,7 @@ jobs:
       - name: Check live application/database health
         run: |
           set -euo pipefail
-          body="$(curl --fail --silent --show-error --location --max-time 20             https://mcgoff.defecttracker.uk/health.php)"
+          body="$(curl --fail --silent --show-error --location --max-time 20             https://defectnotice.site/health.php)"
           echo "$body"
           php -r '
             $d = json_decode(stream_get_contents(STDIN), true);
