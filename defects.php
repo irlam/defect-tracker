@@ -140,7 +140,10 @@ try {
     $whereClauses = ['d.deleted_at IS NULL'];
     $params = [];
 
-    if ($statusFilter !== 'all') {
+    if ($statusFilter === 'active') {
+        // Match the read-only Construction Suite active defect metric.
+        $whereClauses[] = "d.status IN ('open', 'pending', 'in_progress')";
+    } elseif ($statusFilter !== 'all') {
         $whereClauses[] = 'd.status = :status';
         $params[':status'] = $statusFilter;
     }
@@ -579,6 +582,7 @@ $priorityBadgeMap = [
                         <label class="form-label">Status</label>
                         <select name="status" class="form-select">
                             <option value="all">All Status</option>
+                            <option value="active" <?= $statusFilter === 'active' ? 'selected' : '' ?>>Active (Suite)</option>
                             <?php foreach ($statuses as $status): ?>
                                 <option value="<?php echo htmlspecialchars($status, ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($statusFilter === $status) ? 'selected' : ''; ?>>
                                     <?php echo ucwords(str_replace('_', ' ', $status)); ?>
