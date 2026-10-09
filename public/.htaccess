@@ -1,0 +1,5 @@
+Options -Indexes
+DirectoryIndex index.php
+Require all granted
+RewriteEngine On
+RewriteRule ^(?!(?:$|index\.php$|suite-login\.php$|suite-logout\.php$|api\.php$|files\.php$|export\.php$|app\.js$|style\.css$)) - [R=404,L]

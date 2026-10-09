@@ -1,0 +1,33 @@
+{
+  "module": "defects",
+  "source_commit": "e98f7c1e1bc89dda589ac0334fe896a1ff924baa",
+  "staging_only": true,
+  "tenant_ready": false,
+  "files": {
+    ".htaccess": "fa28d421a28ed9b6f4b997d5119c2b8adbacff6e2dd119a179b71230f9664934",
+    ".gitignore": "fcd92d86ece8214b88e79e91da2bf4ec982381a83590ef76c432524987677dcc",
+    "DEPLOYMENT.md": "3b819ef7339c61be8622f81f5c6058edec981149256c3d79908ba9cc017e82fe",
+    "staging/schema.mysql.sql": "46273d4be84f9bc22a07194ae7ee51b7b037f18a9c44cb613b1034614403661a",
+    "staging/bootstrap.php": "305e1e89e240280075d336aaaedae900d00a5e707ab84a2d89b6f088d0eccfa8",
+    "public/api.php": "f6da3fabafec77f846aae7fd14af7040fad186953c5ef38e13a98116e577954a",
+    "public/suite-logout.php": "7dc389264a13887e77a83e4d20f273daf9dc60a85589fd3ad3f732e91f9b7318",
+    "public/.htaccess": "98b0c17535820c89b62282ed103c5c4cc88e3f04a92ee12673cfe7a961eb2624",
+    "public/index.php": "bb542477243ba929bacb08424560a9b5b1ac77d53bb7a40f4ad2bc3c702f6f37",
+    "public/suite-login.php": "55a68378332d482fd12dbfcd6895bcddd728bab7b1cce629865372df8142196b",
+    "public/files.php": "53c71bb9a1ce257f22954a078a9a7fc311a2690a29c9ae29a9f4145d7e740215",
+    "public/export.php": "4b5f1a4b16e3b81d8c93c8db3640832e2a6b2a766e922e424710adc98c6980c5",
+    "public/app.js": "78e62395db62ba947f50afb9686b72de974a8f89b0aeffd6ac19301eea9342d7",
+    "public/style.css": "ff0ffe40b1cd6fa2e176decc455250f2cbea9b06db992426fda4b54f3734a36f",
+    "bin/suite-staging-cleanup.php": "f2ad597cbd0bec2178d12dc5de013cd23933d6bd6080b26be1919f88b43390db",
+    "bin/suite-staging-preflight.php": "c41fc5411a3bf4bf30d45db72c576031636a023fd46f36f26297705aa401a857",
+    "bin/suite-staging-install.php": "06e5bdac75ba8757a87a4df930b639439c4d87bb38840ab3e8d49a4fcec55703",
+    "includes/Suite/Defects.php": "791f27a062a459bb4d6b6708d9cb076efa8787b1d6c91f503b7607a9c13ec1ff",
+    "includes/Suite/SignIn.php": "995e4282f74640cf62b74d473e3f9d17479994df029357738f264ad818986336",
+    "includes/Suite/UserMap.php": "b5a535c87413ea6b65f4223bb96d302a55e69391ec078e69df1ce402e0dfa4fb",
+    "includes/Suite/Configuration.php": "c1be31856007a63f1d33ed5017b5f2e86924b0a046d7347be005f6b69e2c8e84",
+    "includes/Suite/ProjectScope.php": "e18ed1b87e0f1e5a0a5d2b4961444095be8463a96c9e02653abdd9b1e6931195",
+    "includes/Suite/SessionStore.php": "01ef5a01750416964a02b0e4e95ae67d9a3c5370a48ebebb5eb8abc57f4ad2be",
+    "includes/Suite/CookiePolicy.php": "97937da6afe81b2305149e5114d499f70b2bb7e6106ef43a38465692aa5405e1",
+    "includes/Suite/Gateway.php": "f464eba48b460f6a4a4e5374bb554fa8401d9133a59db23927566ab2df114dd5"
+  }
+}

@@ -1,0 +1,5 @@
+config/runtime.suite.private.php
+.env*
+*.log
+uploads/
+sessions/
