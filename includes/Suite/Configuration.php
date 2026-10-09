@@ -89,10 +89,10 @@ final class Configuration
 
     private static function unlinked(string $path): bool
     {
-        if (!str_starts_with($path, DIRECTORY_SEPARATOR)) return false;
-        for ($part = $path; $part !== DIRECTORY_SEPARATOR && $part !== '.'; $part = dirname($part)) {
-            if (is_link($part)) return false;
-        }
-        return true;
+        // Canonical equality rejects symlinks anywhere in the path without
+        // probing ancestors above the hosting account's open_basedir boundary.
+        return str_starts_with($path, DIRECTORY_SEPARATOR)
+            && realpath($path) === $path
+            && !is_link($path);
     }
 }

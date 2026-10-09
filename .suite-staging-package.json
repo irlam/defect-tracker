@@ -1,6 +1,6 @@
 {
   "module": "defects",
-  "source_commit": "e98f7c1e1bc89dda589ac0334fe896a1ff924baa",
+  "source_commit": "7b2faedb837c2441f0521db172911f6b01d13d38",
   "staging_only": true,
   "tenant_ready": false,
   "files": {
@@ -24,7 +24,7 @@
     "includes/Suite/Defects.php": "791f27a062a459bb4d6b6708d9cb076efa8787b1d6c91f503b7607a9c13ec1ff",
     "includes/Suite/SignIn.php": "995e4282f74640cf62b74d473e3f9d17479994df029357738f264ad818986336",
     "includes/Suite/UserMap.php": "b5a535c87413ea6b65f4223bb96d302a55e69391ec078e69df1ce402e0dfa4fb",
-    "includes/Suite/Configuration.php": "c1be31856007a63f1d33ed5017b5f2e86924b0a046d7347be005f6b69e2c8e84",
+    "includes/Suite/Configuration.php": "440944b17f3fb403c736e1f248e0d4bc15740d7206794e2990cbf422efa75380",
     "includes/Suite/ProjectScope.php": "e18ed1b87e0f1e5a0a5d2b4961444095be8463a96c9e02653abdd9b1e6931195",
     "includes/Suite/SessionStore.php": "01ef5a01750416964a02b0e4e95ae67d9a3c5370a48ebebb5eb8abc57f4ad2be",
     "includes/Suite/CookiePolicy.php": "97937da6afe81b2305149e5114d499f70b2bb7e6106ef43a38465692aa5405e1",
