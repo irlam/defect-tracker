@@ -28,6 +28,14 @@ $write=static function(string $path,array $value,bool $guard=true): void {
 };
 try {
     $write($file,$config);
+    $childCode = 'require '.var_export(dirname(__DIR__).'/includes/Suite/Gateway.php',true).'; require '.var_export(dirname(__DIR__).'/includes/Suite/Configuration.php',true).';'
+        . 'ini_set("open_basedir",'.var_export($tmp,true).');'
+        . '$value=\\DefectTracker\\Suite\\Configuration::load('.var_export($root,true).');'
+        . 'if($value["instance_id"]!==3)exit(1); echo "restricted-path-pass";';
+    $process=proc_open([PHP_BINARY,'-r',$childCode],[1=>['pipe','w'],2=>['pipe','w']],$pipes);
+    $childOutput=stream_get_contents($pipes[1]);fclose($pipes[1]);
+    $childError=stream_get_contents($pipes[2]);fclose($pipes[2]);
+    verify(proc_close($process)===0&&$childOutput==='restricted-path-pass'&&$childError==='','configuration works within open_basedir');
     $copy=Configuration::load($root);
     verify($copy===$config,'protected in-tree configuration');
     $outside=$tmp.'/private/binding.php'; $write($outside,$config,false);
