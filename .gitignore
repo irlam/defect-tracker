@@ -45,3 +45,5 @@ database/*.sql
 uploads/*
 !uploads/.htaccess
 !uploads/.gitkeep
+
+!database/suite-staging-binding.mysql.sql
