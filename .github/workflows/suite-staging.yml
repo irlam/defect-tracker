@@ -16,3 +16,6 @@ jobs:
           coverage: none
       - run: php -l includes/Suite/Gateway.php && php -l includes/Suite/ProjectScope.php
       - run: php tests/suite-staging.php
+      - run: php tests/suite-configuration.php
+      - run: php -l includes/Suite/Configuration.php && php -l bin/suite-staging-preflight.php
+      - run: python3 tests/suite-preflight-http.py
