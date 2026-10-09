@@ -19,3 +19,5 @@ jobs:
       - run: php tests/suite-configuration.php
       - run: php -l includes/Suite/Configuration.php && php -l bin/suite-staging-preflight.php
       - run: python3 tests/suite-preflight-http.py
+      - run: php tests/suite-session.php
+      - run: python3 tests/suite-session-race.py
