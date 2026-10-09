@@ -85,7 +85,7 @@ jobs:
             git worktree add --detach "$publication" "$GITHUB_SHA"
             git -C "$publication" checkout --orphan deploy/suite-staging
           fi
-          git -C "$publication" rm -r --ignore-unmatch .
+          git -C "$publication" rm -r -f --ignore-unmatch .
           cp -a "$RUNNER_TEMP/defects-package/." "$publication/"
           git -C "$publication" add .
           if git -C "$publication" diff --cached --quiet; then exit 0; fi
