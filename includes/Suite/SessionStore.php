@@ -55,6 +55,28 @@ final class SessionStore
         if (is_file($path) && !@unlink($path)) throw new RuntimeException('Private session unavailable.');
     }
 
+    /** Bounded cleanup of this audience's expired records; no Suite calls. */
+    public function pruneExpired(bool $apply = false, int $limit = 1000): array
+    {
+        $this->checkDirectory();
+        if($limit<1||$limit>1000)throw new RuntimeException('Invalid cleanup limit.');
+        $checked=0;$expired=0;$removed=0;
+        foreach(glob($this->directory.'/'.$this->audience.'-*.json')?:[]as$path){
+            if($checked++ >= $limit)break;
+            $stat=@lstat($path);if(!$stat||($stat['mode']&0170000)!==0100000||($stat['mode']&0077)!==0||$stat['size']>8192)continue;
+            $handle=@fopen($path,'rb');if(!$handle)continue;
+            try{
+                if(!flock($handle,LOCK_EX))continue;
+                clearstatcache(true,$path);$named=@stat($path);$opened=fstat($handle);
+                if(!$named||!$opened||$named['ino']!==$opened['ino']||$named['dev']!==$opened['dev'])continue;
+                $record=json_decode((string)stream_get_contents($handle,8193),true,8);
+                if(!is_array($record)||($record['audience']??null)!==$this->audience||!is_int($record['expires_at']??null)||$record['expires_at']>($this->clock)())continue;
+                $expired++;if($apply&&@unlink($path))$removed++;
+            }finally{flock($handle,LOCK_UN);fclose($handle);}
+        }
+        return ['expired'=>$expired,'removed'=>$removed];
+    }
+
     private function access(string $id, bool $consume): array
     {
         $this->checkDirectory();

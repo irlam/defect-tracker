@@ -22,6 +22,11 @@ final class CookiePolicy
         return ['expires'=>$expires, 'path'=>'/', 'secure'=>true, 'httponly'=>true, 'samesite'=>'Lax'];
     }
 
+    public static function pendingOptions(int $expires): array
+    {
+        return array_replace(self::options($expires), ['samesite'=>'None']);
+    }
+
     public static function headers(): array
     {
         return ['Cache-Control'=>'no-store', 'Pragma'=>'no-cache', 'Referrer-Policy'=>'no-referrer', 'X-Content-Type-Options'=>'nosniff'];

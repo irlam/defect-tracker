@@ -8,11 +8,11 @@ use Throwable;
 /** HTTP controllers must enforce CookiePolicy before using this internal flow. */
 final class SignIn
 {
-    public function __construct(private readonly Gateway $gateway, private readonly ProjectScope $scope, private readonly SessionStore $store) {}
+    public function __construct(private readonly Gateway $gateway, private readonly ?ProjectScope $scope, private readonly SessionStore $store) {}
 
     public function begin(): array
     {
-        $this->scope->assertDatabase();
+        $this->verifiedScope()->assertDatabase();
         $pending = $this->gateway->begin();
         $id = $this->store->create(['kind'=>'pending', 'state'=>$pending['state'], 'expires_at'=>time()+300]);
         return ['pending_id'=>$id, 'url'=>$pending['url']];
@@ -26,7 +26,7 @@ final class SignIn
             if ($pending['kind'] !== 'pending') throw new RuntimeException();
             $identity = $this->gateway->redeem($code, $state, $pending['state']);
             $token = $identity['session_token'];
-            $current = $this->scope->current($token);
+            $current = $this->verifiedScope()->current($token);
             if ($current['user_id'] !== $identity['user_id'] || $current['session_expires_at'] !== $identity['session_expires_at']) throw new RuntimeException();
             $csrf = bin2hex(random_bytes(32));
             $sessionId = $this->store->create(['kind'=>'authenticated', 'token'=>$token, 'csrf'=>$csrf, 'user_id'=>$current['user_id'], 'expires_at'=>$current['session_expires_at']]);
@@ -42,7 +42,7 @@ final class SignIn
         try {
             $record = $this->store->read($sessionId);
             if ($record['kind'] !== 'authenticated') throw new RuntimeException();
-            $identity = $this->scope->current($record['token']);
+            $identity = $this->verifiedScope()->current($record['token']);
             if ($identity['user_id'] !== $record['user_id'] || $identity['session_expires_at'] !== $record['expires_at']) throw new RuntimeException();
             return ['identity'=>self::browserIdentity($identity), 'csrf'=>$record['csrf']];
         } catch (Throwable $e) {
@@ -73,5 +73,11 @@ final class SignIn
     private static function browserIdentity(array $identity): array
     {
         return array_intersect_key($identity, array_flip(['instance_id','organization_id','project_id','local_project_id','module_key','user_id','role','name','email','session_expires_at']));
+    }
+
+    private function verifiedScope(): ProjectScope
+    {
+        if($this->scope===null)throw new RuntimeException('Database scope unavailable.');
+        return $this->scope;
     }
 }

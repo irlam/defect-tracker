@@ -51,7 +51,7 @@ try {
     [$pending,$session]=$signin();denySession(fn()=>$flow->logout($session['session_id'],'GET',$session['csrf']),'logout GET denied');
     denySession(fn()=>$flow->logout($session['session_id'],'POST','wrong'),'logout CSRF denied');verifySession($store->read($session['session_id'])['kind']==='authenticated','invalid logout preserves session');
     verifySession($flow->logout($session['session_id'],'POST',$session['csrf'])===true,'remote logout');denySession(fn()=>$flow->current($session['session_id']),'logged out denied');
-    [$pending,$session]=$signin();$outage=true;verifySession($flow->logout($session['session_id'],'POST',$session['csrf'])===false,'outage logout reports remote failure');$outage=false;
+    [$pending,$session]=$signin();$outage=true;$logoutOnly=new SignIn($gateway,null,$store);verifySession($logoutOnly->logout($session['session_id'],'POST',$session['csrf'])===false,'outage logout reports remote failure without database');$outage=false;
     denySession(fn()=>$store->read($session['session_id']),'outage logout still removes local access');
     $foreign=$binding;$foreign['origin']='https://beta.defectnotice.site';$foreign['instance_id']=4;$foreign['organization_id']=8;$foreign['project_id']=8;
     [$pending,$session]=$signin();$foreignStore=new SessionStore($tmp,$foreign);denySession(fn()=>$foreignStore->read($session['session_id']),'foreign store audience denied');
@@ -67,6 +67,11 @@ try {
     CookiePolicy::requireOrigin(['HTTP_HOST'=>'alpha.defectnotice.site','HTTPS'=>'on'],$binding);verifySession(true,'exact HTTPS host accepted');
     foreach([['HTTP_HOST'=>'beta.defectnotice.site','HTTPS'=>'on'],['HTTP_HOST'=>'alpha.defectnotice.site','HTTPS'=>'off','HTTP_X_FORWARDED_PROTO'=>'https'],['HTTP_HOST'=>'alpha.defectnotice.site:443','HTTPS'=>'on']]as$server)denySession(fn()=>CookiePolicy::requireOrigin($server,$binding),'origin spoof denied');
     $options=CookiePolicy::options(time()+300);verifySession(!isset($options['domain'])&&$options['path']==='/'&&$options['secure']&&$options['httponly']&&$options['samesite']==='Lax','host-only secure callback cookie');
+    verifySession(CookiePolicy::pendingOptions(time()+300)['samesite']==='None','cross-site POST state cookie');
+    $expired=$store->create(['kind'=>'pending','state'=>str_repeat('f',64),'expires_at'=>time()+1]);$now=time()+2;
+    verifySession($store->pruneExpired()['expired']>=1&&$store->pruneExpired()['removed']===0,'cleanup dry-run preserves expired records');
+    verifySession($store->pruneExpired(true)['removed']>=1,'cleanup removes expired records');$now=time();
+    denySession(fn()=>$store->read($expired),'expired state removed');
     verifySession(CookiePolicy::headers()['Referrer-Policy']==='no-referrer'&&CookiePolicy::headers()['Cache-Control']==='no-store','callback caching and referrer policy');
     verifySession(!isset($_SESSION),'legacy session never touched');
     echo json_encode(['passed'=>true,'checks'=>$checks,'routes_enabled'=>false,'live_requests'=>0])."\n";

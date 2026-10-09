@@ -12,7 +12,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: pdo_sqlite, curl
+          extensions: pdo_sqlite, pdo_mysql, curl, fileinfo
           coverage: none
       - run: php -l includes/Suite/Gateway.php && php -l includes/Suite/ProjectScope.php
       - run: php tests/suite-staging.php
@@ -21,3 +21,73 @@ jobs:
       - run: python3 tests/suite-preflight-http.py
       - run: php tests/suite-session.php
       - run: python3 tests/suite-session-race.py
+      - run: php tests/suite-user-map.php
+      - run: python3 tests/suite-workspace-http.py
+      - run: python3 tests/suite-package.py
+  mysql-staging:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: suite_alpha_stage
+          MYSQL_USER: suite_alpha_stage
+          MYSQL_PASSWORD: fixture-only-stage
+          MYSQL_ROOT_PASSWORD: fixture-only-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pfixture-only-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, curl, fileinfo
+          coverage: none
+      - run: php tests/suite-mysql.php
+  publish-staging:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/work/suite-staging-foundation'
+    needs: [identity-boundary, mysql-staging]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: defects-suite-staging-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, curl, fileinfo
+          coverage: none
+      - name: Build and lint reviewed deployment tree
+        run: |
+          python3 bin/build-suite-staging.py "$RUNNER_TEMP/defects-package" --source-commit "$GITHUB_SHA"
+          find "$RUNNER_TEMP/defects-package" -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Publish checked root for Plesk
+        run: |
+          current_source=$(git ls-remote origin refs/heads/work/suite-staging-foundation | cut -f1)
+          if [ "$current_source" != "$GITHUB_SHA" ]; then
+            echo "Source advanced; this older run will not publish."
+            exit 0
+          fi
+          publication="$RUNNER_TEMP/defects-publication"
+          if git fetch origin deploy/suite-staging; then
+            git worktree add --detach "$publication" FETCH_HEAD
+          else
+            git worktree add --detach "$publication" "$GITHUB_SHA"
+            git -C "$publication" checkout --orphan deploy/suite-staging
+          fi
+          git -C "$publication" rm -r --ignore-unmatch .
+          cp -a "$RUNNER_TEMP/defects-package/." "$publication/"
+          git -C "$publication" add .
+          if git -C "$publication" diff --cached --quiet; then exit 0; fi
+          git -C "$publication" -c user.name='Suite staging builder' -c user.email='suite-staging@example.invalid' commit -m "Build Defects staging from $GITHUB_SHA"
+          git -C "$publication" push origin HEAD:refs/heads/deploy/suite-staging
