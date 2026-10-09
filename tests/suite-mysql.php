@@ -1,0 +1,25 @@
+<?php
+declare(strict_types=1);
+// CI-only credentials refer to an ephemeral MySQL service, never live hosting.
+foreach(['Gateway','Configuration','ProjectScope','UserMap','Defects']as$class)require dirname(__DIR__).'/includes/Suite/'.$class.'.php';
+use DefectTracker\Suite\Configuration;use DefectTracker\Suite\Gateway;use DefectTracker\Suite\ProjectScope;use DefectTracker\Suite\UserMap;use DefectTracker\Suite\Defects;
+$base=sys_get_temp_dir().'/defects-mysql-'.bin2hex(random_bytes(8));mkdir($base,0700);
+$package=$base.'/package';
+$proc=proc_open(['python3',dirname(__DIR__).'/bin/build-suite-staging.py',$package],[1=>['pipe','w'],2=>['pipe','w']],$pipes);stream_get_contents($pipes[1]);fclose($pipes[1]);$error=stream_get_contents($pipes[2]);fclose($pipes[2]);if(proc_close($proc)!==0)throw new RuntimeException($error);
+foreach(['uploads','sessions']as$dir)mkdir($base.'/'.$dir,0700);mkdir($package.'/config',0700);
+$binding=['staging_only'=>true,'module_key'=>'defects','suite_origin'=>'https://suite.defecttracker.uk','origin'=>'https://alpha.defectnotice.site','instance_id'=>3,'organization_id'=>7,'project_id'=>7,'local_project_id'=>1,'key'=>str_repeat('a',64),'database'=>['host'=>'127.0.0.1','port'=>3306,'name'=>'suite_alpha_stage','username'=>'suite_alpha_stage','password'=>'fixture-only-stage'],'upload_root'=>$base.'/uploads','session_root'=>$base.'/sessions'];
+$file=$package.'/config/runtime.suite.private.php';file_put_contents($file,"<?php\ndeclare(strict_types=1);\n".Configuration::guard()."\nreturn ".var_export($binding,true).";\n");chmod($file,0600);
+function runStage(string $script,array $args=[]):array{global$package;$p=proc_open(array_merge([PHP_BINARY,$package.'/bin/'.$script],$args),[1=>['pipe','w'],2=>['pipe','w']],$pipes);$out=stream_get_contents($pipes[1]);fclose($pipes[1]);$err=stream_get_contents($pipes[2]);fclose($pipes[2]);$status=proc_close($p);if($err!=='')throw new RuntimeException('Unexpected CLI output.');return[$status,json_decode($out,true,8,JSON_THROW_ON_ERROR)];}
+[$status,$result]=runStage('suite-staging-install.php',['--dry-run']);if($status!==0||!$result['database_empty']||$result['writes_performed']!==0)throw new RuntimeException('Dry-run failed');
+[$status,$result]=runStage('suite-staging-install.php',['--apply']);if($status!==0||!$result['installed']||$result['users']!==0)throw new RuntimeException('Install failed');
+[$status,$result]=runStage('suite-staging-install.php',['--apply']);if($status!==1)throw new RuntimeException('Existing database not refused');
+[$status,$result]=runStage('suite-staging-preflight.php');if($status!==0||!$result['database_binding_verified']||$result['writes_performed']!==0)throw new RuntimeException('Preflight failed');
+$db=Configuration::connect($binding);$map=new UserMap($db,$binding);$identity=['instance_id'=>3,'organization_id'=>7,'project_id'=>7,'local_project_id'=>1,'module_key'=>'defects','user_id'=>8,'role'=>'manager','name'=>'MySQL fixture','session_expires_at'=>time()+600];$user=$map->resolve($identity);$identity['role']='viewer';if($map->resolve($identity)['user_type']!=='viewer')throw new RuntimeException('Role downgrade failed');
+$register=new Defects($db,$binding);$id=$register->save(['title'=>'MySQL fixture'],$user['id']);$register->save(['title'=>'MySQL edited','status'=>'in_progress'],$user['id'],$id);if($register->find($id)['title']!=='MySQL edited')throw new RuntimeException('Save failed');
+$db->exec('UPDATE suite_instance_binding SET organization_id=8');try{(new ProjectScope(new Gateway($binding),$db,$binding))->assertDatabase();throw new LogicException('Foreign binding accepted');}catch(RuntimeException$e){}
+// Real concurrent provisioning of a new Suite user through native PDO MySQL.
+$db->exec('UPDATE suite_instance_binding SET organization_id=7');$identity['user_id']=9;
+$worker=$base.'/map-worker.php';file_put_contents($worker,"<?php require ".var_export(dirname(__DIR__).'/includes/Suite/Gateway.php',true).";require ".var_export(dirname(__DIR__).'/includes/Suite/Configuration.php',true).";require ".var_export(dirname(__DIR__).'/includes/Suite/UserMap.php',true).";\$b=".var_export($binding,true).";\$i=".var_export($identity,true).";\$db=\\DefectTracker\\Suite\\Configuration::connect(\$b);\$u=(new \\DefectTracker\\Suite\\UserMap(\$db,\$b))->resolve(\$i);echo \$u['id'];");chmod($worker,0600);
+$workers=[];for($i=0;$i<2;$i++){$process=proc_open([PHP_BINARY,$worker],[1=>['pipe','w'],2=>['pipe','w']],$streams);$workers[]=[$process,$streams];}
+$ids=[];foreach($workers as[$process,$streams]){$ids[]=stream_get_contents($streams[1]);fclose($streams[1]);$err=stream_get_contents($streams[2]);fclose($streams[2]);if(proc_close($process)!==0||$err!=='')throw new RuntimeException('Concurrent mapping failed');}if($ids[0]!==$ids[1]||(int)$db->query('SELECT COUNT(*) FROM suite_user_map WHERE suite_user_id=9')->fetchColumn()!==1)throw new RuntimeException('Mapping duplication');
+echo json_encode(['passed'=>true,'engine'=>'MySQL 8.4','install_and_preflight'=>true,'concurrent_mappers'=>2,'single_mapping'=>true,'live_writes'=>0])."\n";

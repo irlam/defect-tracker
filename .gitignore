@@ -4,6 +4,7 @@
 !.env.example
 config/database.local.php
 config/local.php
+config/runtime.suite.private.php
 /config/notification-test.local.php
 .defecttracker-mail.json
 
@@ -45,3 +46,5 @@ database/*.sql
 uploads/*
 !uploads/.htaccess
 !uploads/.gitkeep
+
+!database/suite-staging-binding.mysql.sql
